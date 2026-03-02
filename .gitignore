@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Mise
+.mise.lock
+
+# Git worktrees
+.worktrees/
+
+# Language-specific patterns added per sub-project

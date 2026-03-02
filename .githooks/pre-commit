@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+export MISE_EXPERIMENTAL=1
+if ! mise run '//:ci'; then
+    echo "Pre-commit checks failed!"
+    exit 1
+fi
