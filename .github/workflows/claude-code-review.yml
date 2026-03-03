@@ -21,7 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      # Sticky comments and inline review comments both require write permissions.
+      pull-requests: write
       issues: read
       id-token: write
 
@@ -35,10 +36,24 @@ jobs:
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
+          use_sticky_comment: true
+          track_progress: true
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          prompt: |
+            /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+
+            Your review should be submitted as a combination of one or more inline comments with a single PR comment:
+            - For specific code issues, use the mcp__github_inline_comment__create_inline_comment tool to post inline comments on the relevant lines in the diff. This makes feedback easier to act on.
+            - The PR comment should briefly summarize the overall review and provide any additional high-level feedback, tying any inline comments together.
+
+            Use the repository's CLAUDE.md and .claude/rules/ files for guidance on style and conventions. Be constructive and helpful in your feedback.
+
+            Also review the PR's adherence to the repo's design and development process (see design/README.md):
+            - If the PR implements a product requirement from design/product-requirements/, check whether it meets the acceptance criteria or that any deviations or partial implementations are justified in the PR's description.
+            - Check whether the code complies with the engineering principles in design/engineering-principles/.
+            - If the PR implements an engineering design from design/engineering-designs/, check whether it follows the design.
+            - Check whether relevant design docs were updated as needed for the changes in this PR (though it's fine if it diverges from implementation plans, as those are often just a starting plan).
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),mcp__github_inline_comment__create_inline_comment"'
 
