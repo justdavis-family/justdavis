@@ -13,7 +13,9 @@ from github_analytics.fetcher import (
     fetch_traffic_views,
 )
 
-TOKEN = "fake-token"
+import os
+
+TOKEN = os.environ.get("GITHUB_TOKEN", "fake-token")
 KSOAP = RepoId(owner="karlmdavis", name="ksoap2-android")
 
 

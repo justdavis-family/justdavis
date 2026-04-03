@@ -1,0 +1,111 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA62YYW/bNhCG/4qhTxvmWI6TNIuBogvWoGjRtFvqbl2HQaAl2mZCiSpJ2U2E/Pe9
+        R0qy7KR1UuWDE5viPTwe707HKwORBOP9w+Hx6Fk/yFTCIxoIzl+erd7LNzJ+dXLDPl0s4+zq67uX
+        pwfnl/88DzCRpRyzroxi+WiPZYlWEOsHs0LKqH7ItEwTthQmvDMv12LJLBAzJg3vB2qVcR2My0Cq
+        uciI3AiDShodnYyGw00N/3z216d3Mr78eHR+ebrCPAYm01GhJQgLa3MzDkM/aAZzYRfFtDBcxyqz
+        PLODWKVhETrwi+XzQwDmukI4G2BgC5WLCuNlwcLe2poubCq31vfrOoGNqTMlpVqBsK3v9xcJGzky
+        t2OIbP5DDMiVobILDpNhK7dkAGHsYxVyMmVI/+A7RDE4Bc2TRypVSUElcobbMtQ8Vw5XTE2sRW6F
+        yh6r3IYsWErPWSZu2I+wIGuAILUeq4aTgSxfwvEeK+yFytAFTXxNJtE85mIJE/8QcEsaPHudUzx/
+        hBvgF3lDtBR8FVXjeTGVIqajEJZHLEkpRl3o3vYRaA/z+btZIOHNuWLx095M6auemvXgkj2fMnpS
+        TDXT172fKJwRzX54YFShY475cz7IuA1/7lnVM0WeK22d+KlPSb1cMotp6QDKE77JON+NbHdcrXC9
+        qzqxdpzjDggCGQiodcWvO5KIUIb4W8VfjLTApkozq3all11KbqDKsP2T/NBylnZU3iGAWijV1aIO
+        AZQwpuAPCo1d23ckE9YRmBXp1CfKh8TdLrhnQF9mjJhnnHe0ZIMpwzqfI3iyeNEVXFPK0H9zJ8/m
+        HdUlAkBTqaYdSXjFhg5ThmbB/HvMRt01JC5RNrCaz55AXaI0WKs7n71TlTANFK9TCzfoqGtNCcvK
+        spJl84LNu3IbDDyAXvxzdrOzFNoVT2sOoFTkaTEtniIFrkmkra9GkAe6mnYNWmNdkfP9wmmnGVrl
+        kjNEmopdNccuZgXZCIQnAZPfbsPp9+4y6SEqE6UM11nbvxgqfjcrV2+GWtf2KtX9oqN71JSw/CVn
+        dkFZDYvlTPNuileQsJwylG+DwaBccObK9pSjnOqotWcAxnS8QIXaTdeyplAJx6y7E8xI1QR3BKlY
+        0lHbBgOkP9Bu+npG2xdyXIg7KukQbWYqJDdWZZ3PquG06ZmyYibih9yQdoXgBqp8YUQW8z6Tsg8v
+        tiIW8GvcQek8Ua7yrnbyDGwFvQl/R5IcLt7R+pp7Shn6u23Cc6munyA/tUAU2pqjH5JEzOImhIbE
+        yd7wYG+4PxmNxocH4/3jz5hT5El7zuhob3i4tz+cDA/Go+Px4SHNyQuzWGNGI8IcYMrheH9/fOQw
+        SLmVl+MbrlT3Nii2bjzU9oCoMYu16G9rwfG6s3G/YCzhrlux9Zh1l9vvxIcIQ+GFSnmOaqXqB2G3
+        MVpcg7lSc8ldTya/e7cz4gYCo9EQHbFWbRKrIsPp7A9P+sGKWZTVqADag3VNg8XeoI9EyzMT+ZwQ
+        jK0u0OiikVyrSx5b0x5bZ6LWxJW4EhuCVHc1N1hCJcLEBW4PaIw04/5qWik2OvkViV1oraq+WIZs
+        0mRndLmqBhxAbCr5ekDlPKt0rzcJEroAPDOwTknXVmwUpQX2WXX8zl9Pem+rGTBdnnytmomvJ+S+
+        m225zTZXBTZhBWw1IuNnk1fy8vPfRzefJ2c3AToOSCFqFdE+kT5qAwkTWZ7SfX/dVlzxKZSn+iei
+        G5aazSLNvxQCzakNM1KKdU+QV5tjaQ9GLj6pNMsVVKWdQwlsyqpcxBD5979+gE6nmAopLD1uWib+
+        mj92B9EyajDG79qNKq9K+IwV0kb+lkXWZca6jkzOdQpH8udcBlUHxrtUykRm8akNQSmg/o4S2Hm/
+        n0k78t9hRDJW5OPSqitOTVcs5E1rvhQMoe5e5rWwf+KGKptuPtGcCor7ZBiK8Hq8djdkVXSS/EYj
+        mLVaqnrs1/L5rrFG9Qx3mqjSL9eRFVaiI4VI8LZrjrW9hdoHUm6MTwa/vz+Hs0bnZx8+nL46+0Cp
+        rbXler6Dwy7V7PcX0R8X0eT15O0ZBNqWgPo1+Vszatb52cWrs3phWpfHhYbLRGii48PktRHwp5Ie
+        aA6/jVmWOTfHkLvSQaEmWnGOW/MiOn5KMRYpBv7yTTm8f3iWoE2ENWodvMX98vVaPPOJ4Z6lMooH
+        rZYiQb8QL3P4KuWhByq6ZFIktHNk0hh9m/vlsCwafCvEep2GXCS1b2FVqju+/R8Gd7rMzRgAAA==
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      Cache-Control:
+      - private, max-age=60, s-maxage=60
+      Content-Encoding:
+      - gzip
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Fri, 03 Apr 2026 15:10:55 GMT
+      ETag:
+      - W/"80f191406d2c3bcc422f73da0fb91ca3964c0f140ff8e0ec73f6d1d5ed2cab80"
+      Last-Modified:
+      - Thu, 10 Apr 2025 03:27:44 GMT
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+      X-Accepted-OAuth-Scopes:
+      - repo
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - CCFF:7549F:40C6B3:FE0280:69CFD87F
+      X-OAuth-Scopes:
+      - repo
+      X-RateLimit-Limit:
+      - '5000'
+      X-RateLimit-Remaining:
+      - '4984'
+      X-RateLimit-Reset:
+      - '1775232349'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '16'
+      X-XSS-Protection:
+      - '0'
+      x-github-api-version-selected:
+      - '2022-11-28'
+    status:
+      code: 200
+      message: OK
+version: 1

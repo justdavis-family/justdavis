@@ -10,5 +10,6 @@ def vcr_config() -> dict[str, object]:
     return {
         "cassette_library_dir": "tests/cassettes",
         "filter_headers": ["authorization"],
-        "record_mode": "none",  # Fail if cassette missing; use --record-mode=new_episodes to record
+        # record_mode omitted: pytest-recording defaults to "none" (fail if cassette missing).
+        # Override with --record-mode=new_episodes to record cassettes against the live API.
     }
