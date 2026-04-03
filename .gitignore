@@ -17,6 +17,9 @@ Thumbs.db
 
 # Language-specific patterns added per sub-project
 
+# Environment files (contain credentials — never commit)
+.env
+
 # Python
 __pycache__/
 *.py[cod]
