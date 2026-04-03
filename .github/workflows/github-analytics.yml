@@ -1,0 +1,55 @@
+name: Collect GitHub Analytics
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 6 AM UTC
+  workflow_dispatch:        # Allow manual trigger
+
+concurrency:
+  group: analytics-collection
+  cancel-in-progress: false  # Serialize runs; don't cancel in-progress
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout data repo
+        uses: actions/checkout@v4
+        with:
+          repository: justdavis-family/github-analytics-data
+          token: ${{ secrets.ANALYTICS_DATA_PAT }}
+          path: analytics-data
+
+      - uses: jdx/mise-action@v2
+
+      - name: Collect analytics
+        id: collect
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.ANALYTICS_DATA_PAT }}
+        run: >
+          MISE_EXPERIMENTAL=1 mise run '//github-analytics:collect'
+          -- --data-repo ${{ github.workspace }}/analytics-data
+
+      - name: Generate reports
+        id: report
+        continue-on-error: true
+        run: >
+          MISE_EXPERIMENTAL=1 mise run '//github-analytics:report'
+          -- --data-repo ${{ github.workspace }}/analytics-data
+
+      - name: Commit and push data
+        run: |
+          cd analytics-data
+          git config user.name "GitHub Analytics Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet \
+            || git commit -m "data: collect analytics $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Fail if collection had errors
+        if: steps.collect.outcome == 'failure' || steps.report.outcome == 'failure'
+        run: exit 1
