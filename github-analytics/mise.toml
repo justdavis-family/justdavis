@@ -1,0 +1,53 @@
+[tools]
+python = "3.12"
+uv = "latest"
+
+[tasks.build]
+description = "Sync dependencies via uv"
+run = "uv sync --all-groups"
+
+[tasks.test]
+description = "Run tests"
+depends = ["build"]
+run = "uv run pytest"
+
+[tasks.lint]
+description = "Lint and format check"
+depends = ["build"]
+run = [
+  "uv run ruff check .",
+  "uv run ruff format --check .",
+]
+
+[tasks.typecheck]
+description = "Type check"
+depends = ["build"]
+run = "uv run mypy github_analytics/"
+
+[tasks.ci]
+description = "Full CI suite"
+depends = ["test", "lint", "typecheck"]
+
+[tasks."dependencies:check"]
+description = "Check for outdated or vulnerable dependencies"
+depends = ["build"]
+run = "uv tree --outdated"
+
+[tasks."dependencies:update"]
+description = "Update dependencies to latest compatible versions"
+run = "uv lock --upgrade && uv sync --all-groups"
+
+[tasks.collect]
+description = "Collect GitHub analytics (pass --data-repo PATH as trailing args)"
+depends = ["build"]
+run = "uv run python -m github_analytics collect"
+
+[tasks.report]
+description = "Generate analytics README reports (pass --data-repo PATH as trailing args)"
+depends = ["build"]
+run = "uv run python -m github_analytics report"
+
+[tasks."collect:smoke"]
+description = "Smoke test: collect against live GitHub API into /tmp/"
+depends = ["build"]
+run = "uv run python -m github_analytics collect --data-repo /tmp/analytics-smoke-$(date +%s)"
