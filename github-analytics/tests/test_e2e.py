@@ -63,3 +63,33 @@ def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
         lines = views.read_text().strip().splitlines()
         dates = [json.loads(line)["date"] for line in lines if line.strip()]
         assert len(dates) == len(set(dates)), f"Duplicate date records: {dates}"
+
+
+@pytest.mark.default_cassette("test_collect_creates_ndjson_files.yaml")
+@pytest.mark.vcr
+def test_report_generates_readmes(data_repo: Path, fixture_config: Path) -> None:
+    """Running report after collect creates README files at all three levels."""
+    import argparse
+
+    from github_analytics import reporter
+
+    args = argparse.Namespace(data_repo=str(data_repo), config=str(fixture_config))
+
+    # Collect data first (VCR replays the cassette from the collect test)
+    assert cmd_collect(args) == 0
+
+    # Generate reports (reads local files only — no HTTP calls)
+    assert reporter.generate(data_repo) == 0
+
+    # Root README must exist with per-metric sections
+    root = data_repo / "README.md"
+    assert root.exists()
+    root_content = root.read_text()
+    assert "## Traffic Views" in root_content
+    assert "Last updated" in root_content
+
+    # Per-owner README must exist
+    assert (data_repo / "karlmdavis" / "README.md").exists()
+
+    # Per-repo README must exist
+    assert (data_repo / "karlmdavis" / "ksoap2-android" / "README.md").exists()
