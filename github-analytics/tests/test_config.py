@@ -16,7 +16,7 @@ def test_load_repos_explicit(tmp_path: Path) -> None:
     ]
 
 
-@pytest.mark.vcr("org_repos.yaml")
+@pytest.mark.vcr
 def test_load_repos_org_wildcard(tmp_path: Path) -> None:
     """org: entries are expanded to all repos in the org."""
     config = tmp_path / "config.yaml"
@@ -26,7 +26,7 @@ def test_load_repos_org_wildcard(tmp_path: Path) -> None:
     assert any(r["owner"] == "justdavis-family" for r in result)
 
 
-@pytest.mark.vcr("user_repos.yaml")
+@pytest.mark.vcr
 def test_load_repos_user_wildcard(tmp_path: Path) -> None:
     """user: entries are expanded to all repos for the user."""
     config = tmp_path / "config.yaml"
