@@ -47,7 +47,12 @@ description = "Generate analytics README reports (pass --data-repo PATH as trail
 depends = ["build"]
 run = "uv run python -m github_analytics report"
 
-[tasks."collect:smoke"]
-description = "Smoke test: collect against live GitHub API into /tmp/"
+[tasks."ci:smoke"]
+description = "Smoke test: collect + report against live GitHub API into /tmp/"
 depends = ["build"]
-run = "uv run python -m github_analytics collect --data-repo /tmp/analytics-smoke-$(date +%s)"
+run = """
+smoke_dir=/tmp/analytics-smoke-$(date +%s)
+uv run python -m github_analytics collect --data-repo "$smoke_dir"
+uv run python -m github_analytics report --data-repo "$smoke_dir"
+echo "Smoke output: $smoke_dir"
+"""
