@@ -13,6 +13,10 @@ from github_analytics.config import RepoId
 
 BASE = "https://api.github.com"
 _MAX_RETRIES = 3
+# GitHub stats endpoints return 202 while computing results asynchronously.
+# Polling every 5 s for up to 60 s covers most repos; cold repos can take 30+ s.
+_STATS_POLL_INTERVAL = 5
+_STATS_MAX_ATTEMPTS = 12
 
 
 def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[str, str]:
@@ -175,15 +179,24 @@ def fetch_metadata_as_list(repo: RepoId, token: str) -> list[dict[str, Any]]:
 
 
 def _get_stats(url: str, token: str) -> Any:  # noqa: ANN401
-    """GET a stats endpoint, retrying on 202 (data being computed) up to _MAX_RETRIES times."""
-    for attempt in range(_MAX_RETRIES):
+    """GET a stats endpoint, polling on 202 until data is ready or timeout is reached.
+
+    GitHub computes stats asynchronously; the first request (or a request after a
+    period of inactivity) returns 202. Subsequent requests return 200 once the data
+    is ready, typically within a few seconds but up to 30+ s for cold repos.
+    """
+    for attempt in range(_STATS_MAX_ATTEMPTS):
         response = _get_with_retry(url, _headers(token))
         if response.status_code == 202:
-            time.sleep(2**attempt)
+            if attempt < _STATS_MAX_ATTEMPTS - 1:
+                time.sleep(_STATS_POLL_INTERVAL)
             continue
         response.raise_for_status()
         return response.json()
-    raise RuntimeError(f"Stats endpoint still returning 202 after {_MAX_RETRIES} attempts: {url}")
+    raise RuntimeError(
+        f"Stats endpoint still returning 202 after {_STATS_MAX_ATTEMPTS} attempts "
+        f"({_STATS_MAX_ATTEMPTS * _STATS_POLL_INTERVAL}s): {url}"
+    )
 
 
 def _unix_to_date(ts: int) -> str:
