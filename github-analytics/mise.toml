@@ -2,6 +2,11 @@
 python = "3.12"
 uv = "latest"
 
+[env]
+# Copy sample.env to .env and fill in your token before running ci:smoke.
+_.file = '.env'
+GITHUB_TOKEN = { required = "Classic PAT with repo scope — see github-analytics/sample.env" }
+
 [tasks.build]
 description = "Sync dependencies via uv"
 run = "uv sync --all-groups"
