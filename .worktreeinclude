@@ -1,1 +1,3 @@
-github-analytics/.env
+# Copy any .env files (gitignored secrets) into new worktrees so tasks that
+# require credentials (e.g. ci:smoke) work without manual setup after branching.
+**/.env

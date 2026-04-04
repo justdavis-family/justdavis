@@ -17,8 +17,9 @@ Thumbs.db
 
 # Language-specific patterns added per sub-project
 
-# Environment files (contain credentials — never commit)
-.env
+# Environment files (contain credentials — never commit); matched at all repo
+# depths so sub-projects can each maintain their own .env without extra entries.
+**/.env
 
 # Python
 __pycache__/
