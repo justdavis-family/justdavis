@@ -13,14 +13,20 @@ from typing import Any
 from github_analytics import writer
 from github_analytics.config import RepoId, load_repos
 from github_analytics.fetcher import (
+    fetch_code_frequency,
+    fetch_commit_activity,
+    fetch_contributors,
     fetch_forks,
     fetch_metadata_as_list,
+    fetch_participation,
+    fetch_punch_card,
     fetch_releases,
     fetch_stars,
     fetch_traffic_clones,
     fetch_traffic_paths,
     fetch_traffic_referrers,
     fetch_traffic_views,
+    fetch_workflow_runs,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -37,6 +43,12 @@ _METRICS: list[tuple[str, Callable[[RepoId, str], list[dict[str, Any]]], list[st
     ("referrers", fetch_traffic_referrers, ["collected_at", "referrer"]),
     ("paths", fetch_traffic_paths, ["collected_at", "path"]),
     ("releases", fetch_releases, ["collected_at", "tag", "asset"]),
+    ("commit_activity", fetch_commit_activity, ["week_start"]),
+    ("code_frequency", fetch_code_frequency, ["week_start"]),
+    ("contributors", fetch_contributors, ["week_start", "author"]),
+    ("participation", fetch_participation, ["week_start"]),
+    ("punch_card", fetch_punch_card, ["day_of_week", "hour"]),
+    ("workflow_runs", fetch_workflow_runs, ["date", "name", "path", "workflow_id", "status", "conclusion"]),
 ]
 
 
@@ -113,7 +125,7 @@ def main() -> None:
     if args.command == "collect":
         sys.exit(cmd_collect(args))
     elif args.command == "report":
-        from github_analytics import reporter  # type: ignore[attr-defined]  # noqa: PLC0415
+        from github_analytics import reporter  # noqa: PLC0415
 
         sys.exit(reporter.generate(Path(args.data_repo)))
 

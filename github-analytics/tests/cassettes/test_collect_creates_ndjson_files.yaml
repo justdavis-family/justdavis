@@ -1565,4 +1565,148 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stats/commit_activity
+  response:
+    body:
+      string: '[]'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stats/code_frequency
+  response:
+    body:
+      string: '[]'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stats/contributors
+  response:
+    body:
+      string: '[]'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stats/participation
+  response:
+    body:
+      string: '{"all":[],"owner":[]}'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stats/punch_card
+  response:
+    body:
+      string: '[]'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/actions/runs?per_page=100
+  response:
+    body:
+      string: '{"total_count":0,"workflow_runs":[]}'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
 version: 1

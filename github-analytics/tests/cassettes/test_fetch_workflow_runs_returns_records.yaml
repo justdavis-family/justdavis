@@ -1,0 +1,26 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/actions/runs?per_page=100
+  response:
+    body:
+      string: '{"total_count":1,"workflow_runs":[{"id":12345,"run_number":1,"name":"CI","path":".github/workflows/ci.yml","workflow_id":1,"status":"completed","conclusion":"success","created_at":"2026-04-03T10:00:00Z","run_started_at":"2026-04-03T10:00:05Z","updated_at":"2026-04-03T10:02:30Z"}]}'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    status:
+      code: 200
+      message: OK
+version: 1

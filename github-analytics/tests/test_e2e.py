@@ -81,12 +81,12 @@ def test_report_generates_readmes(data_repo: Path, fixture_config: Path) -> None
     # Generate reports (reads local files only — no HTTP calls)
     assert reporter.generate(data_repo) == 0
 
-    # Root README must exist with per-metric sections
+    # Root README must exist
     root = data_repo / "README.md"
     assert root.exists()
     root_content = root.read_text()
-    assert "## Traffic Views" in root_content
     assert "Last updated" in root_content
+    assert "# GitHub Analytics" in root_content
 
     # Per-owner README must exist
     assert (data_repo / "karlmdavis" / "README.md").exists()
