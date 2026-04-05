@@ -16,7 +16,7 @@ _MAX_RETRIES = 3
 # GitHub stats endpoints return 202 while computing results asynchronously.
 # Polling every 5 s for up to 60 s covers most repos; cold repos can take 30+ s.
 _STATS_POLL_INTERVAL = 5
-_STATS_MAX_ATTEMPTS = 12
+_STATS_MAX_ATTEMPTS = 60  # 5-minute ceiling at _STATS_POLL_INTERVAL seconds per attempt
 
 
 def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[str, str]:
@@ -183,7 +183,10 @@ def _get_stats(url: str, token: str) -> Any:  # noqa: ANN401
 
     GitHub computes stats asynchronously; the first request (or a request after a
     period of inactivity) returns 202. Subsequent requests return 200 once the data
-    is ready, typically within a few seconds but up to 30+ s for cold repos.
+    is ready, typically within a few seconds but up to several minutes for cold repos.
+
+    Returns [] for repos with no data (empty body) or unsupported endpoints (422).
+    Raises RuntimeError if still 202 after _STATS_MAX_ATTEMPTS attempts.
     """
     for attempt in range(_STATS_MAX_ATTEMPTS):
         response = _get_with_retry(url, _headers(token))
@@ -191,7 +194,14 @@ def _get_stats(url: str, token: str) -> Any:  # noqa: ANN401
             if attempt < _STATS_MAX_ATTEMPTS - 1:
                 time.sleep(_STATS_POLL_INTERVAL)
             continue
+        if response.status_code == 422:
+            # Some endpoints (e.g. code_frequency) are unsupported for forked repos.
+            return []
         response.raise_for_status()
+        body = response.text.strip()
+        if not body:
+            # GitHub returns an empty body (not []) for repos with no activity.
+            return []
         return response.json()
     raise RuntimeError(
         f"Stats endpoint still returning 202 after {_STATS_MAX_ATTEMPTS} attempts "
