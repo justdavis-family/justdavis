@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import time
+from email.utils import parsedate_to_datetime
+
 # Maximum number of retry attempts for rate-limited or transient-error requests.
 MAX_ATTEMPTS: int = 3
 
@@ -21,13 +24,18 @@ def next_link(link_header: str) -> str | None:
 def parse_retry_after(header: str, attempt: int) -> float:
     """Return sleep duration from a Retry-After header value (or exponential backoff).
 
-    The header may be an integer seconds count or an HTTP-date string (RFC 7231).
-    Falls back to exponential backoff (2**attempt) if the value cannot be parsed
-    as a float, avoiding a ValueError that would escape the retry loop.
+    GitHub's Retry-After header may be either an integer seconds count or an
+    RFC 7231 HTTP-date string (e.g. ``Fri, 07 Apr 2026 00:00:00 GMT``).
+    Falls back to exponential backoff (2**attempt) if the value cannot be parsed.
     """
     if header:
         try:
             return float(header)
         except ValueError:
-            pass  # HTTP-date format or unexpected value — fall through to backoff
+            pass
+        try:
+            dt = parsedate_to_datetime(header)
+            return max(0.0, dt.timestamp() - time.time())
+        except Exception:
+            pass
     return float(2**attempt)
