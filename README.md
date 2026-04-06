@@ -9,16 +9,23 @@ If you _do_ find something here particularly enlightening or useful,
   and letting us know about it over in the
   [discussions](https://github.com/justdavis-family/justdavis/discussions) section.
 
+## What's In Here?
+
+| Project | Description |
+|---|---|
+| [github-analytics](github-analytics/README.md) | Collects and stores GitHub repository analytics data that the API exposes but the web UI doesn't retain historically. |
+
 ## How is this Repository Organized?
 
 This repository is roughly organized by domain,
   with different subtrees for the different types of projects.
 
 ```
-.github/     GitHub workflows and other config.
-.claude/     Agent instructions and other config.
-design/      Design documents, workflow, and related materials.
-mise.toml    mise-en-place: dev env, tools, and tasks.
+.github/          GitHub workflows and other config.
+.claude/          Agent instructions and other config.
+design/           Design documents, workflow, and related materials.
+github-analytics/ GitHub analytics collector and reporter.
+mise.toml         mise-en-place: dev env, tools, and tasks.
 ```
 
 ### Why a Monorepo?
