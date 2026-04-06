@@ -19,6 +19,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: justdavis-family/github-analytics-data
+          # ANALYTICS_DATA_PAT needs repo scope for both data-repo push and
+          # traffic/star API reads (traffic requires push access to the source repo).
+          # A separate read-only PAT could be used for GITHUB_TOKEN below if the
+          # data-repo push scope ever needs to be reduced.
           token: ${{ secrets.ANALYTICS_DATA_PAT }}
           path: analytics-data
 
