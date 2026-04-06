@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Any, TypedDict
 
 import httpx
 import yaml
+
+_MAX_ATTEMPTS = 3
+_TRANSIENT_5XX = {500, 502, 503, 504}
 
 
 class RepoId(TypedDict):
@@ -69,7 +73,10 @@ def _list_user_repos(user: str, token: str) -> list[RepoId]:
 
 
 def _paginate(url: str, token: str) -> list[RepoId]:
-    """Fetch all pages of a paginated GitHub API endpoint."""
+    """Fetch all pages of a paginated GitHub API endpoint.
+
+    Retries on 429, 403-abuse, and transient 5xx errors with exponential backoff.
+    """
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github+json",
@@ -77,12 +84,46 @@ def _paginate(url: str, token: str) -> list[RepoId]:
     repos: list[RepoId] = []
     next_url: str | None = url
     while next_url:
-        response = httpx.get(next_url, headers=headers, follow_redirects=True, timeout=30.0)
+        response = _get_with_retry(next_url, headers)
         response.raise_for_status()
         for item in response.json():
             repos.append(RepoId(owner=item["owner"]["login"], name=item["name"]))
         next_url = _next_link(response.headers.get("link", ""))
     return repos
+
+
+def _get_with_retry(url: str, headers: dict[str, str]) -> httpx.Response:
+    """Synchronous GET with retry on rate-limit and transient server errors."""
+    last: httpx.Response | None = None
+    for attempt in range(_MAX_ATTEMPTS):
+        response = httpx.get(url, headers=headers, follow_redirects=True, timeout=30.0)
+        last = response
+        if response.status_code == 429:
+            wait = _parse_retry_after(response.headers.get("retry-after", ""), attempt)
+            time.sleep(wait)
+            continue
+        if response.status_code == 403:
+            body = response.text.lower()
+            retry_after = response.headers.get("retry-after")
+            if retry_after or "abuse" in body or "secondary rate" in body:
+                wait = _parse_retry_after(retry_after or "", attempt)
+                time.sleep(wait)
+                continue
+        if response.status_code in _TRANSIENT_5XX:
+            time.sleep(float(2**attempt))
+            continue
+        return response
+    return last  # type: ignore[return-value]
+
+
+def _parse_retry_after(header: str, attempt: int) -> float:
+    """Return sleep duration from a Retry-After header value (or exponential backoff)."""
+    if header:
+        try:
+            return float(header)
+        except ValueError:
+            pass
+    return float(2**attempt)
 
 
 def _next_link(link_header: str) -> str | None:
