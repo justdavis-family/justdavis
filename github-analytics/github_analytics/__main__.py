@@ -122,7 +122,7 @@ async def _collect_metric(
         log.debug("fetch.done", records=len(records), io_ms=round(io_s * 1000))
         return _MetricResult(metric=metric, count=len(records))
     except Exception as exc:
-        log.debug("fetch.error", error=str(exc))
+        log.warning("fetch.error", error=str(exc))
         return _MetricResult(metric=metric, error=str(exc))
 
 
