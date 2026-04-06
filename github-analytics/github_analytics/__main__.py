@@ -112,7 +112,7 @@ async def _collect_metric(
         t_write = time.perf_counter()
         dest = repo_dir / f"{metric}.ndjson"
         writer.append_records(dest, records, key_fields)
-        timings[metric].compute += time.perf_counter() - t_write
+        timings[metric].compute += max(0.0, time.perf_counter() - t_write)
 
         log.debug("fetch.done", records=len(records), io_ms=round(io_s * 1000))
         return _MetricResult(metric=metric, count=len(records))
