@@ -48,20 +48,22 @@ Traffic data is only available for repositories you have push access to,
 2. **Add the PAT as a secret** — in this repository (the one containing this
    collector), add a repository secret named `ANALYTICS_DATA_PAT` set to your PAT.
 
-3. **Edit `config.yaml`** — list the repositories you want to track:
+3. **Update the workflow** — open `.github/workflows/github-analytics.yml` and:
+   - Set the `repository` field under "Checkout data repo" to your data repository name.
+   - Edit the "Write collector config" step to list the repositories you want to track.
+     Supported patterns:
 
-   ```yaml
-   repos:
-     - owner/repo-name
-     - org:your-org          # expands to all repos in the org
-     - user:your-username    # expands to all repos for a user
-   ```
+     ```yaml
+     repos:
+       - owner/repo-name       # a specific repository
+       - org:your-org          # all repos in a GitHub org
+       - user:your-username    # all repos for a GitHub user
+     ```
 
-4. **Update the workflow** — open `.github/workflows/github-analytics.yml`
-   and set the `repository` field under "Checkout data repo" to your data
-   repository name.
+   The repository list lives in the workflow rather than a checked-in config file
+     so that each fork or deployment maintains its own list without risk of merge conflicts.
 
-5. **Trigger the workflow** — navigate to
+4. **Trigger the workflow** — navigate to
    **Actions → Collect GitHub Analytics → Run workflow**
    to run the first collection manually and verify everything is working.
    After that, the workflow runs automatically every day at 6 AM UTC.

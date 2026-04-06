@@ -28,6 +28,18 @@ jobs:
 
       - uses: jdx/mise-action@v2
 
+      - name: Write collector config
+        # Define the repositories to collect here. Supported patterns:
+        #   owner/repo         - a specific repository
+        #   org:<orgname>      - all repos in a GitHub org
+        #   user:<username>    - all repos for a GitHub user
+        run: |
+          cat > ${{ github.workspace }}/github-analytics/config.yaml <<'EOF'
+          repos:
+            - "org:justdavis-family"
+            - "user:karlmdavis"
+          EOF
+
       - name: Collect analytics
         id: collect
         continue-on-error: true

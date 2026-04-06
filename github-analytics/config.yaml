@@ -1,7 +1,0 @@
-# Repositories to track. Supported patterns:
-#   org:<orgname>    - all public repos in an org
-#   user:<username>  - all public repos for a user
-#   <owner>/<repo>   - a specific repo
-repos:
-  - "org:justdavis-family"
-  - "user:karlmdavis"

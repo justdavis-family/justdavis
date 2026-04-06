@@ -21,6 +21,10 @@ Thumbs.db
 # depths so sub-projects can each maintain their own .env without extra entries.
 **/.env
 
+# Collector config (personal repo list — define repos in the GH Actions workflow instead;
+# see github-analytics/README.md for setup instructions).
+**/config.yaml
+
 # Smoke test config (personal repo list — gitignored; see config.smoke.sample.yaml).
 **/config.smoke.yaml
 
