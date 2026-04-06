@@ -10,7 +10,7 @@ replaces: []
 engineering_designs:
   - 2026-04-03-github-analytics.md
 prs:
-  - justdavis-family/justdavis#3
+  - https://github.com/justdavis-family/justdavis/pull/3
 ---
 
 # GitHub Analytics Collector
@@ -99,12 +99,16 @@ SVG chart files are written alongside each README (e.g. `unique_visitors.svg`)
 Used for each per-repo README.
 Contents in order (MermaidJS XY charts replace Vega-Lite SVGs):
 
-1. **Unique visitors line chart** (MermaidJS `xychart-beta`): all available history.
-2. **Unique clones line chart** (MermaidJS `xychart-beta`): all available history.
-3. **Monthly traffic table**: one row per month, columns for unique visitors/day,
+1. **Unique visitors line chart** (MermaidJS `xychart-beta`): all available history,
+    auto-aggregated to ≤25 ticks (Day → Week → Month → Quarter → Year as needed).
+2. **Views line chart** (MermaidJS `xychart-beta`): same granularity as item 1.
+3. **Unique clones line chart** (MermaidJS `xychart-beta`): same auto-aggregation.
+4. **Monthly traffic table**: one row per month, columns for unique visitors/day,
     views/day, unique clones/day, and clones/day (average daily counts per month).
-4. **Current totals table** (pivoted): rows for stars and forks,
+5. **Current totals table** (pivoted): rows for stars and forks,
     single value column (more readable with only one repo).
+6. **Release Downloads table** (omitted if no releases): one row per tag+asset pair,
+    sorted by release creation date (newest first), showing the latest download count.
 
 ## References
 
