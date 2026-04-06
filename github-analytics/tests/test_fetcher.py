@@ -154,6 +154,32 @@ async def test_fetch_workflow_runs_returns_records() -> None:
         assert "incomplete_count" in r
 
 
+async def test_get_with_retry_retries_on_503() -> None:
+    """A transient 5xx response triggers a sleep and a second attempt."""
+    call_count = 0
+    fake_req = httpx.Request("GET", "https://api.github.com/test")
+
+    async def fake_get(url: str, *, headers: dict, follow_redirects: bool) -> httpx.Response:
+        nonlocal call_count
+        call_count += 1
+        r = httpx.Response(503) if call_count == 1 else httpx.Response(200, content=b'{"ok": true}')
+        r.request = fake_req  # type: ignore[assignment]
+        return r
+
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        with patch.object(client, "get", fake_get):
+            with patch("asyncio.sleep") as mock_sleep:
+                resp, _io_s, wait_s = await _get_with_retry(
+                    client, sem, "https://api.github.com/test", {"Authorization": "token fake"}
+                )
+
+    assert call_count == 2, "expected one retry after the 503"
+    assert resp.status_code == 200
+    mock_sleep.assert_called_once_with(1.0)  # 2**0 = 1 on first attempt
+    assert wait_s > 0
+
+
 async def test_get_with_retry_retries_on_429() -> None:
     """A 429 response triggers a sleep and a second attempt."""
     call_count = 0

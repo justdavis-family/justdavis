@@ -27,13 +27,19 @@ async def _get_with_retry(
     url: str,
     headers: dict[str, str],
 ) -> tuple[httpx.Response, float, float]:
-    """HTTP GET with semaphore-bounded concurrency and rate-limit retry.
+    """HTTP GET with semaphore-bounded concurrency and rate-limit/transient-error retry.
+
+    Retries on:
+    - 429 (rate limit): sleeps for retry-after or exponential backoff.
+    - 403 with abuse/secondary-rate-limit body: same.
+    - 500, 502, 503, 504 (transient server errors): exponential backoff.
 
     The semaphore wraps only the HTTP round-trip, not retries or compute.
 
     Returns:
         (response, io_seconds, wait_seconds)
     """
+    _TRANSIENT_5XX = {500, 502, 503, 504}
     last_response: httpx.Response | None = None
     total_io = 0.0
     total_wait = 0.0
@@ -58,6 +64,12 @@ async def _get_with_retry(
                 await asyncio.sleep(wait)
                 total_wait += time.perf_counter() - t0
                 continue
+        if response.status_code in _TRANSIENT_5XX:
+            wait = float(2**attempt)
+            t0 = time.perf_counter()
+            await asyncio.sleep(wait)
+            total_wait += time.perf_counter() - t0
+            continue
         return response, total_io, total_wait
     assert last_response is not None
     return last_response, total_io, total_wait
