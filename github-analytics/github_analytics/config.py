@@ -51,9 +51,13 @@ def _expand_pattern(pattern: str, token: str) -> list[RepoId]:
     """Expand a single pattern to a list of RepoIds."""
     if pattern.startswith("org:"):
         org = pattern[4:]
+        if not org:
+            raise ValueError("Invalid repo pattern 'org:': org name must not be empty")
         return _list_org_repos(org, token)
     if pattern.startswith("user:"):
         user = pattern[5:]
+        if not user:
+            raise ValueError("Invalid repo pattern 'user:': user name must not be empty")
         return _list_user_repos(user, token)
     # Explicit owner/repo
     if "/" not in pattern:
