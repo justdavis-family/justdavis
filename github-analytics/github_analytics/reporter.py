@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
+import sys
 import tempfile
 from collections import defaultdict
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
-log = logging.getLogger(__name__)
 
 # Metrics loaded from NDJSON files for each repo.
 _METRICS = [
@@ -45,10 +43,10 @@ def generate(data_repo: Path) -> int:
         )
         _write_owner_readmes(data_repo, all_data)
         _write_repo_readmes(data_repo, all_data)
-        log.info("Reports generated for %d repos.", len(repos))
+        print(f"Reports generated for {len(repos)} repo(s).")
         return 0
     except Exception as exc:
-        log.error("Reporter failed: %s", exc)
+        print(f"ERROR: Reporter failed: {exc}", file=sys.stderr)
         return 1
 
 
