@@ -78,7 +78,7 @@ def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
 
     counts_after_first = _line_counts()
 
-    cmd_collect(args)  # Second run — cassette replays same responses
+    assert cmd_collect(args) == 0  # Second run — cassette replays same responses
 
     counts_after_second = _line_counts()
 
