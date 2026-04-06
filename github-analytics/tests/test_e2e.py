@@ -90,9 +90,9 @@ def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
 
     # Also verify no duplicate keys exist after the second run.
     views = repo_dir / "views.ndjson"
-    if views.exists():
-        dates = [json.loads(ln)["date"] for ln in views.read_text().splitlines() if ln.strip()]
-        assert len(dates) == len(set(dates)), f"views: duplicate date records: {dates}"
+    assert views.exists(), f"Expected {views} to exist"
+    dates = [json.loads(ln)["date"] for ln in views.read_text().splitlines() if ln.strip()]
+    assert len(dates) == len(set(dates)), f"views: duplicate date records: {dates}"
 
     stars = repo_dir / "stars.ndjson"
     if stars.exists():
