@@ -62,11 +62,35 @@ def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
     cmd_collect(args)
     cmd_collect(args)  # Second run — cassette replays same responses
 
-    views = data_repo / "karlmdavis" / "ksoap2-android" / "views.ndjson"
+    repo_dir = data_repo / "karlmdavis" / "ksoap2-android"
+
+    # views: keyed by date
+    views = repo_dir / "views.ndjson"
     if views.exists():
         lines = views.read_text().strip().splitlines()
         dates = [json.loads(line)["date"] for line in lines if line.strip()]
-        assert len(dates) == len(set(dates)), f"Duplicate date records: {dates}"
+        assert len(dates) == len(set(dates)), f"views: duplicate date records: {dates}"
+
+    # referrers: keyed by (date, referrer) — previously broken (collected_at key)
+    referrers = repo_dir / "referrers.ndjson"
+    if referrers.exists():
+        rows = [json.loads(ln) for ln in referrers.read_text().splitlines() if ln.strip()]
+        keys = [(r["date"], r["referrer"]) for r in rows]
+        assert len(keys) == len(set(keys)), f"referrers: duplicate (date, referrer) records: {keys}"
+
+    # paths: keyed by (date, path)
+    paths_file = repo_dir / "paths.ndjson"
+    if paths_file.exists():
+        rows = [json.loads(ln) for ln in paths_file.read_text().splitlines() if ln.strip()]
+        keys = [(r["date"], r["path"]) for r in rows]
+        assert len(keys) == len(set(keys)), f"paths: duplicate (date, path) records: {keys}"
+
+    # releases: keyed by (date, tag, asset)
+    releases = repo_dir / "releases.ndjson"
+    if releases.exists():
+        rows = [json.loads(ln) for ln in releases.read_text().splitlines() if ln.strip()]
+        keys = [(r["date"], r["tag"], r["asset"]) for r in rows]
+        assert len(keys) == len(set(keys)), f"releases: duplicate (date, tag, asset) records: {keys}"
 
 
 @pytest.mark.default_cassette("test_collect_creates_ndjson_files.yaml")
