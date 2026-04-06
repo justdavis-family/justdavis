@@ -65,7 +65,7 @@ def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
     args = argparse.Namespace(
         data_repo=str(data_repo), config=str(fixture_config), max_concurrent=1, verbose=False
     )
-    cmd_collect(args)
+    assert cmd_collect(args) == 0
 
     repo_dir = data_repo / "karlmdavis" / "ksoap2-android"
 
