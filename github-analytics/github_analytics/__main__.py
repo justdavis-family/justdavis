@@ -171,13 +171,11 @@ def _print_timing_table(timings: dict[str, _Timing]) -> None:
     print(f"  {'TOTAL':<20} {total.io:6.1f}  {total.wait:6.1f}  {total.compute:7.2f}")
 
 
-async def _collect_async(args: argparse.Namespace, token: str) -> int:
+async def _collect_async(args: argparse.Namespace, token: str, repos: list[RepoId]) -> int:
     """Async implementation of the collect subcommand."""
     max_concurrent: int = args.max_concurrent
     data_repo = Path(args.data_repo)
-    config_path = Path(args.config) if args.config else _default_config()
 
-    repos = load_repos(config_path, token)
     print(f"Collecting {len(repos)} repo(s) ({max_concurrent} concurrent max)...")
 
     timings: dict[str, _Timing] = defaultdict(_Timing)
@@ -213,7 +211,11 @@ def cmd_collect(args: argparse.Namespace) -> int:
         print("ERROR: GITHUB_TOKEN environment variable not set", file=sys.stderr)
         return 1
     _configure_logging(args.verbose, token)
-    return asyncio.run(_collect_async(args, token))
+    # Resolve repos synchronously before entering the event loop — load_repos
+    # uses blocking httpx.get() for org:/user: wildcard expansion.
+    config_path = Path(args.config) if args.config else _default_config()
+    repos = load_repos(config_path, token)
+    return asyncio.run(_collect_async(args, token, repos))
 
 
 def _configure_logging(verbose: bool, token: str = "") -> None:
