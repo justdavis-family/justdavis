@@ -163,17 +163,19 @@ def _print_timing_table(timings: dict[str, _Timing]) -> None:
     if not timings:
         return
     print("\nTime breakdown (seconds):")
-    print(f"  {'endpoint':<20} {'I/O':>6}  {'wait':>6}  {'compute':>7}")
-    print(f"  {'-' * 20} {'-' * 6}  {'-' * 6}  {'-' * 7}")
+    print(f"  {'endpoint':<20} {'I/O':>6}  {'wait':>6}  {'compute':>7}  {'total':>7}")
+    print(f"  {'-' * 20} {'-' * 6}  {'-' * 6}  {'-' * 7}  {'-' * 7}")
     total = _Timing()
     for metric in sorted(timings):
         t = timings[metric]
         wait_str = f"{t.wait:6.1f}" if t.wait > 0.001 else "     -"
-        print(f"  {metric:<20} {t.io:6.1f}  {wait_str}  {t.compute:7.2f}")
+        row_total = t.io + t.wait + t.compute
+        print(f"  {metric:<20} {t.io:6.1f}  {wait_str}  {t.compute:7.2f}  {row_total:7.2f}")
         total.io += t.io
         total.wait += t.wait
         total.compute += t.compute
-    print(f"  {'TOTAL':<20} {total.io:6.1f}  {total.wait:6.1f}  {total.compute:7.2f}")
+    grand_total = total.io + total.wait + total.compute
+    print(f"  {'TOTAL':<20} {total.io:6.1f}  {total.wait:6.1f}  {total.compute:7.2f}  {grand_total:7.2f}")
 
 
 async def _collect_async(args: argparse.Namespace, token: str, repos: list[RepoId]) -> int:
