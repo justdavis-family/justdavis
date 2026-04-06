@@ -249,6 +249,7 @@ async def fetch_releases(
                 {
                     "date": today,
                     "tag": release["tag_name"],
+                    "release_created_at": release["created_at"],
                     "asset": asset["name"],
                     "download_count": asset["download_count"],
                 }

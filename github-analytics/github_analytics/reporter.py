@@ -459,14 +459,19 @@ def _releases_table(data: dict[str, list[dict[str, Any]]]) -> list[str]:
     Selects the record with the highest date for each (tag, asset) pair, so that
     re-collecting on the same day (upsert) or collecting across multiple days both
     produce the correct latest download count, regardless of file line order.
+    Rows are ordered by release creation date (newest first), then tag+asset.
     """
-    latest: dict[tuple[str, str], int] = {}
+    latest: dict[tuple[str, str], dict[str, Any]] = {}
     for r in sorted(data["releases"], key=lambda r: r["date"]):
         key = (r["tag"], r["asset"])
-        latest[key] = r["download_count"]
+        latest[key] = r
     if not latest:
         return []
     lines = ["\n## Release Downloads\n\n", "| Tag | Asset | Downloads |\n", "|---|---|---|\n"]
-    for (tag, asset), count in sorted(latest.items()):
-        lines.append(f"| {tag} | {asset} | {count:,} |\n")
+    for (tag, asset), r in sorted(
+        latest.items(),
+        key=lambda item: (item[1].get("release_created_at", ""), item[0][0], item[0][1]),
+        reverse=True,
+    ):
+        lines.append(f"| {tag} | {asset} | {r['download_count']:,} |\n")
     return lines
