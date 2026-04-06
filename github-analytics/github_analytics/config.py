@@ -28,7 +28,7 @@ def load_repos(config_path: Path, token: str) -> list[RepoId]:
     with config_path.open() as f:
         raw: Any = yaml.safe_load(f)
 
-    patterns: list[str] = raw.get("repos", [])
+    patterns: list[str] = raw.get("repos") or []
     repos: list[RepoId] = []
     seen: set[tuple[str, str]] = set()
 
