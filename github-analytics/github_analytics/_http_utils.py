@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+# Maximum number of retry attempts for rate-limited or transient-error requests.
+MAX_ATTEMPTS: int = 3
+
 # GitHub API transient server-error status codes that warrant a retry.
 TRANSIENT_5XX: frozenset[int] = frozenset({500, 502, 503, 504})
 

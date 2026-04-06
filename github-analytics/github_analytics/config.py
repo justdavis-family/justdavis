@@ -9,11 +9,10 @@ from typing import Any, TypedDict
 import httpx
 import yaml
 
+from github_analytics._http_utils import MAX_ATTEMPTS as _MAX_ATTEMPTS
 from github_analytics._http_utils import TRANSIENT_5XX as _TRANSIENT_5XX
 from github_analytics._http_utils import next_link as _next_link
 from github_analytics._http_utils import parse_retry_after as _parse_retry_after
-
-_MAX_ATTEMPTS = 3
 
 
 class RepoId(TypedDict):
