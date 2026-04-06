@@ -18,6 +18,10 @@ def append_record(
 ) -> bool:
     """Append ``record`` to ``file_path`` unless a matching key already exists.
 
+    Lower-level single-record variant of :func:`append_records`. Production
+    code uses ``append_records``; this function exists as a convenience for
+    tests and one-off scripting.
+
     When ``upsert=True``, an existing record with the same key is replaced
     rather than skipped.
 
