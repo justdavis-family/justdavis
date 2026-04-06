@@ -111,10 +111,6 @@ def _next_link(link_header: str) -> str | None:
     return None
 
 
-def _now_utc() -> str:
-    """Return the current UTC time in ISO 8601 format."""
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
 
 async def fetch_traffic_views(
     client: httpx.AsyncClient,
@@ -163,9 +159,9 @@ async def fetch_traffic_referrers(
         f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/popular/referrers",
         token,
     )
-    now = _now_utc()
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     records = [
-        {"collected_at": now, "referrer": r["referrer"], "count": r["count"], "uniques": r["uniques"]}
+        {"date": today, "referrer": r["referrer"], "count": r["count"], "uniques": r["uniques"]}
         for r in data
     ]
     return records, io_s, wait_s
@@ -184,10 +180,10 @@ async def fetch_traffic_paths(
         f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/popular/paths",
         token,
     )
-    now = _now_utc()
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     records = [
         {
-            "collected_at": now,
+            "date": today,
             "path": p["path"],
             "title": p["title"],
             "count": p["count"],
@@ -240,13 +236,13 @@ async def fetch_releases(
     releases, io_s, wait_s = await _paginate(
         client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/releases", token
     )
-    now = _now_utc()
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     records: list[dict[str, Any]] = []
     for release in releases:
         for asset in release.get("assets", []):
             records.append(
                 {
-                    "collected_at": now,
+                    "date": today,
                     "tag": release["tag_name"],
                     "asset": asset["name"],
                     "download_count": asset["download_count"],

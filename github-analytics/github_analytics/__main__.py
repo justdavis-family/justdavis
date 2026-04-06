@@ -44,9 +44,9 @@ _METRICS: list[tuple[str, _FetchFn, list[str]]] = [
     ("metadata", fetch_metadata_as_list, ["date"]),
     ("stars", fetch_stars, ["starred_at", "user"]),
     ("forks", fetch_forks, ["forked_at", "owner"]),
-    ("referrers", fetch_traffic_referrers, ["collected_at", "referrer"]),
-    ("paths", fetch_traffic_paths, ["collected_at", "path"]),
-    ("releases", fetch_releases, ["collected_at", "tag", "asset"]),
+    ("referrers", fetch_traffic_referrers, ["date", "referrer"]),
+    ("paths", fetch_traffic_paths, ["date", "path"]),
+    ("releases", fetch_releases, ["date", "tag", "asset"]),
     ("workflow_runs", fetch_workflow_runs, ["date", "name", "path", "workflow_id", "status", "conclusion"]),
 ]
 

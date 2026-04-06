@@ -55,7 +55,7 @@ async def test_fetch_traffic_referrers_returns_records() -> None:
     assert isinstance(records, list)
     if records:
         r = records[0]
-        assert "collected_at" in r
+        assert "date" in r
         assert "referrer" in r
         assert "count" in r
         assert "uniques" in r
