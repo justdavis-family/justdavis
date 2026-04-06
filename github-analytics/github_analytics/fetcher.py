@@ -314,22 +314,23 @@ async def fetch_workflow_runs(
     url: str | None = f"{BASE}/repos/{repo['owner']}/{repo['name']}/actions/runs?per_page=100"
     total_io = 0.0
     total_wait = 0.0
-    done = False
-    while url and not done:
+    while url:
         response, io_s, wait_s = await _get_with_retry(client, sem, url, _headers(token))
         response.raise_for_status()
         total_io += io_s
         total_wait += wait_s
         page = response.json()
-        for run in page.get("workflow_runs", []):
-            if run["created_at"][:10] < cutoff:
-                done = True
-                break
-            all_runs.append(run)
-        if not done:
-            url = _next_link(response.headers.get("link", ""))
-        else:
-            url = None
+        runs_on_page = page.get("workflow_runs", [])
+        all_runs.extend(runs_on_page)
+        # Stop fetching once the last run on the page predates the cutoff.
+        # Filter out-of-window runs in a post-pass to handle any out-of-order
+        # entries that may appear within a page.
+        if runs_on_page and runs_on_page[-1]["created_at"][:10] < cutoff:
+            break
+        url = _next_link(response.headers.get("link", ""))
+
+    # Keep only runs within the 14-day window
+    all_runs = [r for r in all_runs if r["created_at"][:10] >= cutoff]
 
     # Aggregate by (date, name, path, workflow_id, status, conclusion)
     completed_durations: dict[tuple[str, str, str, int, str, str], list[float]] = defaultdict(list)
