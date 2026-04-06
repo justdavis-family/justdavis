@@ -38,6 +38,8 @@ def append_record(
 
     # Atomic append: read existing content, append new line, write via rename
     existing_content = file_path.read_text() if file_path.exists() else ""
+    if existing_content and not existing_content.endswith("\n"):
+        existing_content += "\n"
     new_content = existing_content + json.dumps(record, separators=(",", ":")) + "\n"
 
     dir_path = file_path.parent
@@ -74,6 +76,8 @@ def append_records(
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     existing_content = file_path.read_text() if file_path.exists() else ""
+    if existing_content and not existing_content.endswith("\n"):
+        existing_content += "\n"
 
     existing_keys: set[tuple[Any, ...]] = set()
     for line in existing_content.splitlines():

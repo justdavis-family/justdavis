@@ -118,3 +118,31 @@ def test_append_records_returns_zero_for_empty_input(tmp_path: Path) -> None:
     count = append_records(dest, [], key_fields=["week_start", "author"])
     assert count == 0
     assert not dest.exists()
+
+
+def test_append_record_tolerates_missing_trailing_newline(tmp_path: Path) -> None:
+    """append_record produces valid NDJSON even if the file lacks a trailing newline."""
+    dest = tmp_path / "views.ndjson"
+    # Write a file that deliberately omits the trailing newline
+    dest.write_text('{"date":"2026-04-03","count":10,"uniques":5}')
+    append_record(dest, {"date": "2026-04-04", "count": 12, "uniques": 6}, key_fields=["date"])
+    lines = [ln for ln in dest.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 2
+    assert json.loads(lines[0])["date"] == "2026-04-03"
+    assert json.loads(lines[1])["date"] == "2026-04-04"
+
+
+def test_append_records_tolerates_missing_trailing_newline(tmp_path: Path) -> None:
+    """append_records produces valid NDJSON even if the file lacks a trailing newline."""
+    dest = tmp_path / "views.ndjson"
+    dest.write_text('{"date":"2026-04-03","count":10,"uniques":5}')
+    count = append_records(
+        dest,
+        [{"date": "2026-04-04", "count": 12, "uniques": 6}],
+        key_fields=["date"],
+    )
+    assert count == 1
+    lines = [ln for ln in dest.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 2
+    assert json.loads(lines[0])["date"] == "2026-04-03"
+    assert json.loads(lines[1])["date"] == "2026-04-04"
