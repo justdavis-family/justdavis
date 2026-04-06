@@ -21,6 +21,9 @@ def load_repos(config_path: Path, token: str) -> list[RepoId]:
 
     Expands ``org:<name>`` and ``user:<name>`` patterns via the GitHub API.
     Deduplicates the result.
+
+    Note: uses synchronous HTTP (httpx.get). Must be called before entering
+    an asyncio event loop — calling from inside ``async def`` will block the loop.
     """
     with config_path.open() as f:
         raw: Any = yaml.safe_load(f)
