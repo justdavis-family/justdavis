@@ -132,6 +132,63 @@ def test_append_record_tolerates_missing_trailing_newline(tmp_path: Path) -> Non
     assert json.loads(lines[1])["date"] == "2026-04-04"
 
 
+def test_append_record_upsert_replaces_existing(tmp_path: Path) -> None:
+    """upsert=True replaces a record with the same key rather than skipping it."""
+    dest = tmp_path / "views.ndjson"
+    append_record(dest, {"date": "2026-04-03", "count": 10, "uniques": 5}, key_fields=["date"])
+    written = append_record(
+        dest, {"date": "2026-04-03", "count": 99, "uniques": 42}, key_fields=["date"], upsert=True
+    )
+    assert written is True
+    lines = [ln for ln in dest.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 1
+    assert json.loads(lines[0])["count"] == 99
+
+
+def test_append_records_upsert_replaces_matching_key(tmp_path: Path) -> None:
+    """upsert=True replaces existing records whose keys match an incoming record."""
+    dest = tmp_path / "views.ndjson"
+    append_records(
+        dest,
+        [{"date": "2026-04-03", "count": 10}, {"date": "2026-04-04", "count": 20}],
+        key_fields=["date"],
+    )
+    written = append_records(
+        dest,
+        [{"date": "2026-04-03", "count": 99}],
+        key_fields=["date"],
+        upsert=True,
+    )
+    assert written == 1
+    lines = [ln for ln in dest.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 2
+    by_date = {json.loads(ln)["date"]: json.loads(ln)["count"] for ln in lines}
+    assert by_date["2026-04-03"] == 99  # replaced
+    assert by_date["2026-04-04"] == 20  # kept
+
+
+def test_append_records_upsert_keeps_non_matching_keys(tmp_path: Path) -> None:
+    """upsert=True preserves existing records that don't match any incoming key."""
+    dest = tmp_path / "views.ndjson"
+    existing = [{"date": f"2026-04-0{i}", "count": i} for i in range(1, 5)]
+    append_records(dest, existing, key_fields=["date"])
+    # Upsert only for dates 1 and 2; dates 3 and 4 should remain untouched.
+    written = append_records(
+        dest,
+        [{"date": "2026-04-01", "count": 100}, {"date": "2026-04-02", "count": 200}],
+        key_fields=["date"],
+        upsert=True,
+    )
+    assert written == 2
+    lines = [json.loads(ln) for ln in dest.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 4
+    by_date = {r["date"]: r["count"] for r in lines}
+    assert by_date["2026-04-01"] == 100
+    assert by_date["2026-04-02"] == 200
+    assert by_date["2026-04-03"] == 3
+    assert by_date["2026-04-04"] == 4
+
+
 def test_append_records_tolerates_missing_trailing_newline(tmp_path: Path) -> None:
     """append_records produces valid NDJSON even if the file lacks a trailing newline."""
     dest = tmp_path / "views.ndjson"
