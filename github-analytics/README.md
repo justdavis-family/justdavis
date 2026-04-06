@@ -39,15 +39,36 @@ Traffic data is only available for repositories you have push access to,
 - A separate GitHub repository to store the collected data
   (e.g. `your-org/github-analytics-data`).
   It can be public or private.
-- A Classic GitHub Personal Access Token (PAT) with `repo` scope.
+- A Classic GitHub Personal Access Token (PAT) with `repo` scope
+  (see [Create a Personal Access Token](#create-a-personal-access-token) below).
+
+### Create a Personal Access Token
+
+The collector needs a Classic PAT with `repo` scope to read traffic data —
+  GitHub's traffic API requires push access to the source repository.
+The same token type is needed for the smoke test during local development.
+
+To create one:
+
+1. Go to **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**.
+2. Click **Generate new token (classic)**.
+3. Set the **Note** to something descriptive (e.g. `ANALYTICS_DATA_PAT`).
+4. Select the **`repo`** scope (the top-level checkbox — this grants full repo access).
+5. Set an appropriate expiration (90 days is a reasonable default; you'll need to rotate it).
+6. Click **Generate token** and copy the value immediately — GitHub only shows it once.
+
+For a production deployment, store the token as a repository secret named `ANALYTICS_DATA_PAT`
+  under **Settings → Secrets and variables → Actions → New repository secret**.
+For local development and the smoke test, store it in `github-analytics/.env`
+  (see [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions).
 
 ### Setup
 
 1. **Create the data repository** — create an empty repository to hold the
    collected NDJSON files and generated READMEs.
 
-2. **Add the PAT as a secret** — in this repository (the one containing this
-   collector), add a repository secret named `ANALYTICS_DATA_PAT` set to your PAT.
+2. **Add the PAT as a secret** — create a PAT per the section above, then add it
+   as a repository secret named `ANALYTICS_DATA_PAT`.
 
 3. **Update the workflow** — open `.github/workflows/github-analytics.yml` and:
    - Set the `repository` field under "Checkout data repo" to your data repository name.

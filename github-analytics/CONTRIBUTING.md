@@ -15,29 +15,17 @@ Follow the [getting started guide](https://mise.jdx.dev/getting-started.html)
 
 ### 2. Create a Personal Access Token
 
-The collector needs a Classic PAT with `repo` scope to read traffic data
-  (GitHub's traffic API requires push access to the source repository).
-To create one:
-
-1. Go to **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**.
-2. Click **Generate new token (classic)**.
-3. Set the **Note** to `ANALYTICS_DATA_PAT` (or any descriptive name).
-4. Select the **`repo`** scope (the top-level checkbox — this grants full repo access).
-5. Set an appropriate expiration (90 days is a reasonable default; you'll need to rotate it).
-6. Click **Generate token** and copy the value immediately — GitHub only shows it once.
-
-To use the token for local development, see step 3 below.
-To deploy the workflow, store the token as a repository secret named `ANALYTICS_DATA_PAT`
-  under **Settings → Secrets and variables → Actions → New repository secret**.
+Follow the [Create a Personal Access Token](README.md#create-a-personal-access-token)
+  instructions in the README.
+The same PAT type is needed for both production deployments and the local smoke test.
 
 ### 3. Set Up Credentials (`.env`)
 
-Traffic and repository metadata endpoints require a GitHub token with `repo` scope.
-Copy the sample and fill it in with the token you created above:
+Copy the sample env file and set `GITHUB_TOKEN` to the PAT you created above:
 
 ```bash
 cp sample.env .env
-# Edit .env and set GITHUB_TOKEN to the PAT you created in step 2
+# Edit .env and set GITHUB_TOKEN to the PAT you created above
 ```
 
 The `.env` file is gitignored and will be copied automatically into new worktrees
@@ -50,7 +38,7 @@ cd github-analytics
 MISE_EXPERIMENTAL=1 mise run ':ci'
 ```
 
-This runs unit tests (VCR cassettes — no live HTTP), linting, and type checking.
+This runs unit tests (VCR cassettes — no live HTTP), type checking, and linting.
 The smoke test (see below) is also included in `:ci` but skips automatically
   if its prerequisites are not met.
 
