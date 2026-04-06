@@ -210,19 +210,25 @@ def _build_clones_svg(
 def _multi_repo_sections(
     all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
     svg_paths: list[Path],
+    has_uv_svg: bool,
+    has_uc_svg: bool,
 ) -> list[str]:
     """Build the body sections for a multi-repo README.
 
     svg_paths: [unique_visitors_path, unique_clones_path]
+    has_uv_svg / has_uc_svg: whether the corresponding SVG file was written.
+    Only emit image references for SVGs that actually exist.
     """
     lines: list[str] = []
 
-    # 1 & 2: Stacked area charts (SVGs written by caller; here we just emit references)
-    uv_svg, uc_svg = svg_paths
-    lines.append("\n## Unique Visitors per Day\n\n")
-    lines.append(f"![Unique Visitors per Day]({uv_svg.name})\n")
-    lines.append("\n## Unique Clones per Day\n\n")
-    lines.append(f"![Unique Clones per Day]({uc_svg.name})\n")
+    # 1 & 2: Stacked area charts — only emit a reference if the file was written
+    uv_svg_path, uc_svg_path = svg_paths
+    if has_uv_svg:
+        lines.append("\n## Unique Visitors per Day\n\n")
+        lines.append(f"![Unique Visitors per Day]({uv_svg_path.name})\n")
+    if has_uc_svg:
+        lines.append("\n## Unique Clones per Day\n\n")
+        lines.append(f"![Unique Clones per Day]({uc_svg_path.name})\n")
 
     # 3: Quarterly traffic tables (4 tables)
     lines.extend(_quarterly_traffic_tables(all_data))
@@ -309,7 +315,7 @@ def _write_multi_repo_readme(
     lines: list[str] = [f"{heading}\n\n", f"_Last updated: {_now_str()}_\n"]
 
     if uv_svg or uc_svg:
-        lines.extend(_multi_repo_sections(all_data, svg_paths))
+        lines.extend(_multi_repo_sections(all_data, svg_paths, bool(uv_svg), bool(uc_svg)))
     else:
         # Fallback when no traffic data yet — just show current totals
         lines.extend(_current_totals_table(all_data))
