@@ -37,17 +37,21 @@ _FetchFn = Callable[
     Coroutine[Any, Any, tuple[list[dict[str, Any]], float, float]],
 ]
 
-# Maps metric name → (fetch function, idempotency key fields).
-_METRICS: list[tuple[str, _FetchFn, list[str]]] = [
-    ("views", fetch_traffic_views, ["date"]),
-    ("clones", fetch_traffic_clones, ["date"]),
-    ("metadata", fetch_metadata_as_list, ["date"]),
-    ("stars", fetch_stars, ["starred_at", "user"]),
-    ("forks", fetch_forks, ["forked_at", "owner"]),
-    ("referrers", fetch_traffic_referrers, ["date", "referrer"]),
-    ("paths", fetch_traffic_paths, ["date", "path"]),
-    ("releases", fetch_releases, ["date", "tag", "asset"]),
-    ("workflow_runs", fetch_workflow_runs, ["date", "name", "path", "workflow_id", "status", "conclusion"]),
+# Maps metric name → (fetch function, idempotency key fields, upsert).
+# upsert=True: re-running overwrites records with the same key so that partial
+#   data collected early in the day is replaced by a more complete value later.
+# upsert=False: append-only; correct for immutable per-event data (stars, forks).
+_WF_KEYS = ["date", "name", "path", "workflow_id", "status", "conclusion"]
+_METRICS: list[tuple[str, _FetchFn, list[str], bool]] = [
+    ("views", fetch_traffic_views, ["date"], True),
+    ("clones", fetch_traffic_clones, ["date"], True),
+    ("metadata", fetch_metadata_as_list, ["date"], True),
+    ("stars", fetch_stars, ["starred_at", "user"], False),
+    ("forks", fetch_forks, ["forked_at", "owner"], False),
+    ("referrers", fetch_traffic_referrers, ["date", "referrer"], True),
+    ("paths", fetch_traffic_paths, ["date", "path"], True),
+    ("releases", fetch_releases, ["date", "tag", "asset"], True),
+    ("workflow_runs", fetch_workflow_runs, _WF_KEYS, True),
 ]
 
 
@@ -92,6 +96,7 @@ async def _collect_metric(
     metric: str,
     fetch_fn: _FetchFn,
     key_fields: list[str],
+    upsert: bool,
     repo_dir: Path,
     timings: dict[str, _Timing],
     token: str,
@@ -111,7 +116,7 @@ async def _collect_metric(
 
         t_write = time.perf_counter()
         dest = repo_dir / f"{metric}.ndjson"
-        writer.append_records(dest, records, key_fields)
+        writer.append_records(dest, records, key_fields, upsert=upsert)
         timings[metric].compute += max(0.0, time.perf_counter() - t_write)
 
         log.debug("fetch.done", records=len(records), io_ms=round(io_s * 1000))
@@ -135,8 +140,8 @@ async def _collect_repo(
     t0 = time.perf_counter()
 
     metric_tasks = [
-        _collect_metric(client, sem, repo, metric, fetch_fn, key_fields, repo_dir, timings, token)
-        for metric, fetch_fn, key_fields in _METRICS
+        _collect_metric(client, sem, repo, metric, fetch_fn, key_fields, upsert, repo_dir, timings, token)
+        for metric, fetch_fn, key_fields, upsert in _METRICS
     ]
     results = await asyncio.gather(*metric_tasks)
 
