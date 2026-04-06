@@ -24,6 +24,14 @@ depends = ["//github-analytics:test"]
 description = "Run full CI suite"
 depends = ["build", "test:all", "lint:all"]
 
+[tasks."dependencies:check"]
+description = "Check for outdated or vulnerable dependencies in all projects"
+depends = ["//github-analytics:dependencies:check"]
+
+[tasks."dependencies:update"]
+description = "Update dependencies to latest compatible versions in all projects"
+depends = ["//github-analytics:dependencies:update"]
+
 [tasks."ci:github:watch"]
 description = "Watch GitHub PR checks"
 run = "gh pr checks --watch --fail-fast"
