@@ -454,9 +454,14 @@ def _write_repo_readmes(
 
 
 def _releases_table(data: dict[str, list[dict[str, Any]]]) -> list[str]:
-    """Build a release download counts table from the latest snapshot per tag+asset."""
+    """Build a release download counts table from the latest snapshot per tag+asset.
+
+    Selects the record with the highest date for each (tag, asset) pair, so that
+    re-collecting on the same day (upsert) or collecting across multiple days both
+    produce the correct latest download count, regardless of file line order.
+    """
     latest: dict[tuple[str, str], int] = {}
-    for r in data["releases"]:
+    for r in sorted(data["releases"], key=lambda r: r["date"]):
         key = (r["tag"], r["asset"])
         latest[key] = r["download_count"]
     if not latest:
