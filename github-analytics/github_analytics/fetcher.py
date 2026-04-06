@@ -21,6 +21,21 @@ def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[st
     return {"Authorization": f"token {token}", "Accept": accept}
 
 
+def _parse_retry_after(header: str, attempt: int) -> float:
+    """Return the sleep duration from a Retry-After header value.
+
+    The header may be an integer seconds count or an HTTP-date string (RFC 7231).
+    Falls back to exponential backoff (2**attempt) if the value cannot be parsed
+    as a float, avoiding a ValueError that would escape the retry loop.
+    """
+    if header:
+        try:
+            return float(header)
+        except ValueError:
+            pass  # HTTP-date format or unexpected value — fall through to backoff
+    return float(2**attempt)
+
+
 async def _get_with_retry(
     client: httpx.AsyncClient,
     sem: asyncio.Semaphore,
@@ -50,7 +65,7 @@ async def _get_with_retry(
             total_io += time.perf_counter() - t0
         last_response = response
         if response.status_code == 429:
-            wait = float(response.headers.get("retry-after", 2**attempt))
+            wait = _parse_retry_after(response.headers.get("retry-after", ""), attempt)
             t0 = time.perf_counter()
             await asyncio.sleep(wait)
             total_wait += time.perf_counter() - t0
@@ -59,7 +74,7 @@ async def _get_with_retry(
             body = response.text.lower()
             retry_after = response.headers.get("retry-after")
             if retry_after or "abuse" in body or "secondary rate" in body:
-                wait = float(retry_after or 2**attempt)
+                wait = _parse_retry_after(retry_after or "", attempt)
                 t0 = time.perf_counter()
                 await asyncio.sleep(wait)
                 total_wait += time.perf_counter() - t0
