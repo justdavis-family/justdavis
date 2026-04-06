@@ -116,11 +116,11 @@ async def _collect_metric(
 
         t_write = time.perf_counter()
         dest = repo_dir / f"{metric}.ndjson"
-        writer.append_records(dest, records, key_fields, upsert=upsert)
+        written = writer.append_records(dest, records, key_fields, upsert=upsert)
         timings[metric].compute += max(0.0, time.perf_counter() - t_write)
 
-        log.debug("fetch.done", records=len(records), io_ms=round(io_s * 1000))
-        return _MetricResult(metric=metric, count=len(records))
+        log.debug("fetch.done", fetched=len(records), written=written, io_ms=round(io_s * 1000))
+        return _MetricResult(metric=metric, count=written)
     except Exception as exc:
         log.warning("fetch.error", error=str(exc))
         return _MetricResult(metric=metric, error=str(exc))
