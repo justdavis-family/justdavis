@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+# GitHub API transient server-error status codes that warrant a retry.
+TRANSIENT_5XX: frozenset[int] = frozenset({500, 502, 503, 504})
+
 
 def next_link(link_header: str) -> str | None:
     """Parse GitHub's Link header and return the 'next' URL, if any."""

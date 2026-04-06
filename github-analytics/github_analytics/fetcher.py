@@ -10,6 +10,7 @@ from typing import Any
 
 import httpx
 
+from github_analytics._http_utils import TRANSIENT_5XX as _TRANSIENT_5XX
 from github_analytics._http_utils import next_link as _next_link
 from github_analytics._http_utils import parse_retry_after as _parse_retry_after
 from github_analytics.config import RepoId
@@ -41,7 +42,6 @@ async def _get_with_retry(
     Returns:
         (response, io_seconds, wait_seconds)
     """
-    _TRANSIENT_5XX = {500, 502, 503, 504}
     last_response: httpx.Response | None = None
     total_io = 0.0
     total_wait = 0.0
