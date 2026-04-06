@@ -13,7 +13,7 @@ import httpx
 from github_analytics.config import RepoId
 
 BASE = "https://api.github.com"
-_MAX_RETRIES = 3
+_MAX_ATTEMPTS = 3
 
 
 def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[str, str]:
@@ -58,7 +58,7 @@ async def _get_with_retry(
     last_response: httpx.Response | None = None
     total_io = 0.0
     total_wait = 0.0
-    for attempt in range(_MAX_RETRIES):
+    for attempt in range(_MAX_ATTEMPTS):
         async with sem:
             t0 = time.perf_counter()
             response = await client.get(url, headers=headers, follow_redirects=True)
