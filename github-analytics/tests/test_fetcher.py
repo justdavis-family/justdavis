@@ -1,11 +1,15 @@
 import asyncio
 import os
+from collections import defaultdict
+from pathlib import Path
+from unittest.mock import patch
 
 import httpx
 import pytest
 
 from github_analytics.config import RepoId
 from github_analytics.fetcher import (
+    _get_with_retry,
     fetch_forks,
     fetch_metadata,
     fetch_metadata_as_list,
@@ -148,3 +152,64 @@ async def test_fetch_workflow_runs_returns_records() -> None:
         assert "status" in r
         assert "completed_count" in r
         assert "incomplete_count" in r
+
+
+async def test_get_with_retry_retries_on_429() -> None:
+    """A 429 response triggers a sleep and a second attempt."""
+    call_count = 0
+    fake_req = httpx.Request("GET", "https://api.github.com/test")
+
+    async def fake_get(url: str, *, headers: dict, follow_redirects: bool) -> httpx.Response:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            r = httpx.Response(429, headers={"retry-after": "0"}, text="rate limited")
+        else:
+            r = httpx.Response(200, content=b'{"ok": true}')
+        r.request = fake_req  # type: ignore[assignment]
+        return r
+
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        with patch.object(client, "get", fake_get):
+            with patch("asyncio.sleep") as mock_sleep:
+                resp, _io_s, wait_s = await _get_with_retry(
+                    client, sem, "https://api.github.com/test", {"Authorization": "token fake"}
+                )
+
+    assert call_count == 2, "expected one retry after the 429"
+    assert resp.status_code == 200
+    mock_sleep.assert_called_once_with(0.0)
+    assert wait_s > 0
+
+
+async def test_collect_metric_isolates_fetch_errors(tmp_path: Path) -> None:
+    """An exception raised by the fetch function is caught and returned as an error."""
+    from github_analytics.__main__ import _collect_metric, _Timing  # noqa: PLC0415
+
+    timings: dict[str, _Timing] = defaultdict(_Timing)
+
+    async def exploding_fetch(
+        client: httpx.AsyncClient,
+        sem: asyncio.Semaphore,
+        repo: RepoId,
+        token: str,
+    ) -> tuple[list, float, float]:
+        raise RuntimeError("injected failure")
+
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        result = await _collect_metric(
+            client,
+            sem,
+            RepoId(owner="test", name="repo"),
+            "views",
+            exploding_fetch,
+            ["date"],
+            tmp_path,
+            timings,
+            "fake-token",
+        )
+
+    assert result.error == "injected failure"
+    assert result.count == 0
