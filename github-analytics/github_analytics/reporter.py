@@ -336,7 +336,12 @@ def _write_owner_readmes(
 
 
 def _mermaid_line(dates: list[str], values: list[int | float], title: str) -> list[str]:
-    """Build a MermaidJS xychart-beta line chart."""
+    """Build a MermaidJS xychart-beta line chart.
+
+    Callers are responsible for safe inputs: ``title`` is always a
+    hardcoded string literal; ``dates`` come from the GitHub API as
+    ``YYYY-MM-DD`` strings which are safe to embed without escaping.
+    """
     if not dates:
         return []
     lines = [f'\n```mermaid\nxychart-beta\n  title "{title}"\n  x-axis [']
