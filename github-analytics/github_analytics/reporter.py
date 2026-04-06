@@ -24,10 +24,8 @@ _METRICS = [
     "forks",
     "releases",
     "metadata",
-    "commit_activity",
+    "workflow_runs",
 ]
-
-_COMMITS_TABLE_WEEKS = 26
 
 
 def generate(data_repo: Path) -> int:
@@ -41,7 +39,6 @@ def generate(data_repo: Path) -> int:
             [
                 data_repo / "unique_visitors.svg",
                 data_repo / "unique_clones.svg",
-                data_repo / "commits_per_week.svg",
             ],
             "# GitHub Analytics",
             all_data,
@@ -140,12 +137,6 @@ def _avg_by_period(
     return {p: sum(vals) / len(vals) for p, vals in sorted(by_period.items())}
 
 
-def _last_n_week_starts(all_commit_activity: list[dict[str, Any]], n: int) -> set[str]:
-    """Return the last n week_start values sorted across all commit_activity records."""
-    weeks = sorted({r["week_start"] for r in all_commit_activity})
-    return set(weeks[-n:])
-
-
 # ---------------------------------------------------------------------------
 # Vega-Lite SVG rendering
 # ---------------------------------------------------------------------------
@@ -213,21 +204,6 @@ def _build_clones_svg(
     return _vegalite_to_svg(_stacked_area_spec(points, "date", "value", "repo", title, y_title))
 
 
-def _build_commits_svg(
-    all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
-) -> str | None:
-    """Build a stacked area SVG for commits per week across all repos."""
-    points: list[dict[str, Any]] = []
-    for (owner, name), data in all_data.items():
-        for r in data["commit_activity"]:
-            points.append({"week": r["week_start"], "repo": f"{owner}/{name}", "commits": r["total"]})
-    if not points:
-        return None
-    return _vegalite_to_svg(
-        _stacked_area_spec(points, "week", "commits", "repo", "Commits per Week", "Commits")
-    )
-
-
 # ---------------------------------------------------------------------------
 # Multi-repo content builders
 # ---------------------------------------------------------------------------
@@ -239,12 +215,12 @@ def _multi_repo_sections(
 ) -> list[str]:
     """Build the body sections for a multi-repo README.
 
-    svg_paths: [unique_visitors_path, unique_clones_path, commits_path]
+    svg_paths: [unique_visitors_path, unique_clones_path]
     """
     lines: list[str] = []
 
     # 1 & 2: Stacked area charts (SVGs written by caller; here we just emit references)
-    uv_svg, uc_svg, cw_svg = svg_paths
+    uv_svg, uc_svg = svg_paths
     lines.append("\n## Unique Visitors per Day\n\n")
     lines.append(f"![Unique Visitors per Day]({uv_svg.name})\n")
     lines.append("\n## Unique Clones per Day\n\n")
@@ -255,13 +231,6 @@ def _multi_repo_sections(
 
     # 4: Current totals table
     lines.extend(_current_totals_table(all_data))
-
-    # 5: Commits per week chart
-    lines.append("\n## Commits per Week\n\n")
-    lines.append(f"![Commits per Week]({cw_svg.name})\n")
-
-    # 6: Commits quarterly table
-    lines.extend(_commits_quarterly_table(all_data))
 
     return lines
 
@@ -315,42 +284,6 @@ def _current_totals_table(
     return lines
 
 
-def _commits_quarterly_table(
-    all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
-) -> list[str]:
-    """Build a quarterly commits table for the last _COMMITS_TABLE_WEEKS weeks."""
-    # Gather all week_starts from all repos to determine the last N
-    all_activity = [r for data in all_data.values() for r in data["commit_activity"]]
-    if not all_activity:
-        return []
-
-    last_n = _last_n_week_starts(all_activity, _COMMITS_TABLE_WEEKS)
-
-    quarters: set[str] = set()
-    repo_totals: dict[str, dict[str, int]] = {}
-    for (owner, name), data in all_data.items():
-        by_quarter: dict[str, int] = defaultdict(int)
-        for r in data["commit_activity"]:
-            if r["week_start"] in last_n:
-                q = _date_to_quarter(r["week_start"])
-                quarters.add(q)
-                by_quarter[q] += r["total"]
-        repo_totals[f"{owner}/{name}"] = dict(by_quarter)
-
-    if not quarters:
-        return []
-
-    sorted_quarters = sorted(quarters)
-    lines = [f"\n## Commits per Week (last {_COMMITS_TABLE_WEEKS} weeks)\n\n"]
-    lines.append("| Repository | " + " | ".join(sorted_quarters) + " |\n")
-    lines.append("|---|" + "---|" * len(sorted_quarters) + "\n")
-    for repo_key in sorted(repo_totals):
-        totals = repo_totals[repo_key]
-        cells = " | ".join(str(totals.get(q, 0)) for q in sorted_quarters)
-        lines.append(f"| {repo_key} | {cells} |\n")
-    return lines
-
-
 # ---------------------------------------------------------------------------
 # Multi-repo README writers
 # ---------------------------------------------------------------------------
@@ -363,7 +296,7 @@ def _write_multi_repo_readme(
     all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
 ) -> None:
     """Write a multi-repo README and its companion SVG files."""
-    uv_svg_path, uc_svg_path, cw_svg_path = svg_paths
+    uv_svg_path, uc_svg_path = svg_paths
 
     # Generate and write SVGs (skip section if no data)
     uv_svg = _build_views_svg(all_data, "uniques", "Unique Visitors per Day", "Unique Visitors/day")
@@ -373,10 +306,6 @@ def _write_multi_repo_readme(
     uc_svg = _build_clones_svg(all_data, "uniques", "Unique Clones per Day", "Unique Clones/day")
     if uc_svg:
         _atomic_write(uc_svg_path, uc_svg)
-
-    cw_svg = _build_commits_svg(all_data)
-    if cw_svg:
-        _atomic_write(cw_svg_path, cw_svg)
 
     lines: list[str] = [f"{heading}\n\n", f"_Last updated: {_now_str()}_\n"]
 
@@ -398,7 +327,6 @@ def _write_root_readme(
         [
             data_repo / "unique_visitors.svg",
             data_repo / "unique_clones.svg",
-            data_repo / "commits_per_week.svg",
         ],
         "# GitHub Analytics",
         all_data,
@@ -419,7 +347,6 @@ def _write_owner_readmes(
             [
                 data_repo / owner / "unique_visitors.svg",
                 data_repo / owner / "unique_clones.svg",
-                data_repo / owner / "commits_per_week.svg",
             ],
             f"# {owner}",
             owner_data,
@@ -495,22 +422,6 @@ def _current_totals_pivoted(data: dict[str, list[dict[str, Any]]]) -> list[str]:
     return lines
 
 
-def _commits_weekly_table(data: dict[str, list[dict[str, Any]]]) -> list[str]:
-    """Build a table of the last _COMMITS_TABLE_WEEKS weeks of commits."""
-    activity = sorted(data["commit_activity"], key=lambda r: r["week_start"])
-    recent = activity[-_COMMITS_TABLE_WEEKS:]
-    if not recent:
-        return []
-    lines = [
-        f"\n## Commits per Week (last {_COMMITS_TABLE_WEEKS} weeks)\n\n",
-        "| Week | Commits |\n",
-        "|---|---|\n",
-    ]
-    for r in recent:
-        lines.append(f"| {r['week_start']} | {r['total']} |\n")
-    return lines
-
-
 def _write_repo_readmes(
     data_repo: Path,
     all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
@@ -552,18 +463,6 @@ def _write_repo_readmes(
 
         # Current totals (pivoted)
         lines.extend(_current_totals_pivoted(data))
-
-        # Commits per week
-        activity = sorted(data["commit_activity"], key=lambda r: r["week_start"])
-        if activity:
-            lines.extend(
-                _mermaid_line(
-                    [r["week_start"] for r in activity],
-                    [r["total"] for r in activity],
-                    "Commits per Week",
-                )
-            )
-        lines.extend(_commits_weekly_table(data))
 
         # Release downloads
         if data["releases"]:

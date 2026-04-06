@@ -10,12 +10,14 @@
   home-lab dependencies.
 
 **Architecture:** A Python package (`github-analytics/`) in this monorepo reads a repo allowlist,
-  calls the GitHub API for 8 endpoint types per repo, and writes idempotent NDJSON files to a local
+  calls the GitHub API for 9 endpoint types per repo concurrently (asyncio + httpx.AsyncClient,
+  bounded by a semaphore tied to the connection pool), and writes idempotent NDJSON files to a local
   checkout of `justdavis-family/github-analytics-data`.
 A reporter generates three levels of Markdown README (root, per-owner, per-repo).
 A scheduled GitHub Actions workflow orchestrates everything: checkout → collect → report → git push.
 
-**Tech Stack:** Python 3.12, uv, httpx, PyYAML, ruff, mypy (strict), pytest, pytest-recording (vcrpy).
+**Tech Stack:** Python 3.12, uv, httpx (async), asyncio, structlog, PyYAML, ruff, mypy (strict),
+  pytest, pytest-recording (vcrpy), pytest-asyncio.
   Invocation chain: GitHub Actions → Mise → uv.
 
 ---
@@ -60,6 +62,16 @@ Files to be created or modified, by module:
 
 ### GitHub Actions workflow
 - Create: `.github/workflows/github-analytics.yml`
+
+### Performance and observability
+- Create: `github-analytics/config.smoke.yaml`
+- Modify: `github-analytics/pyproject.toml` (add structlog, pytest-asyncio)
+- Modify: `github-analytics/mise.toml` (update ci:smoke to use config.smoke.yaml)
+- Modify: `github-analytics/github_analytics/fetcher.py` (async rewrite)
+- Modify: `github-analytics/github_analytics/__main__.py` (asyncio, timing, structlog)
+- Modify: `github-analytics/github_analytics/reporter.py` (remove commits sections)
+- Modify: `github-analytics/tests/test_fetcher.py` (async tests)
+- Modify: `github-analytics/tests/test_e2e.py` (9 metrics)
 
 ---
 
@@ -2124,6 +2136,120 @@ E2e test for the report command is added to `tests/test_e2e.py`.
 
 ---
 
+## Task 11: Async Concurrency, Observability & Cleanup
+
+**Files:**
+- Modify: `github-analytics/pyproject.toml`
+- Modify: `github-analytics/mise.toml`
+- Create: `github-analytics/config.smoke.yaml`
+- Modify: `github-analytics/github_analytics/fetcher.py`
+- Modify: `github-analytics/github_analytics/__main__.py`
+- Modify: `github-analytics/github_analytics/reporter.py`
+- Modify: `github-analytics/tests/test_fetcher.py`
+- Modify: `github-analytics/tests/test_e2e.py`
+- Delete: 5 stats endpoint cassette files
+
+**Goal:** Make the collector concurrent, observable, and remove endpoints that only
+  duplicate data already in the git history.
+
+- [ ] **Step 1: Remove stats endpoints**
+
+  In `github_analytics/fetcher.py`: delete `_get_stats`, `_unix_to_date`,
+  `fetch_commit_activity`, `fetch_code_frequency`, `fetch_contributors`,
+  `fetch_participation`, `fetch_punch_card`.
+
+  In `github_analytics/__main__.py`: remove the 5 stat function imports
+  and their `_METRICS` entries.
+
+  In `github_analytics/reporter.py`: remove `commit_activity` from `_METRICS`;
+  remove `_COMMITS_TABLE_WEEKS`, `_last_n_week_starts`, `_build_commits_svg`,
+  `_commits_quarterly_table`, `_commits_weekly_table`; remove commits sections
+  from both README format outputs.
+
+  In `tests/test_fetcher.py`: delete the 5 tests for removed functions.
+
+  Delete cassettes:
+  `tests/cassettes/test_fetch_commit_activity_returns_records.yaml`,
+  `test_fetch_code_frequency_returns_records.yaml`,
+  `test_fetch_contributors_returns_records.yaml`,
+  `test_fetch_participation_returns_records.yaml`,
+  `test_fetch_punch_card_returns_records.yaml`.
+
+  Update e2e cassettes to remove the 5 interactions per collect call.
+
+- [ ] **Step 2: Add dependencies**
+
+  In `pyproject.toml`, add to `dependencies`: `structlog>=24.0`.
+  Add to `[dependency-groups] dev`: `pytest-asyncio>=0.23`.
+  Add to `[tool.pytest.ini_options]`: `asyncio_mode = "auto"`.
+
+- [ ] **Step 3: Async rewrite of fetcher.py**
+
+  Convert all functions to `async def`.
+  Accept `client: httpx.AsyncClient` and `sem: asyncio.Semaphore` as first parameters.
+  `_get_with_retry` wraps only `await client.get(...)` with the semaphore and returns
+  `(response, io_seconds, wait_seconds)`.
+  All public `fetch_*` functions return `(records, io_seconds, wait_seconds)`.
+
+- [ ] **Step 4: Async rewrite of __main__.py**
+
+  Replace `cmd_collect` body with `asyncio.run(_collect_async(...))`.
+  `_collect_async` creates `asyncio.Semaphore(N)` and `httpx.AsyncClient` with matching
+  `httpx.Limits(max_keepalive_connections=N, max_connections=N)` (default N=20).
+  Launches all `(repo, metric)` pairs as asyncio Tasks via `asyncio.gather`.
+  Accumulates timing in a shared `dict[str, _Timing]` (safe: single-threaded event loop).
+  Prints per-repo ✔/✗ lines as each repo completes.
+  Prints timing summary table on exit.
+  Add `--max-concurrent` (int, default 20) to the collect subparser.
+  Add `--verbose` flag; configure structlog at DEBUG when set, WARNING otherwise.
+
+- [ ] **Step 5: Smoke test config**
+
+  Create `github-analytics/config.smoke.yaml`:
+
+  ```yaml
+  repos:
+    - karlmdavis/ksoap2-android
+    - karlmdavis/liquibase-percona
+    - justdavis-family/justdavis-ansible
+    - justdavis-family/justdavis
+  ```
+
+  Update `ci:smoke` in `github-analytics/mise.toml` to pass
+  `--config config.smoke.yaml`.
+
+- [ ] **Step 6: Update tests**
+
+  Convert `test_fetcher.py` tests to `async def`, creating `httpx.AsyncClient`
+  and `asyncio.Semaphore(1)` inside each test.
+  Update e2e cassettes to match 9-metric collection.
+
+- [ ] **Step 7: Run CI**
+
+  ```bash
+  MISE_EXPERIMENTAL=1 mise run :ci
+  ```
+
+  Expected: all tests pass, lint clean, mypy strict satisfied.
+
+- [ ] **Step 8: Run smoke test**
+
+  ```bash
+  MISE_EXPERIMENTAL=1 mise run :ci:smoke
+  ```
+
+  Expected: timing table printed, total time well under 5 minutes for 4 repos,
+  compute fraction visible in timing breakdown.
+
+- [ ] **Step 9: Commit**
+
+  ```bash
+  git add -p
+  git commit -m "feat(github-analytics): async concurrency, observability, remove stats endpoints"
+  ```
+
+---
+
 ## Verification Checklist
 
 - [ ] `MISE_EXPERIMENTAL=1 mise run //github-analytics:ci` passes (tests green, lint clean,
@@ -2132,6 +2258,6 @@ E2e test for the report command is added to `tests/test_e2e.py`.
 - [ ] `github.com/justdavis-family/github-analytics-data` renders a README
       with per-metric comparison tables.
 - [ ] Idempotency confirmed: two runs on same day produce no duplicate records.
-- [ ] Smoke test: `MISE_EXPERIMENTAL=1 mise run //github-analytics:collect:smoke` exits 0
-      and produces files under `/tmp/analytics-smoke-*/`.
+- [ ] Smoke test (`MISE_EXPERIMENTAL=1 mise run //github-analytics:ci:smoke`) exits 0,
+      prints timing table, completes within 5 minutes for 4 repos.
 - [ ] Scheduled workflow runs confirmed after 48 hours.

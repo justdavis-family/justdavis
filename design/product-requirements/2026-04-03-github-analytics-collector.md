@@ -41,6 +41,15 @@ As Karl, I want all my GitHub repository analytics automatically collected daily
 - [ ] At least one integration test covers each endpoint type using VCR cassettes.
 - [ ] The full `collect` + `report` pipeline is verified end-to-end by `test_e2e.py`
         against recorded cassettes.
+- [ ] All `(repo, metric)` pairs are fetched concurrently (bounded by `--max-concurrent`,
+        default 20) so total collection time scales with the slowest repo, not all repos summed.
+- [ ] Collection completes within 5 minutes for a typical repo set on GitHub Actions.
+- [ ] The workflow's total GitHub Actions runtime stays within 5% of the account's
+        monthly allotment (3,000 min/month = 150 min/month ceiling).
+- [ ] `collect` prints a ✔ or ✗ line per repo as it completes, showing elapsed time
+        and a count of records fetched per metric.
+- [ ] `collect` prints a timing summary table on exit showing I/O, wait, and compute
+        seconds broken out per endpoint, revealing where time is spent.
 
 #### Traffic Endpoints
 
@@ -48,17 +57,6 @@ As Karl, I want all my GitHub repository analytics automatically collected daily
 - `GET /repos/{owner}/{repo}/traffic/clones` — daily clone and unique cloner counts.
 - `GET /repos/{owner}/{repo}/traffic/popular/referrers` — top referral sources (snapshot).
 - `GET /repos/{owner}/{repo}/traffic/popular/paths` — top paths by view count (snapshot).
-
-#### Stats Endpoints
-
-- `GET /repos/{owner}/{repo}/stats/commit_activity` — total commits per week for the last 52 weeks,
-    with per-day-of-week breakdown.
-- `GET /repos/{owner}/{repo}/stats/code_frequency` — weekly additions and deletions since repo creation.
-- `GET /repos/{owner}/{repo}/stats/contributors` — per-contributor weekly commit, addition,
-    and deletion counts.
-- `GET /repos/{owner}/{repo}/stats/participation` — weekly commit counts (all contributors vs.
-    repo owner only) for the last 52 weeks.
-- `GET /repos/{owner}/{repo}/stats/punch_card` — commit counts by hour of day and day of week.
 
 #### Other Endpoints
 
@@ -91,12 +89,6 @@ Contents in order:
     cell value = average daily count for that repo in that quarter.
 4. **Current totals table**: one row per repo, columns for stars and forks
     (current values from the most recent metadata snapshot).
-5. **Commits per week stacked area chart** (SVG, Vega-Lite):
-    x-axis = week start date, y-axis = commits per week, one stacked series per repo.
-    Shows all available history.
-6. **Commits per week table**: repos as rows, calendar quarters as columns
-    (covering the last 26 weeks only); cell value = total commits in that quarter
-    within the 26-week window.
 
 SVG chart files are written alongside each README (e.g. `unique_visitors.svg`)
   and referenced with relative `![alt](./chart.svg)` links.
@@ -112,8 +104,6 @@ Contents in order (MermaidJS XY charts replace Vega-Lite SVGs):
     views/day, unique clones/day, and clones/day (average daily counts per month).
 4. **Current totals table** (pivoted): rows for stars and forks,
     single value column (more readable with only one repo).
-5. **Commits per week line chart** (MermaidJS `xychart-beta`): all available history.
-6. **Commits per week table**: one row per week (last 26 weeks), single commits column.
 
 ## References
 

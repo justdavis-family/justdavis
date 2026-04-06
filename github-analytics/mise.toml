@@ -57,7 +57,7 @@ description = "Smoke test: collect + report against live GitHub API into /tmp/"
 depends = ["build"]
 run = """
 smoke_dir=/tmp/analytics-smoke-$(date +%s)
-uv run python -m github_analytics collect --data-repo "$smoke_dir"
+uv run python -m github_analytics collect --data-repo "$smoke_dir" --config config.smoke.yaml
 uv run python -m github_analytics report --data-repo "$smoke_dir"
 echo "Smoke output: $smoke_dir"
 """

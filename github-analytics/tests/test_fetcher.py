@@ -1,17 +1,14 @@
+import asyncio
 import os
 
+import httpx
 import pytest
 
 from github_analytics.config import RepoId
 from github_analytics.fetcher import (
-    fetch_code_frequency,
-    fetch_commit_activity,
-    fetch_contributors,
     fetch_forks,
     fetch_metadata,
     fetch_metadata_as_list,
-    fetch_participation,
-    fetch_punch_card,
     fetch_releases,
     fetch_stars,
     fetch_traffic_clones,
@@ -26,8 +23,10 @@ KSOAP = RepoId(owner="karlmdavis", name="ksoap2-android")
 
 
 @pytest.mark.vcr
-def test_fetch_traffic_views_returns_records() -> None:
-    records = fetch_traffic_views(KSOAP, TOKEN)
+async def test_fetch_traffic_views_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_traffic_views(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
     if records:
         r = records[0]
@@ -37,14 +36,18 @@ def test_fetch_traffic_views_returns_records() -> None:
 
 
 @pytest.mark.vcr
-def test_fetch_traffic_clones_returns_records() -> None:
-    records = fetch_traffic_clones(KSOAP, TOKEN)
+async def test_fetch_traffic_clones_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_traffic_clones(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
 
 
 @pytest.mark.vcr
-def test_fetch_traffic_referrers_returns_records() -> None:
-    records = fetch_traffic_referrers(KSOAP, TOKEN)
+async def test_fetch_traffic_referrers_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_traffic_referrers(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
     if records:
         r = records[0]
@@ -55,14 +58,18 @@ def test_fetch_traffic_referrers_returns_records() -> None:
 
 
 @pytest.mark.vcr
-def test_fetch_traffic_paths_returns_records() -> None:
-    records = fetch_traffic_paths(KSOAP, TOKEN)
+async def test_fetch_traffic_paths_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_traffic_paths(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
 
 
 @pytest.mark.vcr
-def test_fetch_stars_returns_records() -> None:
-    records = fetch_stars(KSOAP, TOKEN)
+async def test_fetch_stars_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_stars(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
     if records:
         r = records[0]
@@ -71,8 +78,10 @@ def test_fetch_stars_returns_records() -> None:
 
 
 @pytest.mark.vcr
-def test_fetch_forks_returns_records() -> None:
-    records = fetch_forks(KSOAP, TOKEN)
+async def test_fetch_forks_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_forks(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
     if records:
         r = records[0]
@@ -81,14 +90,18 @@ def test_fetch_forks_returns_records() -> None:
 
 
 @pytest.mark.vcr
-def test_fetch_releases_returns_records() -> None:
-    records = fetch_releases(KSOAP, TOKEN)
+async def test_fetch_releases_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_releases(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
 
 
 @pytest.mark.vcr
-def test_fetch_metadata_returns_record() -> None:
-    record = fetch_metadata(KSOAP, TOKEN)
+async def test_fetch_metadata_returns_record() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        record, _, _ = await fetch_metadata(client, sem, KSOAP, TOKEN)
     assert "date" in record
     assert "stars" in record
     assert "forks" in record
@@ -96,9 +109,9 @@ def test_fetch_metadata_returns_record() -> None:
     assert "open_issues" in record
 
 
-def test_fetch_metadata_as_list_wraps_metadata() -> None:
+async def test_fetch_metadata_as_list_wraps_metadata() -> None:
     """fetch_metadata_as_list returns a single-element list; no HTTP call needed."""
-    from unittest.mock import patch
+    from unittest.mock import AsyncMock, patch
 
     fake_record = {
         "date": "2026-04-03",
@@ -111,70 +124,22 @@ def test_fetch_metadata_as_list_wraps_metadata() -> None:
         "size_kb": 1024,
     }
 
-    with patch("github_analytics.fetcher.fetch_metadata", return_value=fake_record):
-        result = fetch_metadata_as_list(KSOAP, TOKEN)
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        with patch(
+            "github_analytics.fetcher.fetch_metadata",
+            new_callable=AsyncMock,
+            return_value=(fake_record, 0.0, 0.0),
+        ):
+            result, _, _ = await fetch_metadata_as_list(client, sem, KSOAP, TOKEN)
     assert result == [fake_record]
 
 
 @pytest.mark.vcr
-def test_fetch_commit_activity_returns_records() -> None:
-    records = fetch_commit_activity(KSOAP, TOKEN)
-    assert isinstance(records, list)
-    if records:
-        r = records[0]
-        assert "week_start" in r
-        assert "total" in r
-        assert "days" in r
-        assert len(r["days"]) == 7
-
-
-@pytest.mark.vcr
-def test_fetch_code_frequency_returns_records() -> None:
-    records = fetch_code_frequency(KSOAP, TOKEN)
-    assert isinstance(records, list)
-    if records:
-        r = records[0]
-        assert "week_start" in r
-        assert "additions" in r
-        assert "deletions" in r
-
-
-@pytest.mark.vcr
-def test_fetch_contributors_returns_records() -> None:
-    records = fetch_contributors(KSOAP, TOKEN)
-    assert isinstance(records, list)
-    if records:
-        r = records[0]
-        assert "week_start" in r
-        assert "author" in r
-        assert "commits" in r
-
-
-@pytest.mark.vcr
-def test_fetch_participation_returns_records() -> None:
-    records = fetch_participation(KSOAP, TOKEN)
-    assert isinstance(records, list)
-    if records:
-        r = records[0]
-        assert "week_start" in r
-        assert "all" in r
-        assert "owner" in r
-
-
-@pytest.mark.vcr
-def test_fetch_punch_card_returns_records() -> None:
-    records = fetch_punch_card(KSOAP, TOKEN)
-    assert isinstance(records, list)
-    if records:
-        r = records[0]
-        assert "day_of_week" in r
-        assert "hour" in r
-        assert "commits" in r
-
-
-@pytest.mark.vcr
-def test_fetch_workflow_runs_returns_records() -> None:
-    records = fetch_workflow_runs(KSOAP, TOKEN)
+async def test_fetch_workflow_runs_returns_records() -> None:
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        records, _, _ = await fetch_workflow_runs(client, sem, KSOAP, TOKEN)
     assert isinstance(records, list)
     if records:
         r = records[0]

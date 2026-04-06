@@ -37,7 +37,9 @@ def test_collect_creates_ndjson_files(data_repo: Path, fixture_config: Path) -> 
     """Running collect populates the data repo with NDJSON files."""
     import argparse
 
-    args = argparse.Namespace(data_repo=str(data_repo), config=str(fixture_config))
+    args = argparse.Namespace(
+        data_repo=str(data_repo), config=str(fixture_config), max_concurrent=1, verbose=False
+    )
     exit_code = cmd_collect(args)
     assert exit_code == 0
 
@@ -54,7 +56,9 @@ def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
     """Running collect twice on the same day produces no duplicate records."""
     import argparse
 
-    args = argparse.Namespace(data_repo=str(data_repo), config=str(fixture_config))
+    args = argparse.Namespace(
+        data_repo=str(data_repo), config=str(fixture_config), max_concurrent=1, verbose=False
+    )
     cmd_collect(args)
     cmd_collect(args)  # Second run — cassette replays same responses
 
@@ -73,7 +77,9 @@ def test_report_generates_readmes(data_repo: Path, fixture_config: Path) -> None
 
     from github_analytics import reporter
 
-    args = argparse.Namespace(data_repo=str(data_repo), config=str(fixture_config))
+    args = argparse.Namespace(
+        data_repo=str(data_repo), config=str(fixture_config), max_concurrent=1, verbose=False
+    )
 
     # Collect data first (VCR replays the cassette from the collect test)
     assert cmd_collect(args) == 0

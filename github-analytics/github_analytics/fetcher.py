@@ -1,7 +1,8 @@
-"""GitHub API fetcher for all analytics endpoints."""
+"""GitHub API fetcher for all analytics endpoints (async, httpx.AsyncClient)."""
 
 from __future__ import annotations
 
+import asyncio
 import time
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
@@ -13,10 +14,6 @@ from github_analytics.config import RepoId
 
 BASE = "https://api.github.com"
 _MAX_RETRIES = 3
-# GitHub stats endpoints return 202 while computing results asynchronously.
-# Polling every 5 s for up to 60 s covers most repos; cold repos can take 30+ s.
-_STATS_POLL_INTERVAL = 5
-_STATS_MAX_ATTEMPTS = 60  # 5-minute ceiling at _STATS_POLL_INTERVAL seconds per attempt
 
 
 def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[str, str]:
@@ -24,45 +21,85 @@ def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[st
     return {"Authorization": f"token {token}", "Accept": accept}
 
 
-def _get_with_retry(url: str, headers: dict[str, str]) -> httpx.Response:
-    """HTTP GET with retry for primary (429) and secondary (403 abuse) rate limits."""
+async def _get_with_retry(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    url: str,
+    headers: dict[str, str],
+) -> tuple[httpx.Response, float, float]:
+    """HTTP GET with semaphore-bounded concurrency and rate-limit retry.
+
+    The semaphore wraps only the HTTP round-trip, not retries or compute.
+
+    Returns:
+        (response, io_seconds, wait_seconds)
+    """
     last_response: httpx.Response | None = None
+    total_io = 0.0
+    total_wait = 0.0
     for attempt in range(_MAX_RETRIES):
-        response = httpx.get(url, headers=headers, follow_redirects=True)
+        async with sem:
+            t0 = time.perf_counter()
+            response = await client.get(url, headers=headers, follow_redirects=True)
+            total_io += time.perf_counter() - t0
         last_response = response
         if response.status_code == 429:
             wait = float(response.headers.get("retry-after", 2**attempt))
-            time.sleep(wait)
+            t0 = time.perf_counter()
+            await asyncio.sleep(wait)
+            total_wait += time.perf_counter() - t0
             continue
         if response.status_code == 403:
             body = response.text.lower()
             retry_after = response.headers.get("retry-after")
             if retry_after or "abuse" in body or "secondary rate" in body:
                 wait = float(retry_after or 2**attempt)
-                time.sleep(wait)
+                t0 = time.perf_counter()
+                await asyncio.sleep(wait)
+                total_wait += time.perf_counter() - t0
                 continue
-        return response
+        return response, total_io, total_wait
     assert last_response is not None
-    return last_response
+    return last_response, total_io, total_wait
 
 
-def _get(url: str, token: str, accept: str = "application/vnd.github+json") -> Any:  # noqa: ANN401
-    """GET a single URL, raise on HTTP error, return parsed JSON."""
-    response = _get_with_retry(url, _headers(token, accept))
+async def _get(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    url: str,
+    token: str,
+    accept: str = "application/vnd.github+json",
+) -> tuple[Any, float, float]:  # noqa: ANN401
+    """GET a single URL, raise on HTTP error, return (parsed JSON, io_s, wait_s)."""
+    response, io_s, wait_s = await _get_with_retry(client, sem, url, _headers(token, accept))
     response.raise_for_status()
-    return response.json()
+    return response.json(), io_s, wait_s
 
 
-def _paginate(url: str, token: str, accept: str = "application/vnd.github+json") -> list[Any]:
-    """GET all pages of a paginated endpoint, applying rate-limit retry per request."""
+async def _paginate(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    url: str,
+    token: str,
+    accept: str = "application/vnd.github+json",
+) -> tuple[list[Any], float, float]:
+    """GET all pages of a paginated endpoint.
+
+    Returns:
+        (all_results, total_io_seconds, total_wait_seconds)
+    """
     results: list[Any] = []
     next_url: str | None = url
+    total_io = 0.0
+    total_wait = 0.0
     while next_url:
-        response = _get_with_retry(next_url, _headers(token, accept))
+        response, io_s, wait_s = await _get_with_retry(client, sem, next_url, _headers(token, accept))
         response.raise_for_status()
         results.extend(response.json())
+        total_io += io_s
+        total_wait += wait_s
         next_url = _next_link(response.headers.get("link", ""))
-    return results
+    return results, total_io, total_wait
 
 
 def _next_link(link_header: str) -> str | None:
@@ -79,39 +116,76 @@ def _now_utc() -> str:
     return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def fetch_traffic_views(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch daily traffic views. Returns list of {date, count, uniques}."""
-    data = _get(f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/views", token)
-    return [
+async def fetch_traffic_views(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch daily traffic views. Returns (records, io_s, wait_s)."""
+    data, io_s, wait_s = await _get(
+        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/views", token
+    )
+    records = [
         {"date": v["timestamp"][:10], "count": v["count"], "uniques": v["uniques"]}
         for v in data.get("views", [])
     ]
+    return records, io_s, wait_s
 
 
-def fetch_traffic_clones(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch daily traffic clones. Returns list of {date, count, uniques}."""
-    data = _get(f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/clones", token)
-    return [
+async def fetch_traffic_clones(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch daily traffic clones. Returns (records, io_s, wait_s)."""
+    data, io_s, wait_s = await _get(
+        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/clones", token
+    )
+    records = [
         {"date": c["timestamp"][:10], "count": c["count"], "uniques": c["uniques"]}
         for c in data.get("clones", [])
     ]
+    return records, io_s, wait_s
 
 
-def fetch_traffic_referrers(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch top referrers snapshot. Returns list of {collected_at, referrer, count, uniques}."""
-    data = _get(f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/popular/referrers", token)
+async def fetch_traffic_referrers(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch top referrers snapshot. Returns (records, io_s, wait_s)."""
+    data, io_s, wait_s = await _get(
+        client,
+        sem,
+        f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/popular/referrers",
+        token,
+    )
     now = _now_utc()
-    return [
+    records = [
         {"collected_at": now, "referrer": r["referrer"], "count": r["count"], "uniques": r["uniques"]}
         for r in data
     ]
+    return records, io_s, wait_s
 
 
-def fetch_traffic_paths(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch top paths snapshot. Returns list of {collected_at, path, title, count, uniques}."""
-    data = _get(f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/popular/paths", token)
+async def fetch_traffic_paths(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch top paths snapshot. Returns (records, io_s, wait_s)."""
+    data, io_s, wait_s = await _get(
+        client,
+        sem,
+        f"{BASE}/repos/{repo['owner']}/{repo['name']}/traffic/popular/paths",
+        token,
+    )
     now = _now_utc()
-    return [
+    records = [
         {
             "collected_at": now,
             "path": p["path"],
@@ -121,27 +195,51 @@ def fetch_traffic_paths(repo: RepoId, token: str) -> list[dict[str, Any]]:
         }
         for p in data
     ]
+    return records, io_s, wait_s
 
 
-def fetch_stars(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch all star events. Returns list of {starred_at, user}."""
-    items = _paginate(
+async def fetch_stars(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch all star events. Returns (records, io_s, wait_s)."""
+    items, io_s, wait_s = await _paginate(
+        client,
+        sem,
         f"{BASE}/repos/{repo['owner']}/{repo['name']}/stargazers",
         token,
         accept="application/vnd.github.v3.star+json",
     )
-    return [{"starred_at": item["starred_at"], "user": item["user"]["login"]} for item in items]
+    records = [{"starred_at": item["starred_at"], "user": item["user"]["login"]} for item in items]
+    return records, io_s, wait_s
 
 
-def fetch_forks(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch all fork events. Returns list of {forked_at, owner}."""
-    items = _paginate(f"{BASE}/repos/{repo['owner']}/{repo['name']}/forks", token)
-    return [{"forked_at": item["created_at"], "owner": item["owner"]["login"]} for item in items]
+async def fetch_forks(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch all fork events. Returns (records, io_s, wait_s)."""
+    items, io_s, wait_s = await _paginate(
+        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/forks", token
+    )
+    records = [{"forked_at": item["created_at"], "owner": item["owner"]["login"]} for item in items]
+    return records, io_s, wait_s
 
 
-def fetch_releases(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch release asset download counts. Returns list of {collected_at, tag, asset, download_count}."""
-    releases = _paginate(f"{BASE}/repos/{repo['owner']}/{repo['name']}/releases", token)
+async def fetch_releases(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
+    """Fetch release asset download counts. Returns (records, io_s, wait_s)."""
+    releases, io_s, wait_s = await _paginate(
+        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/releases", token
+    )
     now = _now_utc()
     records: list[dict[str, Any]] = []
     for release in releases:
@@ -154,14 +252,19 @@ def fetch_releases(repo: RepoId, token: str) -> list[dict[str, Any]]:
                     "download_count": asset["download_count"],
                 }
             )
-    return records
+    return records, io_s, wait_s
 
 
-def fetch_metadata(repo: RepoId, token: str) -> dict[str, Any]:
-    """Fetch repo metadata snapshot with all available point-in-time counts."""
-    data = _get(f"{BASE}/repos/{repo['owner']}/{repo['name']}", token)
+async def fetch_metadata(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[dict[str, Any], float, float]:
+    """Fetch repo metadata snapshot. Returns (record, io_s, wait_s)."""
+    data, io_s, wait_s = await _get(client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}", token)
     today = datetime.now(UTC).strftime("%Y-%m-%d")
-    return {
+    record = {
         "date": today,
         "stars": data["stargazers_count"],
         "forks": data["forks_count"],
@@ -171,140 +274,26 @@ def fetch_metadata(repo: RepoId, token: str) -> dict[str, Any]:
         "subscribers": data.get("subscribers_count"),
         "size_kb": data.get("size"),
     }
+    return record, io_s, wait_s
 
 
-def fetch_metadata_as_list(repo: RepoId, token: str) -> list[dict[str, Any]]:
+async def fetch_metadata_as_list(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
     """Wrap fetch_metadata to return a list for uniform dispatch in the CLI."""
-    return [fetch_metadata(repo, token)]
+    record, io_s, wait_s = await fetch_metadata(client, sem, repo, token)
+    return [record], io_s, wait_s
 
 
-def _get_stats(url: str, token: str) -> Any:  # noqa: ANN401
-    """GET a stats endpoint, polling on 202 until data is ready or timeout is reached.
-
-    GitHub computes stats asynchronously; the first request (or a request after a
-    period of inactivity) returns 202. Subsequent requests return 200 once the data
-    is ready, typically within a few seconds but up to several minutes for cold repos.
-
-    Returns [] for repos with no data (empty body) or unsupported endpoints (422).
-    Raises RuntimeError if still 202 after _STATS_MAX_ATTEMPTS attempts.
-    """
-    for attempt in range(_STATS_MAX_ATTEMPTS):
-        response = _get_with_retry(url, _headers(token))
-        if response.status_code == 202:
-            if attempt < _STATS_MAX_ATTEMPTS - 1:
-                time.sleep(_STATS_POLL_INTERVAL)
-            continue
-        if response.status_code == 422:
-            # Some endpoints (e.g. code_frequency) are unsupported for forked repos.
-            return []
-        response.raise_for_status()
-        body = response.text.strip()
-        if not body:
-            # GitHub returns an empty body (not []) for repos with no activity.
-            return []
-        return response.json()
-    raise RuntimeError(
-        f"Stats endpoint still returning 202 after {_STATS_MAX_ATTEMPTS} attempts "
-        f"({_STATS_MAX_ATTEMPTS * _STATS_POLL_INTERVAL}s): {url}"
-    )
-
-
-def _unix_to_date(ts: int) -> str:
-    """Convert a Unix timestamp to an ISO 8601 date string (UTC)."""
-    return datetime.fromtimestamp(ts, tz=UTC).strftime("%Y-%m-%d")
-
-
-def fetch_commit_activity(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch weekly commit activity for the last 52 weeks.
-
-    Returns list of {week_start, total, days} where days is a 7-element list
-    [Sun, Mon, Tue, Wed, Thu, Fri, Sat].
-    """
-    data = _get_stats(f"{BASE}/repos/{repo['owner']}/{repo['name']}/stats/commit_activity", token)
-    if not data:
-        return []
-    return [
-        {"week_start": _unix_to_date(entry["week"]), "total": entry["total"], "days": entry["days"]}
-        for entry in data
-    ]
-
-
-def fetch_code_frequency(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch weekly additions and deletions since repo creation.
-
-    Returns list of {week_start, additions, deletions}.
-    """
-    data = _get_stats(f"{BASE}/repos/{repo['owner']}/{repo['name']}/stats/code_frequency", token)
-    if not data:
-        return []
-    return [
-        {"week_start": _unix_to_date(entry[0]), "additions": entry[1], "deletions": entry[2]}
-        for entry in data
-    ]
-
-
-def fetch_contributors(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch per-contributor weekly commit, addition, and deletion counts.
-
-    Returns list of {week_start, author, additions, deletions, commits}.
-    """
-    data = _get_stats(f"{BASE}/repos/{repo['owner']}/{repo['name']}/stats/contributors", token)
-    if not data:
-        return []
-    records: list[dict[str, Any]] = []
-    for contributor in data:
-        author = contributor["author"]["login"]
-        for week in contributor["weeks"]:
-            records.append(
-                {
-                    "week_start": _unix_to_date(week["w"]),
-                    "author": author,
-                    "additions": week["a"],
-                    "deletions": week["d"],
-                    "commits": week["c"],
-                }
-            )
-    return records
-
-
-def fetch_participation(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch weekly commit counts (all contributors vs. owner) for the last 52 weeks.
-
-    Returns list of {week_start, all, owner}.
-    """
-    data = _get_stats(f"{BASE}/repos/{repo['owner']}/{repo['name']}/stats/participation", token)
-    if not data:
-        return []
-    all_counts: list[int] = data.get("all", [])
-    owner_counts: list[int] = data.get("owner", [])
-    n = len(all_counts)
-    if n == 0:
-        return []
-    # GitHub returns the oldest week first; the last entry is the most recent week.
-    # Compute week_start dates by going back from the current Sunday.
-    today = datetime.now(UTC)
-    days_since_sunday = (today.weekday() + 1) % 7
-    most_recent_sunday = today - timedelta(days=days_since_sunday)
-    records = []
-    for i, (all_c, owner_c) in enumerate(zip(all_counts, owner_counts)):
-        weeks_ago = n - 1 - i
-        week_start = (most_recent_sunday - timedelta(weeks=weeks_ago)).strftime("%Y-%m-%d")
-        records.append({"week_start": week_start, "all": all_c, "owner": owner_c})
-    return records
-
-
-def fetch_punch_card(repo: RepoId, token: str) -> list[dict[str, Any]]:
-    """Fetch commit counts by hour of day and day of week (all-time snapshot).
-
-    Returns list of {day_of_week, hour, commits} where day_of_week is 0=Sun..6=Sat.
-    """
-    data = _get_stats(f"{BASE}/repos/{repo['owner']}/{repo['name']}/stats/punch_card", token)
-    if not data:
-        return []
-    return [{"day_of_week": entry[0], "hour": entry[1], "commits": entry[2]} for entry in data]
-
-
-def fetch_workflow_runs(repo: RepoId, token: str) -> list[dict[str, Any]]:
+async def fetch_workflow_runs(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    token: str,
+) -> tuple[list[dict[str, Any]], float, float]:
     """Fetch workflow run aggregates for the last 14 days.
 
     Paginates through /actions/runs, stopping when runs older than 14 days are reached.
@@ -315,10 +304,14 @@ def fetch_workflow_runs(repo: RepoId, token: str) -> list[dict[str, Any]]:
 
     all_runs: list[dict[str, Any]] = []
     url: str | None = f"{BASE}/repos/{repo['owner']}/{repo['name']}/actions/runs?per_page=100"
+    total_io = 0.0
+    total_wait = 0.0
     done = False
     while url and not done:
-        response = _get_with_retry(url, _headers(token))
+        response, io_s, wait_s = await _get_with_retry(client, sem, url, _headers(token))
         response.raise_for_status()
+        total_io += io_s
+        total_wait += wait_s
         page = response.json()
         for run in page.get("workflow_runs", []):
             if run["created_at"][:10] < cutoff:
@@ -368,4 +361,4 @@ def fetch_workflow_runs(repo: RepoId, token: str) -> list[dict[str, Any]]:
                 "avg_duration_seconds": avg_dur,
             }
         )
-    return records
+    return records, total_io, total_wait

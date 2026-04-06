@@ -3,23 +3,25 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import logging
 import os
 import sys
-from collections.abc import Callable
+import time
+from collections import defaultdict
+from collections.abc import Callable, Coroutine
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+import httpx
+import structlog
 
 from github_analytics import writer
 from github_analytics.config import RepoId, load_repos
 from github_analytics.fetcher import (
-    fetch_code_frequency,
-    fetch_commit_activity,
-    fetch_contributors,
     fetch_forks,
     fetch_metadata_as_list,
-    fetch_participation,
-    fetch_punch_card,
     fetch_releases,
     fetch_stars,
     fetch_traffic_clones,
@@ -29,12 +31,14 @@ from github_analytics.fetcher import (
     fetch_workflow_runs,
 )
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-log = logging.getLogger(__name__)
+# Fetch function type: (client, sem, repo, token) → (records, io_s, wait_s)
+_FetchFn = Callable[
+    [httpx.AsyncClient, asyncio.Semaphore, RepoId, str],
+    Coroutine[Any, Any, tuple[list[dict[str, Any]], float, float]],
+]
 
 # Maps metric name → (fetch function, idempotency key fields).
-# All fetch functions return list[dict[str, Any]].
-_METRICS: list[tuple[str, Callable[[RepoId, str], list[dict[str, Any]]], list[str]]] = [
+_METRICS: list[tuple[str, _FetchFn, list[str]]] = [
     ("views", fetch_traffic_views, ["date"]),
     ("clones", fetch_traffic_clones, ["date"]),
     ("metadata", fetch_metadata_as_list, ["date"]),
@@ -43,13 +47,37 @@ _METRICS: list[tuple[str, Callable[[RepoId, str], list[dict[str, Any]]], list[st
     ("referrers", fetch_traffic_referrers, ["collected_at", "referrer"]),
     ("paths", fetch_traffic_paths, ["collected_at", "path"]),
     ("releases", fetch_releases, ["collected_at", "tag", "asset"]),
-    ("commit_activity", fetch_commit_activity, ["week_start"]),
-    ("code_frequency", fetch_code_frequency, ["week_start"]),
-    ("contributors", fetch_contributors, ["week_start", "author"]),
-    ("participation", fetch_participation, ["week_start"]),
-    ("punch_card", fetch_punch_card, ["day_of_week", "hour"]),
     ("workflow_runs", fetch_workflow_runs, ["date", "name", "path", "workflow_id", "status", "conclusion"]),
 ]
+
+
+@dataclass
+class _Timing:
+    io: float = 0.0
+    wait: float = 0.0
+    compute: float = 0.0
+
+
+@dataclass
+class _MetricResult:
+    metric: str
+    count: int = 0
+    error: str | None = None
+
+
+@dataclass
+class _RepoResult:
+    repo_str: str
+    elapsed: float = 0.0
+    metric_results: list[_MetricResult] = field(default_factory=list)
+
+    @property
+    def errors(self) -> list[str]:
+        return [f"{self.repo_str}/{r.metric}: {r.error}" for r in self.metric_results if r.error]
+
+    @property
+    def counts(self) -> dict[str, int]:
+        return {r.metric: r.count for r in self.metric_results if not r.error and r.count > 0}
 
 
 def _default_config() -> Path:
@@ -57,49 +85,158 @@ def _default_config() -> Path:
     return Path(__file__).parent.parent / "config.yaml"
 
 
-def cmd_collect(args: argparse.Namespace) -> int:
-    """Run the collect subcommand. Returns 0 on full success, 1 if any error."""
-    token = os.environ.get("GITHUB_TOKEN", "")
-    if not token:
-        log.error("GITHUB_TOKEN environment variable not set")
-        return 1
+async def _collect_metric(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    metric: str,
+    fetch_fn: _FetchFn,
+    key_fields: list[str],
+    repo_dir: Path,
+    timings: dict[str, _Timing],
+    token: str,
+) -> _MetricResult:
+    """Fetch one metric for one repo and write results. Returns a MetricResult."""
+    log = structlog.get_logger().bind(repo=f"{repo['owner']}/{repo['name']}", metric=metric)
+    log.debug("fetch.start")
+    try:
+        t0 = time.perf_counter()
+        records, io_s, wait_s = await fetch_fn(client, sem, repo, token)
+        compute_s = time.perf_counter() - t0 - io_s - wait_s
 
+        # Accumulate timing (safe: asyncio is single-threaded)
+        timings[metric].io += io_s
+        timings[metric].wait += wait_s
+        timings[metric].compute += max(0.0, compute_s)
+
+        t_write = time.perf_counter()
+        dest = repo_dir / f"{metric}.ndjson"
+        writer.append_records(dest, records, key_fields)
+        timings[metric].compute += time.perf_counter() - t_write
+
+        log.debug("fetch.done", records=len(records), io_ms=round(io_s * 1000))
+        return _MetricResult(metric=metric, count=len(records))
+    except Exception as exc:
+        log.debug("fetch.error", error=str(exc))
+        return _MetricResult(metric=metric, error=str(exc))
+
+
+async def _collect_repo(
+    client: httpx.AsyncClient,
+    sem: asyncio.Semaphore,
+    repo: RepoId,
+    data_repo: Path,
+    timings: dict[str, _Timing],
+    token: str,
+) -> _RepoResult:
+    """Fetch all metrics for one repo concurrently."""
+    repo_str = f"{repo['owner']}/{repo['name']}"
+    repo_dir = data_repo / repo["owner"] / repo["name"]
+    t0 = time.perf_counter()
+
+    metric_tasks = [
+        _collect_metric(client, sem, repo, metric, fetch_fn, key_fields, repo_dir, timings, token)
+        for metric, fetch_fn, key_fields in _METRICS
+    ]
+    results = await asyncio.gather(*metric_tasks)
+
+    elapsed = time.perf_counter() - t0
+    repo_result = _RepoResult(repo_str=repo_str, elapsed=elapsed, metric_results=list(results))
+
+    # Print progress line immediately when repo completes
+    if repo_result.errors:
+        print(f"  \u2717 {repo_str:<45} {elapsed:5.1f}s  ERROR")
+    else:
+        counts_str = " ".join(f"{m}:{c}" for m, c in repo_result.counts.items())
+        print(f"  \u2714 {repo_str:<45} {elapsed:5.1f}s  ({counts_str})")
+
+    return repo_result
+
+
+def _print_timing_table(timings: dict[str, _Timing]) -> None:
+    """Print the timing breakdown table to stdout."""
+    if not timings:
+        return
+    print("\nTime breakdown (seconds):")
+    print(f"  {'endpoint':<20} {'I/O':>6}  {'wait':>6}  {'compute':>7}")
+    print(f"  {'-' * 20} {'-' * 6}  {'-' * 6}  {'-' * 7}")
+    total = _Timing()
+    for metric in sorted(timings):
+        t = timings[metric]
+        wait_str = f"{t.wait:6.1f}" if t.wait > 0.001 else "     -"
+        print(f"  {metric:<20} {t.io:6.1f}  {wait_str}  {t.compute:7.2f}")
+        total.io += t.io
+        total.wait += t.wait
+        total.compute += t.compute
+    print(f"  {'TOTAL':<20} {total.io:6.1f}  {total.wait:6.1f}  {total.compute:7.2f}")
+
+
+async def _collect_async(args: argparse.Namespace, token: str) -> int:
+    """Async implementation of the collect subcommand."""
+    max_concurrent: int = args.max_concurrent
     data_repo = Path(args.data_repo)
     config_path = Path(args.config) if args.config else _default_config()
 
     repos = load_repos(config_path, token)
-    log.info("Collecting data for %d repos", len(repos))
+    print(f"Collecting {len(repos)} repo(s) ({max_concurrent} concurrent max)...")
 
-    errors: list[str] = []
+    timings: dict[str, _Timing] = defaultdict(_Timing)
+    t_total = time.perf_counter()
 
-    for repo in repos:
-        repo_str = f"{repo['owner']}/{repo['name']}"
-        log.info("  \u2192 %s", repo_str)
-        repo_dir = data_repo / repo["owner"] / repo["name"]
+    limits = httpx.Limits(
+        max_keepalive_connections=max_concurrent,
+        max_connections=max_concurrent,
+    )
+    sem = asyncio.Semaphore(max_concurrent)
 
-        for metric, fetch_fn, key_fields in _METRICS:
-            try:
-                records = fetch_fn(repo, token)
-                dest = repo_dir / f"{metric}.ndjson"
-                writer.append_records(dest, records, key_fields)
-            except Exception as exc:
-                msg = f"{repo_str}/{metric}: {exc}"
-                log.error("    FAILED: %s", msg)
-                errors.append(msg)
+    async with httpx.AsyncClient(limits=limits) as client:
+        repo_tasks = [_collect_repo(client, sem, repo, data_repo, timings, token) for repo in repos]
+        repo_results = await asyncio.gather(*repo_tasks)
 
-    if errors:
-        log.error("%d error(s) occurred during collection:", len(errors))
-        for e in errors:
-            log.error("  - %s", e)
+    elapsed_total = time.perf_counter() - t_total
+    print(f"Done in {elapsed_total:.1f}s.")
+    _print_timing_table(timings)
+
+    all_errors = [err for result in repo_results for err in result.errors]
+    if all_errors:
+        print(f"\n{len(all_errors)} error(s) occurred during collection:")
+        for err in all_errors:
+            print(f"  - {err}")
         return 1
-
-    log.info("Collection complete.")
     return 0
+
+
+def cmd_collect(args: argparse.Namespace) -> int:
+    """Run the collect subcommand. Returns 0 on full success, 1 if any error."""
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if not token:
+        print("ERROR: GITHUB_TOKEN environment variable not set", file=sys.stderr)
+        return 1
+    return asyncio.run(_collect_async(args, token))
+
+
+def _configure_logging(verbose: bool) -> None:
+    """Configure structlog for the CLI."""
+    level = logging.DEBUG if verbose else logging.WARNING
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.dev.ConsoleRenderer(),
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(level),
+        logger_factory=structlog.PrintLoggerFactory(),
+    )
 
 
 def main() -> None:
     """Parse CLI arguments and dispatch to the appropriate subcommand."""
     parser = argparse.ArgumentParser(description="GitHub Analytics Collector")
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="Enable debug-level structured logging",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     collect_parser = sub.add_parser("collect", help="Collect analytics data")
@@ -110,6 +247,13 @@ def main() -> None:
         help="Path to data repository",
     )
     collect_parser.add_argument("--config", default=None, help="Path to config.yaml")
+    collect_parser.add_argument(
+        "--max-concurrent",
+        type=int,
+        default=20,
+        dest="max_concurrent",
+        help="Maximum concurrent HTTP requests (default: 20)",
+    )
 
     report_parser = sub.add_parser("report", help="Generate README reports")
     report_parser.add_argument(
@@ -120,6 +264,7 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    _configure_logging(args.verbose)
 
     if args.command == "collect":
         sys.exit(cmd_collect(args))
