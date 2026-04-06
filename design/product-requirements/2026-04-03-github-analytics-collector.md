@@ -1,6 +1,6 @@
 ---
 title: GitHub Analytics Collector
-status: draft
+status: implemented
 vision:
   - 2026-04-03-github-analytics
 depends_on: []
@@ -9,7 +9,8 @@ modifies: []
 replaces: []
 engineering_designs:
   - 2026-04-03-github-analytics.md
-prs: []
+prs:
+  - justdavis-family/justdavis#3
 ---
 
 # GitHub Analytics Collector
@@ -125,4 +126,7 @@ Contents in order (MermaidJS XY charts replace Vega-Lite SVGs):
 
 ### Implementation
 
-- None yet.
+- [justdavis-family/justdavis#3](https://github.com/justdavis-family/justdavis/pull/3) —
+    Initial implementation: Python package with asyncio/httpx collector,
+    NDJSON writer with upsert semantics, Vega-Lite and Mermaid reporter,
+    VCR-based test suite, and GitHub Actions scheduled workflow.
