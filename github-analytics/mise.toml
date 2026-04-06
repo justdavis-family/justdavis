@@ -30,8 +30,8 @@ depends = ["build"]
 run = "uv run mypy github_analytics/"
 
 [tasks.ci]
-description = "Full CI suite: unit tests, lint, and type checking (reproducible; no live API calls)"
-depends = ["test", "lint", "typecheck"]
+description = "Full CI suite (includes smoke test if .env and config.smoke.yaml are present)"
+depends = ["test", "lint", "typecheck", "test:smoke"]
 
 [tasks."dependencies:check"]
 description = "Check for outdated or vulnerable dependencies"
