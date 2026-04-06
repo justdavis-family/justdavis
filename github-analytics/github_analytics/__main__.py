@@ -187,7 +187,7 @@ async def _collect_async(args: argparse.Namespace, token: str, repos: list[RepoI
     )
     sem = asyncio.Semaphore(max_concurrent)
 
-    async with httpx.AsyncClient(limits=limits) as client:
+    async with httpx.AsyncClient(limits=limits, timeout=httpx.Timeout(30.0)) as client:
         repo_tasks = [_collect_repo(client, sem, repo, data_repo, timings, token) for repo in repos]
         repo_results = await asyncio.gather(*repo_tasks)
 

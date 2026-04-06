@@ -77,7 +77,7 @@ def _paginate(url: str, token: str) -> list[RepoId]:
     repos: list[RepoId] = []
     next_url: str | None = url
     while next_url:
-        response = httpx.get(next_url, headers=headers, follow_redirects=True)
+        response = httpx.get(next_url, headers=headers, follow_redirects=True, timeout=30.0)
         response.raise_for_status()
         for item in response.json():
             repos.append(RepoId(owner=item["owner"]["login"], name=item["name"]))
