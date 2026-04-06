@@ -1,3 +1,5 @@
 repos:
   - karlmdavis/ksoap2-android
+  - karlmdavis/liquibase
+  - karlmdavis/justdavis-ansible
   - justdavis-family/justdavis
