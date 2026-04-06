@@ -33,23 +33,23 @@ As Karl, I want all my GitHub repository analytics automatically collected daily
 
 ### Data Collection
 
-- [ ] All endpoints below are collected for every repo matching the configured allowlist.
-- [ ] Data is stored as NDJSON in `justdavis-family/github-analytics-data`
+- [x] All endpoints below are collected for every repo matching the configured allowlist.
+- [x] Data is stored as NDJSON in `justdavis-family/github-analytics-data`
         under `{owner}/{repo}/{metric}.ndjson`.
-- [ ] Collection is idempotent: running twice on the same day produces no duplicate records.
-- [ ] Per-repo failures do not prevent collection for other repos;
+- [x] Collection is idempotent: running twice on the same day produces no duplicate records.
+- [x] Per-repo failures do not prevent collection for other repos;
         the job still fails overall (triggering an email) if any repo fails.
-- [ ] At least one integration test covers each endpoint type using VCR cassettes.
-- [ ] The full `collect` + `report` pipeline is verified end-to-end by `test_e2e.py`
+- [x] At least one integration test covers each endpoint type using VCR cassettes.
+- [x] The full `collect` + `report` pipeline is verified end-to-end by `test_e2e.py`
         against recorded cassettes.
-- [ ] All `(repo, metric)` pairs are fetched concurrently (bounded by `--max-concurrent`,
+- [x] All `(repo, metric)` pairs are fetched concurrently (bounded by `--max-concurrent`,
         default 20) so total collection time scales with the slowest repo, not all repos summed.
 - [ ] Collection completes within 5 minutes for a typical repo set on GitHub Actions.
 - [ ] The workflow's total GitHub Actions runtime stays within 5% of the account's
         monthly allotment (3,000 min/month = 150 min/month ceiling).
-- [ ] `collect` prints a ✔ or ✗ line per repo as it completes, showing elapsed time
+- [x] `collect` prints a ✔ or ✗ line per repo as it completes, showing elapsed time
         and a count of records fetched per metric.
-- [ ] `collect` prints a timing summary table on exit showing I/O, wait, and compute
+- [x] `collect` prints a timing summary table on exit showing I/O, wait, and compute
         seconds broken out per endpoint, revealing where time is spent.
 
 #### Traffic Endpoints
@@ -69,6 +69,21 @@ As Karl, I want all my GitHub repository analytics automatically collected daily
 - `GET /repos/{owner}/{repo}/actions/runs` — workflow run aggregates for the last 14 days,
     grouped by (date, workflow name, path, workflow id, status, conclusion);
     stores completed count, incomplete count, and average duration of completed runs.
+
+#### Excluded Endpoints
+
+The following GitHub API endpoints are intentionally excluded from collection:
+
+- `GET /repos/{owner}/{repo}/stats/commit_activity` — weekly commit counts for the past year.
+- `GET /repos/{owner}/{repo}/stats/code_frequency` — weekly addition and deletion counts.
+- `GET /repos/{owner}/{repo}/stats/contributors` — per-contributor commit activity.
+
+These endpoints are excluded because GitHub computes them asynchronously on-demand:
+  the first request for a given repository returns HTTP 202 and begins background computation,
+  requiring the client to poll until the data is ready (HTTP 200).
+In practice this means each endpoint can take 10–30 seconds or more per repository,
+  making them impractical for a time-bounded daily collector run.
+The collector may support an opt-in polling mode for these endpoints in a future release.
 
 ### Reporting
 
