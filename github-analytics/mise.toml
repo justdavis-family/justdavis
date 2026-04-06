@@ -4,7 +4,7 @@ uv = "latest"
 
 [env]
 # Copy sample.env to .env and set GITHUB_TOKEN before running test:smoke.
-# .env is optional — test:smoke checks for it and warns if missing.
+# .env is optional — test:smoke checks for it and fails to run with a warning, if missing.
 _.file = { path = '.env', optional = true }
 
 [tasks.build]
