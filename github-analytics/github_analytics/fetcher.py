@@ -10,6 +10,8 @@ from typing import Any
 
 import httpx
 
+from github_analytics._http_utils import next_link as _next_link
+from github_analytics._http_utils import parse_retry_after as _parse_retry_after
 from github_analytics.config import RepoId
 
 BASE = "https://api.github.com"
@@ -19,21 +21,6 @@ _MAX_ATTEMPTS = 3
 def _headers(token: str, accept: str = "application/vnd.github+json") -> dict[str, str]:
     """Build standard GitHub API request headers."""
     return {"Authorization": f"token {token}", "Accept": accept}
-
-
-def _parse_retry_after(header: str, attempt: int) -> float:
-    """Return the sleep duration from a Retry-After header value.
-
-    The header may be an integer seconds count or an HTTP-date string (RFC 7231).
-    Falls back to exponential backoff (2**attempt) if the value cannot be parsed
-    as a float, avoiding a ValueError that would escape the retry loop.
-    """
-    if header:
-        try:
-            return float(header)
-        except ValueError:
-            pass  # HTTP-date format or unexpected value — fall through to backoff
-    return float(2**attempt)
 
 
 async def _get_with_retry(
@@ -128,15 +115,6 @@ async def _paginate(
         total_wait += wait_s
         next_url = _next_link(response.headers.get("link", ""))
     return results, total_io, total_wait
-
-
-def _next_link(link_header: str) -> str | None:
-    """Parse GitHub's Link header and return the 'next' URL, if any."""
-    for part in link_header.split(","):
-        url_part, *params = part.strip().split(";")
-        if any('rel="next"' in p for p in params):
-            return url_part.strip().strip("<>")
-    return None
 
 
 async def fetch_traffic_views(

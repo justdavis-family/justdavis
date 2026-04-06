@@ -9,6 +9,9 @@ from typing import Any, TypedDict
 import httpx
 import yaml
 
+from github_analytics._http_utils import next_link as _next_link
+from github_analytics._http_utils import parse_retry_after as _parse_retry_after
+
 _MAX_ATTEMPTS = 3
 _TRANSIENT_5XX = {500, 502, 503, 504}
 
@@ -114,22 +117,3 @@ def _get_with_retry(url: str, headers: dict[str, str]) -> httpx.Response:
             continue
         return response
     return last  # type: ignore[return-value]
-
-
-def _parse_retry_after(header: str, attempt: int) -> float:
-    """Return sleep duration from a Retry-After header value (or exponential backoff)."""
-    if header:
-        try:
-            return float(header)
-        except ValueError:
-            pass
-    return float(2**attempt)
-
-
-def _next_link(link_header: str) -> str | None:
-    """Parse GitHub's Link header and return the 'next' URL, if any."""
-    for part in link_header.split(","):
-        url_part, *params = part.strip().split(";")
-        if any('rel="next"' in p for p in params):
-            return url_part.strip().strip("<>")
-    return None
