@@ -28,6 +28,12 @@ def test_parse_retry_after_http_date_returns_positive_or_zero(monkeypatch: objec
     assert result > 0.0
 
 
+def test_parse_retry_after_http_date_in_past_returns_zero() -> None:
+    """An HTTP-date in the past is clamped to 0.0 rather than returning negative."""
+    result = parse_retry_after("Thu, 01 Jan 2020 00:00:00 GMT", attempt=0)
+    assert result == 0.0
+
+
 def test_parse_retry_after_unparseable_falls_back_to_backoff() -> None:
     assert parse_retry_after("not-a-date-or-number", attempt=1) == 2.0
 

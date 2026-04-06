@@ -38,6 +38,14 @@ def test_load_repos_user_wildcard(tmp_path: Path) -> None:
     assert any(r["owner"] == "karlmdavis" for r in result)
 
 
+def test_load_repos_invalid_pattern_raises(tmp_path: Path) -> None:
+    """A pattern with no '/' and no org:/user: prefix raises ValueError."""
+    config = tmp_path / "config.yaml"
+    config.write_text("repos:\n  - notavalidpattern\n")
+    with pytest.raises(ValueError, match="Invalid repo pattern"):
+        load_repos(config, token="unused")
+
+
 def test_load_repos_deduplication(tmp_path: Path) -> None:
     """A repo appearing via wildcard and explicit entry is returned once."""
     config = tmp_path / "config.yaml"

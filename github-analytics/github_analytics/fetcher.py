@@ -332,7 +332,7 @@ async def fetch_workflow_runs(
     for run in all_runs:
         date = run["created_at"][:10]
         raw_conclusion = run.get("conclusion")  # None for in-progress runs
-        conclusion: str = raw_conclusion or ""  # coerce to str for use as dict key
+        conclusion: str = "" if raw_conclusion is None else raw_conclusion
         key = (date, run["name"], run["path"], run["workflow_id"], run["status"], conclusion)
         if raw_conclusion is not None and run.get("run_started_at") and run.get("updated_at"):
             try:

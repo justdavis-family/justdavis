@@ -13,7 +13,13 @@ TRANSIENT_5XX: frozenset[int] = frozenset({500, 502, 503, 504})
 
 
 def next_link(link_header: str) -> str | None:
-    """Parse GitHub's Link header and return the 'next' URL, if any."""
+    """Parse GitHub's Link header and return the 'next' URL, if any.
+
+    Splits on commas before inspecting individual link entries. This is safe
+    for GitHub's pagination URLs, which never contain commas. A full RFC 8288
+    parser would find ``<...>`` brackets first, but that complexity is not
+    warranted here.
+    """
     for part in link_header.split(","):
         url_part, *params = part.strip().split(";")
         if any('rel="next"' in p for p in params):

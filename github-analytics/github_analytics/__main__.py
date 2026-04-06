@@ -103,8 +103,8 @@ async def _collect_metric(
 ) -> _MetricResult:
     """Fetch one metric for one repo and write results. Returns a MetricResult."""
     log = structlog.get_logger().bind(repo=f"{repo['owner']}/{repo['name']}", metric=metric)
-    log.debug("fetch.start")
     try:
+        log.debug("fetch.start")
         t0 = time.perf_counter()
         records, io_s, wait_s = await fetch_fn(client, sem, repo, token)
         compute_s = time.perf_counter() - t0 - io_s - wait_s
