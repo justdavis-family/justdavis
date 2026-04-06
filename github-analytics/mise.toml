@@ -8,8 +8,11 @@ uv = "0.9.5"
 _.file = { path = '.env', optional = true }
 
 [tasks.build]
-description = "Sync dependencies via uv"
-run = "uv sync --all-groups"
+description = "Sync dependencies and run type checks"
+run = [
+  "uv sync --all-groups",
+  "uv run mypy github_analytics/",
+]
 
 [tasks.test]
 description = "Run tests"
@@ -24,14 +27,9 @@ run = [
   "uv run ruff format --check .",
 ]
 
-[tasks.typecheck]
-description = "Type check"
-depends = ["build"]
-run = "uv run mypy github_analytics/"
-
 [tasks.ci]
 description = "Full CI suite (includes smoke test if .env and config.smoke.yaml are present)"
-depends = ["lint", "typecheck", "test", "test:smoke"]
+depends = ["lint", "test", "test:smoke"]
 
 [tasks."dependencies:check"]
 description = "Check for outdated or vulnerable dependencies"

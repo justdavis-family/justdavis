@@ -14,7 +14,7 @@ depends = ["//github-analytics:build"]
 
 [tasks."lint:all"]
 description = "Lint all projects"
-depends = ["//github-analytics:lint", "//github-analytics:typecheck"]
+depends = ["//github-analytics:lint"]
 
 [tasks."test:all"]
 description = "Test all projects"
