@@ -9,6 +9,7 @@ import tempfile
 from collections import defaultdict
 from collections.abc import Callable
 from datetime import UTC, datetime
+from datetime import date as _date
 from pathlib import Path
 from typing import Any
 
@@ -119,6 +120,58 @@ def _date_to_quarter(date_str: str) -> str:
 def _date_to_month(date_str: str) -> str:
     """Convert 'YYYY-MM-DD' to 'YYYY-MM'."""
     return date_str[:7]
+
+
+def _date_to_iso_week(date_str: str) -> str:
+    """Convert 'YYYY-MM-DD' to 'YYYY-WNN' (ISO week)."""
+    d = _date.fromisoformat(date_str)
+    year, week, _ = d.isocalendar()
+    return f"{year}-W{week:02d}"
+
+
+def _sum_by_period(
+    dates: list[str],
+    values: list[int | float],
+    period_fn: Callable[[str], str],
+) -> dict[str, float]:
+    """Sum values grouped by period label. Returns a sorted dict."""
+    by_period: dict[str, float] = {}
+    for d, v in zip(dates, values):
+        key = period_fn(d)
+        by_period[key] = by_period.get(key, 0.0) + float(v)
+    return dict(sorted(by_period.items()))
+
+
+_MAX_CHART_TICKS = 25
+
+# Granularities tried in order from finest to coarsest.
+_CHART_GRANULARITIES: list[tuple[str, Callable[[str], str]]] = [
+    ("Day", lambda d: d),
+    ("Week", _date_to_iso_week),
+    ("Month", _date_to_month),
+    ("Quarter", _date_to_quarter),
+    ("Year", lambda d: d[:4]),
+]
+
+
+def _auto_aggregate(
+    dates: list[str],
+    values: list[int | float],
+) -> tuple[list[str], list[float], str]:
+    """Aggregate a date+value series to at most _MAX_CHART_TICKS ticks.
+
+    Tries granularities from finest to coarsest: Day → Week → Month →
+    Quarter → Year.  Returns (labels, summed_values, granularity_name) for
+    the first granularity that produces ≤ _MAX_CHART_TICKS distinct labels.
+    Falls back to Year if even yearly aggregation exceeds the limit.
+    """
+    for granularity, period_fn in _CHART_GRANULARITIES:
+        agg = _sum_by_period(dates, values, period_fn)
+        if len(agg) <= _MAX_CHART_TICKS:
+            return list(agg.keys()), list(agg.values()), granularity
+    # Fallback: all years (may exceed _MAX_CHART_TICKS for very long-lived repos)
+    agg = _sum_by_period(dates, values, lambda d: d[:4])
+    return list(agg.keys()), list(agg.values()), "Year"
 
 
 def _avg_by_period(
@@ -339,8 +392,9 @@ def _mermaid_line(dates: list[str], values: list[int | float], title: str) -> li
     """Build a MermaidJS xychart-beta line chart.
 
     Callers are responsible for safe inputs: ``title`` is always a
-    hardcoded string literal; ``dates`` come from the GitHub API as
-    ``YYYY-MM-DD`` strings which are safe to embed without escaping.
+    hardcoded string literal; ``dates`` are period labels (YYYY-MM-DD,
+    YYYY-WNN, YYYY-MM, YYYY-QN, or YYYY) which are safe to embed without
+    escaping.
     """
     if not dates:
         return []
@@ -412,33 +466,20 @@ def _write_repo_readmes(
     for (owner, name), data in all_data.items():
         lines: list[str] = [f"# {owner}/{name}\n\n", f"_Last updated: {_now_str()}_\n"]
 
-        # Charts
+        # Charts — auto-aggregate to ≤25 ticks so labels remain legible.
         views = sorted(data["views"], key=lambda r: r["date"])
         if views:
-            lines.extend(
-                _mermaid_line(
-                    [r["date"] for r in views],
-                    [r["uniques"] for r in views],
-                    "Unique Visitors per Day",
-                )
-            )
-            lines.extend(
-                _mermaid_line(
-                    [r["date"] for r in views],
-                    [r["count"] for r in views],
-                    "Views per Day",
-                )
-            )
+            view_dates = [r["date"] for r in views]
+            uv_labels, uv_vals, uv_gran = _auto_aggregate(view_dates, [r["uniques"] for r in views])
+            lines.extend(_mermaid_line(uv_labels, uv_vals, f"Unique Visitors per {uv_gran}"))
+            v_labels, v_vals, v_gran = _auto_aggregate(view_dates, [r["count"] for r in views])
+            lines.extend(_mermaid_line(v_labels, v_vals, f"Views per {v_gran}"))
 
         clones = sorted(data["clones"], key=lambda r: r["date"])
         if clones:
-            lines.extend(
-                _mermaid_line(
-                    [r["date"] for r in clones],
-                    [r["uniques"] for r in clones],
-                    "Unique Clones per Day",
-                )
-            )
+            clone_dates = [r["date"] for r in clones]
+            uc_labels, uc_vals, uc_gran = _auto_aggregate(clone_dates, [r["uniques"] for r in clones])
+            lines.extend(_mermaid_line(uc_labels, uc_vals, f"Unique Clones per {uc_gran}"))
 
         # Monthly traffic table
         lines.extend(_monthly_traffic_table(data))
