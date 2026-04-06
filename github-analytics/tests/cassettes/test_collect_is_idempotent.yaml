@@ -1504,7 +1504,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/releases
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/releases?per_page=100
   response:
     body:
       string: '[]'
@@ -3070,7 +3070,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/releases
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/releases?per_page=100
   response:
     body:
       string: '[]'

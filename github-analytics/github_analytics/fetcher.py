@@ -239,7 +239,7 @@ async def fetch_releases(
 ) -> tuple[list[dict[str, Any]], float, float]:
     """Fetch release asset download counts. Returns (records, io_s, wait_s)."""
     releases, io_s, wait_s = await _paginate(
-        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/releases", token
+        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/releases?per_page=100", token
     )
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     records: list[dict[str, Any]] = []
