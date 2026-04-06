@@ -31,7 +31,7 @@ run = "uv run mypy github_analytics/"
 
 [tasks.ci]
 description = "Full CI suite (includes smoke test if .env and config.smoke.yaml are present)"
-depends = ["test", "lint", "typecheck", "test:smoke"]
+depends = ["lint", "typecheck", "test", "test:smoke"]
 
 [tasks."dependencies:check"]
 description = "Check for outdated or vulnerable dependencies"
