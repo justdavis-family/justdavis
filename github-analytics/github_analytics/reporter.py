@@ -278,8 +278,9 @@ def _current_totals_table(
     lines = ["\n## Current Totals\n\n", "| Repository | Stars | Forks |\n", "|---|---|---|\n"]
     for (owner, name), data in sorted(all_data.items()):
         meta = data["metadata"]
-        stars = meta[-1]["stars"] if meta else "—"
-        forks = meta[-1]["forks"] if meta else "—"
+        latest = max(meta, key=lambda r: r["date"]) if meta else None
+        stars = latest["stars"] if latest else "—"
+        forks = latest["forks"] if latest else "—"
         lines.append(f"| {owner}/{name} | {stars} | {forks} |\n")
     return lines
 
@@ -396,7 +397,7 @@ def _current_totals_pivoted(data: dict[str, list[dict[str, Any]]]) -> list[str]:
     meta = data["metadata"]
     if not meta:
         return []
-    latest = meta[-1]
+    latest = max(meta, key=lambda r: r["date"])
     lines = [
         "\n## Current Totals\n\n",
         "| Metric | Value |\n",
