@@ -219,7 +219,11 @@ def cmd_collect(args: argparse.Namespace) -> int:
     # Resolve repos synchronously before entering the event loop — load_repos
     # uses blocking httpx.get() for org:/user: wildcard expansion.
     config_path = Path(args.config) if args.config else _default_config()
-    repos = load_repos(config_path, token)
+    try:
+        repos = load_repos(config_path, token)
+    except Exception as exc:
+        print(f"ERROR: Failed to load config: {exc}", file=sys.stderr)
+        return 1
     return asyncio.run(_collect_async(args, token, repos))
 
 
