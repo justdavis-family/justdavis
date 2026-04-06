@@ -170,32 +170,17 @@ def _stacked_area_spec(
     }
 
 
-def _build_views_svg(
+def _build_traffic_svg(
     all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
+    data_key: str,
     value_key: str,
     title: str,
     y_title: str,
 ) -> str | None:
-    """Build a stacked area SVG for unique visitors or views across all repos."""
+    """Build a stacked area SVG for a traffic metric (views or clones) across all repos."""
     points: list[dict[str, Any]] = []
     for (owner, name), data in all_data.items():
-        for r in data["views"]:
-            points.append({"date": r["date"], "repo": f"{owner}/{name}", "value": r[value_key]})
-    if not points:
-        return None
-    return _vegalite_to_svg(_stacked_area_spec(points, "date", "value", "repo", title, y_title))
-
-
-def _build_clones_svg(
-    all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
-    value_key: str,
-    title: str,
-    y_title: str,
-) -> str | None:
-    """Build a stacked area SVG for unique clones or clones across all repos."""
-    points: list[dict[str, Any]] = []
-    for (owner, name), data in all_data.items():
-        for r in data["clones"]:
+        for r in data[data_key]:
             points.append({"date": r["date"], "repo": f"{owner}/{name}", "value": r[value_key]})
     if not points:
         return None
@@ -304,11 +289,15 @@ def _write_multi_repo_readme(
     uv_svg_path, uc_svg_path = svg_paths
 
     # Generate and write SVGs (skip section if no data)
-    uv_svg = _build_views_svg(all_data, "uniques", "Unique Visitors per Day", "Unique Visitors/day")
+    uv_svg = _build_traffic_svg(
+        all_data, "views", "uniques", "Unique Visitors per Day", "Unique Visitors/day"
+    )
     if uv_svg:
         _atomic_write(uv_svg_path, uv_svg)
 
-    uc_svg = _build_clones_svg(all_data, "uniques", "Unique Clones per Day", "Unique Clones/day")
+    uc_svg = _build_traffic_svg(
+        all_data, "clones", "uniques", "Unique Clones per Day", "Unique Clones/day"
+    )
     if uc_svg:
         _atomic_write(uc_svg_path, uc_svg)
 
