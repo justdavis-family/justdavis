@@ -13,20 +13,37 @@ This project uses [mise](https://mise.jdx.dev/) for tool and task management.
 Follow the [getting started guide](https://mise.jdx.dev/getting-started.html)
   to install it if you haven't already.
 
-### 2. Set Up Credentials (`.env`)
+### 2. Create a Personal Access Token
+
+The collector needs a Classic PAT with `repo` scope to read traffic data
+  (GitHub's traffic API requires push access to the source repository).
+To create one:
+
+1. Go to **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**.
+2. Click **Generate new token (classic)**.
+3. Set the **Note** to `ANALYTICS_DATA_PAT` (or any descriptive name).
+4. Select the **`repo`** scope (the top-level checkbox — this grants full repo access).
+5. Set an appropriate expiration (90 days is a reasonable default; you'll need to rotate it).
+6. Click **Generate token** and copy the value immediately — GitHub only shows it once.
+
+To use the token for local development, see step 3 below.
+To deploy the workflow, store the token as a repository secret named `ANALYTICS_DATA_PAT`
+  under **Settings → Secrets and variables → Actions → New repository secret**.
+
+### 3. Set Up Credentials (`.env`)
 
 Traffic and repository metadata endpoints require a GitHub token with `repo` scope.
-Copy the sample and fill it in:
+Copy the sample and fill it in with the token you created above:
 
 ```bash
 cp sample.env .env
-# Edit .env and set GITHUB_TOKEN to a Classic PAT with repo scope
+# Edit .env and set GITHUB_TOKEN to the PAT you created in step 2
 ```
 
 The `.env` file is gitignored and will be copied automatically into new worktrees
   via `.worktreeinclude`.
 
-### 3. Run the Test Suite
+### 4. Run the Test Suite
 
 ```bash
 cd github-analytics
@@ -37,7 +54,7 @@ This runs unit tests (VCR cassettes — no live HTTP), linting, and type checkin
 The smoke test (see below) is also included in `:ci` but skips automatically
   if its prerequisites are not met.
 
-### 4. Set Up the Smoke Test Config (`config.smoke.yaml`)
+### 5. Set Up the Smoke Test Config (`config.smoke.yaml`)
 
 The smoke test runs the full collect-and-report pipeline against the live GitHub API.
 Copy the sample and add a small set of repositories you have push access to:
@@ -54,7 +71,7 @@ Run the smoke test with:
 MISE_EXPERIMENTAL=1 mise run ':test:smoke'
 ```
 
-### 5. Recording New VCR Cassettes
+### 6. Recording New VCR Cassettes
 
 Unit tests replay recorded HTTP interactions stored in `tests/cassettes/`.
 If you add a new test or change an API call, re-record the cassette:
