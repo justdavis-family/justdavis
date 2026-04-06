@@ -318,21 +318,6 @@ def _write_multi_repo_readme(
     _atomic_write(readme_path, "".join(lines))
 
 
-def _write_root_readme(
-    data_repo: Path,
-    all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
-) -> None:
-    _write_multi_repo_readme(
-        data_repo / "README.md",
-        [
-            data_repo / "unique_visitors.svg",
-            data_repo / "unique_clones.svg",
-        ],
-        "# GitHub Analytics",
-        all_data,
-    )
-
-
 def _write_owner_readmes(
     data_repo: Path,
     all_data: dict[tuple[str, str], dict[str, list[dict[str, Any]]]],
