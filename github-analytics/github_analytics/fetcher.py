@@ -230,7 +230,7 @@ async def fetch_stars(
     items, io_s, wait_s = await _paginate(
         client,
         sem,
-        f"{BASE}/repos/{repo['owner']}/{repo['name']}/stargazers",
+        f"{BASE}/repos/{repo['owner']}/{repo['name']}/stargazers?per_page=100",
         token,
         accept="application/vnd.github.v3.star+json",
     )
@@ -246,7 +246,7 @@ async def fetch_forks(
 ) -> tuple[list[dict[str, Any]], float, float]:
     """Fetch all fork events. Returns (records, io_s, wait_s)."""
     items, io_s, wait_s = await _paginate(
-        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/forks", token
+        client, sem, f"{BASE}/repos/{repo['owner']}/{repo['name']}/forks?per_page=100", token
     )
     records = [{"forked_at": item["created_at"], "owner": item["owner"]["login"]} for item in items]
     return records, io_s, wait_s

@@ -60,12 +60,12 @@ def _expand_pattern(pattern: str, token: str) -> list[RepoId]:
 
 def _list_org_repos(org: str, token: str) -> list[RepoId]:
     """List all repos for a GitHub org via the API."""
-    return _paginate(f"https://api.github.com/orgs/{org}/repos", token)
+    return _paginate(f"https://api.github.com/orgs/{org}/repos?per_page=100", token)
 
 
 def _list_user_repos(user: str, token: str) -> list[RepoId]:
     """List all repos for a GitHub user via the API."""
-    return _paginate(f"https://api.github.com/users/{user}/repos", token)
+    return _paginate(f"https://api.github.com/users/{user}/repos?per_page=100", token)
 
 
 def _paginate(url: str, token: str) -> list[RepoId]:
