@@ -41,12 +41,12 @@ description = "Update dependencies to latest compatible versions"
 run = "uv lock --upgrade && uv sync --all-groups"
 
 [tasks.collect]
-description = "Collect GitHub analytics (pass --data-repo PATH as trailing args)"
+description = "Collect analytics — pass --data-repo PATH after --"
 depends = ["build"]
 run = "uv run python -m github_analytics collect"
 
 [tasks.report]
-description = "Generate analytics README reports (pass --data-repo PATH as trailing args)"
+description = "Generate README reports — pass --data-repo PATH after --"
 depends = ["build"]
 run = "uv run python -m github_analytics report"
 
