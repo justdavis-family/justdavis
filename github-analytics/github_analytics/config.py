@@ -50,6 +50,10 @@ def _expand_pattern(pattern: str, token: str) -> list[RepoId]:
         user = pattern[5:]
         return _list_user_repos(user, token)
     # Explicit owner/repo
+    if "/" not in pattern:
+        raise ValueError(
+            f"Invalid repo pattern {pattern!r}: expected 'owner/name', 'org:<name>', or 'user:<name>'"
+        )
     owner, name = pattern.split("/", 1)
     return [RepoId(owner=owner, name=name)]
 
