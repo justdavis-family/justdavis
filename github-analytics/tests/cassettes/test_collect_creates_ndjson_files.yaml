@@ -284,7 +284,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stargazers
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/stargazers?per_page=100
   response:
     body:
       string: !!binary |
@@ -801,7 +801,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/forks
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/forks?per_page=100
   response:
     body:
       string: !!binary |
