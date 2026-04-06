@@ -5,6 +5,7 @@ Collects GitHub repository analytics data that the GitHub API exposes
   things like daily traffic views, clone counts, and referrer breakdowns —
   and stores them in a separate data repository.
 A companion reporter generates Markdown README files with tables and charts
+  in the same companion data repository
   so the data is easy to browse on GitHub.
 
 ## How It Works
