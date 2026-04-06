@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from github_analytics.writer import append_record
+from github_analytics.writer import append_record, append_records
 
 
 def test_append_record_creates_file(tmp_path: Path) -> None:
@@ -60,3 +60,61 @@ def test_append_record_atomic_write(tmp_path: Path) -> None:
         append_record(dest, {"date": f"2026-04-0{i + 1}", "count": i, "uniques": i}, key_fields=["date"])
     for line in dest.read_text().strip().splitlines():
         json.loads(line)  # raises if malformed
+
+
+def test_append_records_creates_file(tmp_path: Path) -> None:
+    """append_records creates the file and parent dirs when they don't exist."""
+    dest = tmp_path / "owner" / "repo" / "contributors.ndjson"
+    records = [
+        {"week_start": "2026-01-01", "author": "alice", "commits": 3},
+        {"week_start": "2026-01-08", "author": "alice", "commits": 5},
+    ]
+    count = append_records(dest, records, key_fields=["week_start", "author"])
+    assert count == 2
+    assert dest.exists()
+    lines = dest.read_text().strip().splitlines()
+    assert len(lines) == 2
+    assert json.loads(lines[0]) == records[0]
+    assert json.loads(lines[1]) == records[1]
+
+
+def test_append_records_appends_to_existing_file(tmp_path: Path) -> None:
+    """New records are appended after existing content."""
+    dest = tmp_path / "contributors.ndjson"
+    existing = {"week_start": "2026-01-01", "author": "alice", "commits": 3}
+    append_record(dest, existing, key_fields=["week_start", "author"])
+    new_records = [
+        {"week_start": "2026-01-08", "author": "alice", "commits": 5},
+        {"week_start": "2026-01-15", "author": "alice", "commits": 2},
+    ]
+    count = append_records(dest, new_records, key_fields=["week_start", "author"])
+    assert count == 2
+    lines = dest.read_text().strip().splitlines()
+    assert len(lines) == 3
+
+
+def test_append_records_skips_duplicates_in_file(tmp_path: Path) -> None:
+    """Records whose keys already exist in the file are not appended."""
+    dest = tmp_path / "contributors.ndjson"
+    existing = {"week_start": "2026-01-01", "author": "alice", "commits": 3}
+    append_record(dest, existing, key_fields=["week_start", "author"])
+    count = append_records(dest, [existing], key_fields=["week_start", "author"])
+    assert count == 0
+    assert len(dest.read_text().strip().splitlines()) == 1
+
+
+def test_append_records_skips_duplicates_within_batch(tmp_path: Path) -> None:
+    """Duplicate keys within the incoming batch are written only once."""
+    dest = tmp_path / "contributors.ndjson"
+    record = {"week_start": "2026-01-01", "author": "alice", "commits": 3}
+    count = append_records(dest, [record, record], key_fields=["week_start", "author"])
+    assert count == 1
+    assert len(dest.read_text().strip().splitlines()) == 1
+
+
+def test_append_records_returns_zero_for_empty_input(tmp_path: Path) -> None:
+    """Empty records list returns 0 and does not create or modify the file."""
+    dest = tmp_path / "contributors.ndjson"
+    count = append_records(dest, [], key_fields=["week_start", "author"])
+    assert count == 0
+    assert not dest.exists()

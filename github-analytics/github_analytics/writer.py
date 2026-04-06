@@ -53,3 +53,58 @@ def append_record(
             pass
         raise
     return True
+
+
+def append_records(
+    file_path: Path,
+    records: list[dict[str, Any]],
+    key_fields: list[str],
+) -> int:
+    """Append all records that are not already present in ``file_path``.
+
+    Reads the file once to build a key set, filters duplicates in memory,
+    then writes all new records in a single atomic pass.
+
+    Returns:
+        The number of records actually appended.
+    """
+    if not records:
+        return 0
+
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    existing_content = file_path.read_text() if file_path.exists() else ""
+
+    existing_keys: set[tuple[Any, ...]] = set()
+    for line in existing_content.splitlines():
+        stripped = line.strip()
+        if stripped:
+            existing = json.loads(stripped)
+            existing_keys.add(tuple(existing.get(f) for f in key_fields))
+
+    new_lines: list[str] = []
+    for record in records:
+        key = tuple(record[f] for f in key_fields)
+        if key not in existing_keys:
+            new_lines.append(json.dumps(record, separators=(",", ":")))
+            existing_keys.add(key)
+
+    if not new_lines:
+        return 0
+
+    new_content = existing_content + "\n".join(new_lines) + "\n"
+
+    dir_path = file_path.parent
+    fd, tmp_path = tempfile.mkstemp(dir=dir_path, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(new_content)
+        os.replace(tmp_path, file_path)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+    return len(new_lines)

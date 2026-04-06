@@ -81,8 +81,7 @@ def cmd_collect(args: argparse.Namespace) -> int:
             try:
                 records = fetch_fn(repo, token)
                 dest = repo_dir / f"{metric}.ndjson"
-                for record in records:
-                    writer.append_record(dest, record, key_fields)
+                writer.append_records(dest, records, key_fields)
             except Exception as exc:
                 msg = f"{repo_str}/{metric}: {exc}"
                 log.error("    FAILED: %s", msg)
