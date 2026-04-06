@@ -21,6 +21,9 @@ Thumbs.db
 # depths so sub-projects can each maintain their own .env without extra entries.
 **/.env
 
+# Smoke test config (personal repo list — gitignored; see config.smoke.sample.yaml).
+**/config.smoke.yaml
+
 # Python
 __pycache__/
 *.py[cod]

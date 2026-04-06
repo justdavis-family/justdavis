@@ -3,9 +3,9 @@ python = "3.12"
 uv = "latest"
 
 [env]
-# Copy sample.env to .env and fill in your token before running ci:smoke.
-_.file = '.env'
-GITHUB_TOKEN = { required = "Classic PAT with repo scope — see github-analytics/sample.env" }
+# Copy sample.env to .env and set GITHUB_TOKEN before running test:smoke.
+# .env is optional — test:smoke checks for it and warns if missing.
+_.file = { path = '.env', optional = true }
 
 [tasks.build]
 description = "Sync dependencies via uv"
@@ -30,8 +30,8 @@ depends = ["build"]
 run = "uv run mypy github_analytics/"
 
 [tasks.ci]
-description = "Full CI suite"
-depends = ["test", "lint", "typecheck"]
+description = "Full CI suite (includes smoke test if .env and config.smoke.yaml are present)"
+depends = ["test", "lint", "typecheck", "test:smoke"]
 
 [tasks."dependencies:check"]
 description = "Check for outdated or vulnerable dependencies"
@@ -52,10 +52,18 @@ description = "Generate analytics README reports (pass --data-repo PATH as trail
 depends = ["build"]
 run = "uv run python -m github_analytics report"
 
-[tasks."ci:smoke"]
+[tasks."test:smoke"]
 description = "Smoke test: collect + report against live GitHub API into /tmp/"
 depends = ["build"]
 run = """
+if [ ! -f .env ]; then
+  echo "WARNING: Skipping smoke test — .env file not found (copy sample.env to .env and set GITHUB_TOKEN)."
+  exit 0
+fi
+if [ ! -f config.smoke.yaml ]; then
+  echo "WARNING: Skipping smoke test — config.smoke.yaml not found (copy config.smoke.sample.yaml to config.smoke.yaml and add your repos)."
+  exit 0
+fi
 smoke_dir=/tmp/analytics-smoke-$(date +%s)
 uv run python -m github_analytics collect --data-repo "$smoke_dir" --config config.smoke.yaml
 uv run python -m github_analytics report --data-repo "$smoke_dir"

@@ -1,0 +1,5 @@
+# Smoke test repository list — used by the `mise run :test:smoke` task.
+# Copy to config.smoke.yaml and customize; config.smoke.yaml is gitignored.
+# Keep this list small (4-8 repos) so the smoke test completes quickly.
+repos:
+  - your-org/your-repo

@@ -1,3 +1,6 @@
 # Copy any .env files (gitignored secrets) into new worktrees so tasks that
-# require credentials (e.g. ci:smoke) work without manual setup after branching.
+# require credentials (e.g. test:smoke) work without manual setup after branching.
 **/.env
+
+# Copy smoke test config (gitignored personal repo list) into new worktrees.
+**/config.smoke.yaml
