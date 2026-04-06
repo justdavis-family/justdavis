@@ -24,20 +24,16 @@ def append_record(
     """
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    record_key = tuple(record.get(f) for f in key_fields)
-
-    # Check for existing record with the same key
-    if file_path.exists():
-        for line in file_path.read_text(encoding="utf-8").splitlines():
-            stripped = line.strip()
-            if not stripped:
-                continue
-            existing = json.loads(stripped)
-            if tuple(existing.get(f) for f in key_fields) == record_key:
-                return False
-
-    # Atomic append: read existing content, append new line, write via rename
+    # Single read: build the key set and capture existing content in one pass.
     existing_content = file_path.read_text(encoding="utf-8") if file_path.exists() else ""
+    record_key = tuple(record.get(f) for f in key_fields)
+    for line in existing_content.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        existing = json.loads(stripped)
+        if tuple(existing.get(f) for f in key_fields) == record_key:
+            return False
     if existing_content and not existing_content.endswith("\n"):
         existing_content += "\n"
     new_content = existing_content + json.dumps(record, separators=(",", ":")) + "\n"
