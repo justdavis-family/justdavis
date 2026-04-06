@@ -212,17 +212,29 @@ def cmd_collect(args: argparse.Namespace) -> int:
     if not token:
         print("ERROR: GITHUB_TOKEN environment variable not set", file=sys.stderr)
         return 1
+    _configure_logging(args.verbose, token)
     return asyncio.run(_collect_async(args, token))
 
 
-def _configure_logging(verbose: bool) -> None:
-    """Configure structlog for the CLI."""
+def _configure_logging(verbose: bool, token: str = "") -> None:
+    """Configure structlog for the CLI.
+
+    When a token is supplied, a processor is added that redacts any occurrence
+    of the token value from log event strings, providing defence-in-depth
+    against accidental credential leakage into log output.
+    """
     level = logging.DEBUG if verbose else logging.WARNING
+    processors: list[Any] = [structlog.stdlib.add_log_level]
+    if token:
+        _tok = token  # capture in closure
+
+        def _scrub_token(_logger: object, _method: str, event_dict: dict[str, Any]) -> dict[str, Any]:
+            return {k: v.replace(_tok, "***") if isinstance(v, str) else v for k, v in event_dict.items()}
+
+        processors.append(_scrub_token)
+    processors.append(structlog.dev.ConsoleRenderer())
     structlog.configure(
-        processors=[
-            structlog.stdlib.add_log_level,
-            structlog.dev.ConsoleRenderer(),
-        ],
+        processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(level),
         logger_factory=structlog.PrintLoggerFactory(),
     )
@@ -264,7 +276,6 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    _configure_logging(args.verbose)
 
     if args.command == "collect":
         sys.exit(cmd_collect(args))
