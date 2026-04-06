@@ -25,7 +25,7 @@ def load_repos(config_path: Path, token: str) -> list[RepoId]:
     Note: uses synchronous HTTP (httpx.get). Must be called before entering
     an asyncio event loop — calling from inside ``async def`` will block the loop.
     """
-    with config_path.open() as f:
+    with config_path.open(encoding="utf-8") as f:
         raw: Any = yaml.safe_load(f)
 
     patterns: list[str] = raw.get("repos") or []

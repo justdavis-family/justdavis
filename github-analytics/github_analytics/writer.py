@@ -28,7 +28,7 @@ def append_record(
 
     # Check for existing record with the same key
     if file_path.exists():
-        for line in file_path.read_text().splitlines():
+        for line in file_path.read_text(encoding="utf-8").splitlines():
             stripped = line.strip()
             if not stripped:
                 continue
@@ -37,7 +37,7 @@ def append_record(
                 return False
 
     # Atomic append: read existing content, append new line, write via rename
-    existing_content = file_path.read_text() if file_path.exists() else ""
+    existing_content = file_path.read_text(encoding="utf-8") if file_path.exists() else ""
     if existing_content and not existing_content.endswith("\n"):
         existing_content += "\n"
     new_content = existing_content + json.dumps(record, separators=(",", ":")) + "\n"
@@ -45,7 +45,7 @@ def append_record(
     dir_path = file_path.parent
     fd, tmp_path = tempfile.mkstemp(dir=dir_path, suffix=".tmp")
     try:
-        with os.fdopen(fd, "w") as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(new_content)
         os.replace(tmp_path, file_path)
     except Exception:
@@ -75,7 +75,7 @@ def append_records(
 
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    existing_content = file_path.read_text() if file_path.exists() else ""
+    existing_content = file_path.read_text(encoding="utf-8") if file_path.exists() else ""
     if existing_content and not existing_content.endswith("\n"):
         existing_content += "\n"
 
@@ -101,7 +101,7 @@ def append_records(
     dir_path = file_path.parent
     fd, tmp_path = tempfile.mkstemp(dir=dir_path, suffix=".tmp")
     try:
-        with os.fdopen(fd, "w") as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(new_content)
         os.replace(tmp_path, file_path)
     except Exception:
