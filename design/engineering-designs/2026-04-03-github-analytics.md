@@ -105,14 +105,16 @@ Safety properties:
 
 **Debug logging** (`--verbose` flag): `structlog` events bound with `repo` and `metric`
 context per task.
-Events include `fetch.start`, `fetch.done` (with `records`, `io_ms`), and `retry`
-(with `attempt`, `wait_s`).
+Events include `fetch.start` and `fetch.done` (with `records`, `io_ms`).
+Rate-limit retry wait is tracked in the `wait` timing bucket (visible in the timing table)
+rather than as a separate log event.
 Output is suppressed by default; enabled with `--verbose`.
+Fetch errors (per-metric failures) are logged at `warning` level and always shown.
 
 **INFO-level progress** (always shown): plain `print()` for human-readable output.
 - Header line: `Collecting N repos (M concurrent max)...`
-- Per-repo completion: `  ✔ owner/repo    8.2s  (views:14 stars:312 ...)`
-    or `  ✗ owner/repo    ERROR: <message>` on failure.
+- Per-repo completion: `  ✔ owner/repo        8.2s  (views:14 stars:312 ...)`
+    or `  ✗ owner/repo        8.2s  ERROR` on failure (details in aggregate summary).
 - Footer: `Done in Xs.`
 
 **Timing summary** (always shown after collection):
@@ -126,7 +128,10 @@ Accumulated per metric name in a shared dict — safe because asyncio is single-
 
 ## Error Handling
 
-- Per-repo and per-endpoint failures are isolated via `asyncio.gather(return_exceptions=True)`.
+- Per-endpoint failures are isolated: `_collect_metric` wraps its body in `except Exception`,
+    so errors never propagate to `asyncio.gather`.
+  Per-repo failures are isolated by the same boundary (`_collect_repo` calls `_collect_metric`
+    for each metric and accumulates results).
 - Errors are collected across all tasks and reported after all tasks complete.
 - Collector exits 1 if any error occurred; git operations still run to commit partial data.
 - Rate limits: primary (429) and secondary (403 with `Retry-After`/`abuse`) are retried
