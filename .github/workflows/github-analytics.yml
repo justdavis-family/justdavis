@@ -49,7 +49,7 @@ jobs:
           git add -A
           git diff --cached --quiet \
             || git commit -m "data: collect analytics $(date -u +%Y-%m-%d)"
-          git push
+          git push || (git pull --rebase && git push)
 
       - name: Fail if collection had errors
         if: steps.collect.outcome == 'failure' || steps.report.outcome == 'failure'
