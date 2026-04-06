@@ -32,6 +32,7 @@ jobs:
         run: >
           MISE_EXPERIMENTAL=1 mise run '//github-analytics:collect'
           -- --data-repo ${{ github.workspace }}/analytics-data
+          --config ${{ github.workspace }}/github-analytics/config.yaml
 
       - name: Generate reports
         id: report
