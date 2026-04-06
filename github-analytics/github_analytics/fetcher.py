@@ -75,7 +75,8 @@ async def _get_with_retry(
         return response, total_io, total_wait
     # All attempts were retryable; return the last response so the caller can
     # call raise_for_status() and surface the final error.
-    return last_response, total_io, total_wait  # type: ignore[return-value]
+    assert last_response is not None  # always true when _MAX_ATTEMPTS >= 1
+    return last_response, total_io, total_wait
 
 
 async def _get(

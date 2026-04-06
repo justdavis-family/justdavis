@@ -116,4 +116,5 @@ def _get_with_retry(url: str, headers: dict[str, str]) -> httpx.Response:
             time.sleep(float(2**attempt))
             continue
         return response
-    return last  # type: ignore[return-value]
+    assert last is not None  # always true when _MAX_ATTEMPTS >= 1
+    return last

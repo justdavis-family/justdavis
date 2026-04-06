@@ -209,6 +209,28 @@ async def test_get_with_retry_retries_on_429() -> None:
     assert wait_s > 0
 
 
+async def test_get_with_retry_exhausts_all_attempts_and_raises() -> None:
+    """After all retry attempts return a transient error, raise_for_status() raises."""
+    fake_req = httpx.Request("GET", "https://api.github.com/test")
+
+    async def always_503(url: str, *, headers: dict, follow_redirects: bool) -> httpx.Response:
+        r = httpx.Response(503)
+        r.request = fake_req  # type: ignore[assignment]
+        return r
+
+    async with httpx.AsyncClient() as client:
+        sem = asyncio.Semaphore(1)
+        with patch.object(client, "get", always_503):
+            with patch("asyncio.sleep"):
+                resp, _io_s, _wait_s = await _get_with_retry(
+                    client, sem, "https://api.github.com/test", {"Authorization": "token fake"}
+                )
+
+    assert resp.status_code == 503
+    with pytest.raises(httpx.HTTPStatusError):
+        resp.raise_for_status()
+
+
 async def test_collect_metric_isolates_fetch_errors(tmp_path: Path) -> None:
     """An exception raised by the fetch function is caught and returned as an error."""
     from github_analytics.__main__ import _collect_metric, _Timing  # noqa: PLC0415
