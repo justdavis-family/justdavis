@@ -24,7 +24,7 @@ def append_record(
     """
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    record_key = tuple(record[f] for f in key_fields)
+    record_key = tuple(record.get(f) for f in key_fields)
 
     # Check for existing record with the same key
     if file_path.exists():
@@ -88,7 +88,7 @@ def append_records(
 
     new_lines: list[str] = []
     for record in records:
-        key = tuple(record[f] for f in key_fields)
+        key = tuple(record.get(f) for f in key_fields)
         if key not in existing_keys:
             new_lines.append(json.dumps(record, separators=(",", ":")))
             existing_keys.add(key)
