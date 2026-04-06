@@ -53,44 +53,55 @@ def test_collect_creates_ndjson_files(data_repo: Path, fixture_config: Path) -> 
 
 @pytest.mark.vcr
 def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
-    """Running collect twice on the same day produces no duplicate records."""
+    """Running collect twice produces no extra records in any NDJSON file.
+
+    Upsert metrics (views, clones, metadata, referrers, paths, releases,
+    workflow_runs) replace existing records on the second run, so line counts
+    stay the same.  Append-only metrics (stars, forks) skip duplicates, so
+    their line counts also stay the same.
+    """
     import argparse
 
     args = argparse.Namespace(
         data_repo=str(data_repo), config=str(fixture_config), max_concurrent=1, verbose=False
     )
     cmd_collect(args)
-    cmd_collect(args)  # Second run — cassette replays same responses
 
     repo_dir = data_repo / "karlmdavis" / "ksoap2-android"
 
-    # views: keyed by date
+    # Record line counts after the first run.
+    def _line_counts() -> dict[str, int]:
+        return {
+            p.name: len([ln for ln in p.read_text().splitlines() if ln.strip()])
+            for p in repo_dir.glob("*.ndjson")
+        }
+
+    counts_after_first = _line_counts()
+
+    cmd_collect(args)  # Second run — cassette replays same responses
+
+    counts_after_second = _line_counts()
+
+    for filename, first_count in counts_after_first.items():
+        second_count = counts_after_second[filename]
+        assert second_count == first_count, (
+            f"{filename}: line count changed from {first_count} to {second_count} on second run"
+        )
+
+    # Also verify no duplicate keys exist after the second run.
     views = repo_dir / "views.ndjson"
     if views.exists():
-        lines = views.read_text().strip().splitlines()
-        dates = [json.loads(line)["date"] for line in lines if line.strip()]
+        dates = [json.loads(ln)["date"] for ln in views.read_text().splitlines() if ln.strip()]
         assert len(dates) == len(set(dates)), f"views: duplicate date records: {dates}"
 
-    # referrers: keyed by (date, referrer) — previously broken (collected_at key)
-    referrers = repo_dir / "referrers.ndjson"
-    if referrers.exists():
-        rows = [json.loads(ln) for ln in referrers.read_text().splitlines() if ln.strip()]
-        keys = [(r["date"], r["referrer"]) for r in rows]
-        assert len(keys) == len(set(keys)), f"referrers: duplicate (date, referrer) records: {keys}"
-
-    # paths: keyed by (date, path)
-    paths_file = repo_dir / "paths.ndjson"
-    if paths_file.exists():
-        rows = [json.loads(ln) for ln in paths_file.read_text().splitlines() if ln.strip()]
-        keys = [(r["date"], r["path"]) for r in rows]
-        assert len(keys) == len(set(keys)), f"paths: duplicate (date, path) records: {keys}"
-
-    # releases: keyed by (date, tag, asset)
-    releases = repo_dir / "releases.ndjson"
-    if releases.exists():
-        rows = [json.loads(ln) for ln in releases.read_text().splitlines() if ln.strip()]
-        keys = [(r["date"], r["tag"], r["asset"]) for r in rows]
-        assert len(keys) == len(set(keys)), f"releases: duplicate (date, tag, asset) records: {keys}"
+    stars = repo_dir / "stars.ndjson"
+    if stars.exists():
+        keys = [
+            (json.loads(ln)["starred_at"], json.loads(ln)["user"])
+            for ln in stars.read_text().splitlines()
+            if ln.strip()
+        ]
+        assert len(keys) == len(set(keys)), f"stars: duplicate keys: {keys}"
 
 
 @pytest.mark.default_cassette("test_collect_creates_ndjson_files.yaml")

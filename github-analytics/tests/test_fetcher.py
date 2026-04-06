@@ -232,6 +232,7 @@ async def test_collect_metric_isolates_fetch_errors(tmp_path: Path) -> None:
             "views",
             exploding_fetch,
             ["date"],
+            True,
             tmp_path,
             timings,
             "fake-token",
