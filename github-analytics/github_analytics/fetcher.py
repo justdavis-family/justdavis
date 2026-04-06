@@ -138,7 +138,6 @@ def _next_link(link_header: str) -> str | None:
     return None
 
 
-
 async def fetch_traffic_views(
     client: httpx.AsyncClient,
     sem: asyncio.Semaphore,
@@ -188,8 +187,7 @@ async def fetch_traffic_referrers(
     )
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     records = [
-        {"date": today, "referrer": r["referrer"], "count": r["count"], "uniques": r["uniques"]}
-        for r in data
+        {"date": today, "referrer": r["referrer"], "count": r["count"], "uniques": r["uniques"]} for r in data
     ]
     return records, io_s, wait_s
 

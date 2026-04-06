@@ -295,9 +295,7 @@ def _write_multi_repo_readme(
     if uv_svg:
         _atomic_write(uv_svg_path, uv_svg)
 
-    uc_svg = _build_traffic_svg(
-        all_data, "clones", "uniques", "Unique Clones per Day", "Unique Clones/day"
-    )
+    uc_svg = _build_traffic_svg(all_data, "clones", "uniques", "Unique Clones per Day", "Unique Clones/day")
     if uc_svg:
         _atomic_write(uc_svg_path, uc_svg)
 
