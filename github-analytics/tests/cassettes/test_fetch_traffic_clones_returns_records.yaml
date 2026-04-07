@@ -16,11 +16,7 @@ interactions:
     uri: https://api.github.com/repos/karlmdavis/ksoap2-android/traffic/clones
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA6WSsQrDMAxE/0WzDbLlpI2/o1NLhxIyBBqnJc4U/O9N20WDBKYFDzbo6e7wbdDP
-        a8oQXWdgTeNzHZb9EQz09zm975cN8jgNS75ND4jg0bcWyXo8IcbPOcM+/d2CbAkWo6BOQj1DvYp6
-        Ca1TJQl1PLWqGiS0TrX5HW0llJhhUg0fJLQu61FC67J2EsoNq/9KYpsaljVoWUlsU0XWYPEPVCwi
-        77Ar1/ICiCvTel4DAAA=
+      string: '{"count":19,"uniques":14,"clones":[{"timestamp":"2026-03-20T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-21T00:00:00Z","count":2,"uniques":2},{"timestamp":"2026-03-22T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-23T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-03-24T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-25T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-26T00:00:00Z","count":3,"uniques":3},{"timestamp":"2026-03-27T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-03-28T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-29T00:00:00Z","count":3,"uniques":2},{"timestamp":"2026-03-30T00:00:00Z","count":5,"uniques":4},{"timestamp":"2026-03-31T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-04-01T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-04-02T00:00:00Z","count":2,"uniques":1}]}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -31,8 +27,6 @@ interactions:
         X-GitHub-Request-Id, Deprecation, Sunset
       Cache-Control:
       - private, max-age=60, s-maxage=60
-      Content-Encoding:
-      - gzip
       Content-Security-Policy:
       - default-src 'none'
       Content-Type:
@@ -75,6 +69,162 @@ interactions:
       - '10'
       X-XSS-Protection:
       - '0'
+      content-length:
+      - '862'
+      x-github-api-version-selected:
+      - '2022-11-28'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/traffic/clones
+  response:
+    body:
+      string: '{"count":20,"uniques":16,"clones":[{"timestamp":"2026-03-23T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-03-24T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-25T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-26T00:00:00Z","count":3,"uniques":3},{"timestamp":"2026-03-27T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-03-28T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-29T00:00:00Z","count":3,"uniques":2},{"timestamp":"2026-03-30T00:00:00Z","count":5,"uniques":4},{"timestamp":"2026-03-31T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-04-01T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-04-02T00:00:00Z","count":2,"uniques":1},{"timestamp":"2026-04-03T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-04-04T00:00:00Z","count":3,"uniques":3},{"timestamp":"2026-04-05T00:00:00Z","count":0,"uniques":0}]}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      Cache-Control:
+      - private, max-age=60, s-maxage=60
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 02:48:31 GMT
+      ETag:
+      - W/"e5bd739a3294f6b5c6d88b09c0ced736326b907a062a987ce9a5a60bde1c2ecc"
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+      X-Accepted-OAuth-Scopes:
+      - ''
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - D6A0:183877:3DCB2CD:F32F316:69D4707F
+      X-OAuth-Scopes:
+      - repo
+      X-RateLimit-Limit:
+      - '5000'
+      X-RateLimit-Remaining:
+      - '4991'
+      X-RateLimit-Reset:
+      - '1775532933'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '9'
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '862'
+      x-github-api-version-selected:
+      - '2022-11-28'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android/traffic/clones
+  response:
+    body:
+      string: '{"count":20,"uniques":16,"clones":[{"timestamp":"2026-03-23T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-03-24T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-25T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-26T00:00:00Z","count":3,"uniques":3},{"timestamp":"2026-03-27T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-03-28T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-03-29T00:00:00Z","count":3,"uniques":2},{"timestamp":"2026-03-30T00:00:00Z","count":5,"uniques":4},{"timestamp":"2026-03-31T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-04-01T00:00:00Z","count":1,"uniques":1},{"timestamp":"2026-04-02T00:00:00Z","count":2,"uniques":1},{"timestamp":"2026-04-03T00:00:00Z","count":0,"uniques":0},{"timestamp":"2026-04-04T00:00:00Z","count":3,"uniques":3},{"timestamp":"2026-04-05T00:00:00Z","count":0,"uniques":0}]}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      Cache-Control:
+      - private, max-age=60, s-maxage=60
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 02:51:35 GMT
+      ETag:
+      - W/"e5bd739a3294f6b5c6d88b09c0ced736326b907a062a987ce9a5a60bde1c2ecc"
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+      X-Accepted-OAuth-Scopes:
+      - ''
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - D6D0:1943B3:44372B8:10D37DE0:69D47137
+      X-OAuth-Scopes:
+      - repo
+      X-RateLimit-Limit:
+      - '5000'
+      X-RateLimit-Remaining:
+      - '4947'
+      X-RateLimit-Reset:
+      - '1775532933'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '53'
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '862'
       x-github-api-version-selected:
       - '2022-11-28'
     status:
