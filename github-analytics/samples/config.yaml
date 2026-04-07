@@ -1,0 +1,17 @@
+# Sample collector configuration.
+#
+# This file is for reference only — in production, the repo list is written
+# inline in the workflow's "Write collector config" step so each deployment
+# maintains its own list without risk of merge conflicts.
+#
+# Supported repo patterns:
+
+repos:
+  # A specific repository (must have push access for traffic data):
+  - "owner/repo-name"
+
+  # All repositories in a GitHub organization:
+  - "org:your-org"
+
+  # All repositories for a GitHub user:
+  - "user:your-username"

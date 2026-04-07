@@ -1,0 +1,248 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android
+  response:
+    body:
+      string: '{"id":140726,"node_id":"MDEwOlJlcG9zaXRvcnkxNDA3MjY=","name":"ksoap2-android","full_name":"karlmdavis/ksoap2-android","private":false,"owner":{"login":"karlmdavis","id":59200,"node_id":"MDQ6VXNlcjU5MjAw","avatar_url":"https://avatars.githubusercontent.com/u/59200?v=4","gravatar_id":"","url":"https://api.github.com/users/karlmdavis","html_url":"https://github.com/karlmdavis","followers_url":"https://api.github.com/users/karlmdavis/followers","following_url":"https://api.github.com/users/karlmdavis/following{/other_user}","gists_url":"https://api.github.com/users/karlmdavis/gists{/gist_id}","starred_url":"https://api.github.com/users/karlmdavis/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/karlmdavis/subscriptions","organizations_url":"https://api.github.com/users/karlmdavis/orgs","repos_url":"https://api.github.com/users/karlmdavis/repos","events_url":"https://api.github.com/users/karlmdavis/events{/privacy}","received_events_url":"https://api.github.com/users/karlmdavis/received_events","type":"User","user_view_type":"public","site_admin":false},"html_url":"https://github.com/karlmdavis/ksoap2-android","description":"A
+        fork of the ksoap2 library (http://ksoap2.sourceforge.net/) to support the
+        Android platform.","fork":false,"url":"https://api.github.com/repos/karlmdavis/ksoap2-android","forks_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/forks","keys_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/keys{/key_id}","collaborators_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/teams","hooks_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/hooks","issue_events_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues/events{/number}","events_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/events","assignees_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/assignees{/user}","branches_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/branches{/branch}","tags_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/tags","blobs_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/refs{/sha}","trees_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/trees{/sha}","statuses_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/statuses/{sha}","languages_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/languages","stargazers_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/stargazers","contributors_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/contributors","subscribers_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/subscribers","subscription_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/subscription","commits_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/commits{/sha}","git_commits_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/commits{/sha}","comments_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/comments{/number}","issue_comment_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues/comments{/number}","contents_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/contents/{+path}","compare_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/compare/{base}...{head}","merges_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/merges","archive_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/downloads","issues_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues{/number}","pulls_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/pulls{/number}","milestones_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/milestones{/number}","notifications_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/labels{/name}","releases_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/releases{/id}","deployments_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/deployments","created_at":"2009-03-01T22:43:17Z","updated_at":"2025-04-10T03:27:44Z","pushed_at":"2022-03-30T04:11:57Z","git_url":"git://github.com/karlmdavis/ksoap2-android.git","ssh_url":"git@github.com:karlmdavis/ksoap2-android.git","clone_url":"https://github.com/karlmdavis/ksoap2-android.git","svn_url":"https://github.com/karlmdavis/ksoap2-android","homepage":"http://code.google.com/p/ksoap2-android","size":2206,"stargazers_count":109,"watchers_count":109,"language":"Java","has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":298,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":8,"license":{"key":"mit","name":"MIT
+        License","spdx_id":"MIT","url":"https://api.github.com/licenses/mit","node_id":"MDc6TGljZW5zZTEz"},"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"has_pull_requests":true,"pull_request_creation_policy":"all","topics":[],"visibility":"public","forks":298,"open_issues":8,"watchers":109,"default_branch":"master","permissions":{"admin":true,"maintain":true,"push":true,"triage":true,"pull":true},"temp_clone_token":"","allow_squash_merge":true,"allow_merge_commit":true,"allow_rebase_merge":true,"allow_auto_merge":false,"delete_branch_on_merge":false,"allow_update_branch":false,"use_squash_pr_title_as_default":false,"squash_merge_commit_message":"COMMIT_MESSAGES","squash_merge_commit_title":"COMMIT_OR_PR_TITLE","merge_commit_message":"PR_TITLE","merge_commit_title":"MERGE_MESSAGE","security_and_analysis":{"secret_scanning":{"status":"disabled"},"secret_scanning_push_protection":{"status":"disabled"},"dependabot_security_updates":{"status":"enabled"},"secret_scanning_non_provider_patterns":{"status":"disabled"},"secret_scanning_validity_checks":{"status":"disabled"}},"network_count":298,"subscribers_count":7}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      Cache-Control:
+      - private, max-age=60, s-maxage=60
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Fri, 03 Apr 2026 15:10:55 GMT
+      ETag:
+      - W/"80f191406d2c3bcc422f73da0fb91ca3964c0f140ff8e0ec73f6d1d5ed2cab80"
+      Last-Modified:
+      - Thu, 10 Apr 2025 03:27:44 GMT
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+      X-Accepted-OAuth-Scopes:
+      - repo
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - CCFF:7549F:40C6B3:FE0280:69CFD87F
+      X-OAuth-Scopes:
+      - repo
+      X-RateLimit-Limit:
+      - '5000'
+      X-RateLimit-Remaining:
+      - '4984'
+      X-RateLimit-Reset:
+      - '1775232349'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '16'
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '6349'
+      x-github-api-version-selected:
+      - '2022-11-28'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android
+  response:
+    body:
+      string: '{"id":140726,"node_id":"MDEwOlJlcG9zaXRvcnkxNDA3MjY=","name":"ksoap2-android","full_name":"karlmdavis/ksoap2-android","private":false,"owner":{"login":"karlmdavis","id":59200,"node_id":"MDQ6VXNlcjU5MjAw","avatar_url":"https://avatars.githubusercontent.com/u/59200?v=4","gravatar_id":"","url":"https://api.github.com/users/karlmdavis","html_url":"https://github.com/karlmdavis","followers_url":"https://api.github.com/users/karlmdavis/followers","following_url":"https://api.github.com/users/karlmdavis/following{/other_user}","gists_url":"https://api.github.com/users/karlmdavis/gists{/gist_id}","starred_url":"https://api.github.com/users/karlmdavis/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/karlmdavis/subscriptions","organizations_url":"https://api.github.com/users/karlmdavis/orgs","repos_url":"https://api.github.com/users/karlmdavis/repos","events_url":"https://api.github.com/users/karlmdavis/events{/privacy}","received_events_url":"https://api.github.com/users/karlmdavis/received_events","type":"User","user_view_type":"public","site_admin":false},"html_url":"https://github.com/karlmdavis/ksoap2-android","description":"A
+        fork of the ksoap2 library (http://ksoap2.sourceforge.net/) to support the
+        Android platform.","fork":false,"url":"https://api.github.com/repos/karlmdavis/ksoap2-android","forks_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/forks","keys_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/keys{/key_id}","collaborators_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/teams","hooks_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/hooks","issue_events_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues/events{/number}","events_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/events","assignees_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/assignees{/user}","branches_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/branches{/branch}","tags_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/tags","blobs_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/refs{/sha}","trees_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/trees{/sha}","statuses_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/statuses/{sha}","languages_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/languages","stargazers_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/stargazers","contributors_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/contributors","subscribers_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/subscribers","subscription_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/subscription","commits_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/commits{/sha}","git_commits_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/commits{/sha}","comments_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/comments{/number}","issue_comment_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues/comments{/number}","contents_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/contents/{+path}","compare_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/compare/{base}...{head}","merges_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/merges","archive_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/downloads","issues_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues{/number}","pulls_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/pulls{/number}","milestones_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/milestones{/number}","notifications_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/labels{/name}","releases_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/releases{/id}","deployments_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/deployments","created_at":"2009-03-01T22:43:17Z","updated_at":"2025-04-10T03:27:44Z","pushed_at":"2022-03-30T04:11:57Z","git_url":"git://github.com/karlmdavis/ksoap2-android.git","ssh_url":"git@github.com:karlmdavis/ksoap2-android.git","clone_url":"https://github.com/karlmdavis/ksoap2-android.git","svn_url":"https://github.com/karlmdavis/ksoap2-android","homepage":"http://code.google.com/p/ksoap2-android","size":2206,"stargazers_count":109,"watchers_count":109,"language":"Java","has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":298,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":8,"license":{"key":"mit","name":"MIT
+        License","spdx_id":"MIT","url":"https://api.github.com/licenses/mit","node_id":"MDc6TGljZW5zZTEz"},"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"has_pull_requests":true,"pull_request_creation_policy":"all","topics":[],"visibility":"public","forks":298,"open_issues":8,"watchers":109,"default_branch":"master","permissions":{"admin":true,"maintain":true,"push":true,"triage":true,"pull":true},"temp_clone_token":"","allow_squash_merge":true,"allow_merge_commit":true,"allow_rebase_merge":true,"allow_auto_merge":false,"delete_branch_on_merge":false,"allow_update_branch":false,"use_squash_pr_title_as_default":false,"squash_merge_commit_message":"COMMIT_MESSAGES","squash_merge_commit_title":"COMMIT_OR_PR_TITLE","merge_commit_message":"PR_TITLE","merge_commit_title":"MERGE_MESSAGE","security_and_analysis":{"secret_scanning":{"status":"disabled"},"secret_scanning_push_protection":{"status":"disabled"},"dependabot_security_updates":{"status":"enabled"},"secret_scanning_non_provider_patterns":{"status":"disabled"},"secret_scanning_validity_checks":{"status":"disabled"}},"network_count":298,"subscribers_count":7}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      Cache-Control:
+      - private, max-age=60, s-maxage=60
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 02:48:33 GMT
+      ETag:
+      - W/"80f191406d2c3bcc422f73da0fb91ca3964c0f140ff8e0ec73f6d1d5ed2cab80"
+      Last-Modified:
+      - Thu, 10 Apr 2025 03:27:44 GMT
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+      X-Accepted-OAuth-Scopes:
+      - repo
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - D6A7:38F3F6:3C5C260:ED13935:69D47081
+      X-OAuth-Scopes:
+      - repo
+      X-RateLimit-Limit:
+      - '5000'
+      X-RateLimit-Remaining:
+      - '4986'
+      X-RateLimit-Reset:
+      - '1775532933'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '14'
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '6349'
+      x-github-api-version-selected:
+      - '2022-11-28'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/vnd.github+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.github.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.github.com/repos/karlmdavis/ksoap2-android
+  response:
+    body:
+      string: '{"id":140726,"node_id":"MDEwOlJlcG9zaXRvcnkxNDA3MjY=","name":"ksoap2-android","full_name":"karlmdavis/ksoap2-android","private":false,"owner":{"login":"karlmdavis","id":59200,"node_id":"MDQ6VXNlcjU5MjAw","avatar_url":"https://avatars.githubusercontent.com/u/59200?v=4","gravatar_id":"","url":"https://api.github.com/users/karlmdavis","html_url":"https://github.com/karlmdavis","followers_url":"https://api.github.com/users/karlmdavis/followers","following_url":"https://api.github.com/users/karlmdavis/following{/other_user}","gists_url":"https://api.github.com/users/karlmdavis/gists{/gist_id}","starred_url":"https://api.github.com/users/karlmdavis/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/karlmdavis/subscriptions","organizations_url":"https://api.github.com/users/karlmdavis/orgs","repos_url":"https://api.github.com/users/karlmdavis/repos","events_url":"https://api.github.com/users/karlmdavis/events{/privacy}","received_events_url":"https://api.github.com/users/karlmdavis/received_events","type":"User","user_view_type":"public","site_admin":false},"html_url":"https://github.com/karlmdavis/ksoap2-android","description":"A
+        fork of the ksoap2 library (http://ksoap2.sourceforge.net/) to support the
+        Android platform.","fork":false,"url":"https://api.github.com/repos/karlmdavis/ksoap2-android","forks_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/forks","keys_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/keys{/key_id}","collaborators_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/teams","hooks_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/hooks","issue_events_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues/events{/number}","events_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/events","assignees_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/assignees{/user}","branches_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/branches{/branch}","tags_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/tags","blobs_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/refs{/sha}","trees_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/trees{/sha}","statuses_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/statuses/{sha}","languages_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/languages","stargazers_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/stargazers","contributors_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/contributors","subscribers_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/subscribers","subscription_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/subscription","commits_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/commits{/sha}","git_commits_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/git/commits{/sha}","comments_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/comments{/number}","issue_comment_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues/comments{/number}","contents_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/contents/{+path}","compare_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/compare/{base}...{head}","merges_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/merges","archive_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/downloads","issues_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/issues{/number}","pulls_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/pulls{/number}","milestones_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/milestones{/number}","notifications_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/labels{/name}","releases_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/releases{/id}","deployments_url":"https://api.github.com/repos/karlmdavis/ksoap2-android/deployments","created_at":"2009-03-01T22:43:17Z","updated_at":"2025-04-10T03:27:44Z","pushed_at":"2022-03-30T04:11:57Z","git_url":"git://github.com/karlmdavis/ksoap2-android.git","ssh_url":"git@github.com:karlmdavis/ksoap2-android.git","clone_url":"https://github.com/karlmdavis/ksoap2-android.git","svn_url":"https://github.com/karlmdavis/ksoap2-android","homepage":"http://code.google.com/p/ksoap2-android","size":2206,"stargazers_count":109,"watchers_count":109,"language":"Java","has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":298,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":8,"license":{"key":"mit","name":"MIT
+        License","spdx_id":"MIT","url":"https://api.github.com/licenses/mit","node_id":"MDc6TGljZW5zZTEz"},"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"has_pull_requests":true,"pull_request_creation_policy":"all","topics":[],"visibility":"public","forks":298,"open_issues":8,"watchers":109,"default_branch":"master","permissions":{"admin":true,"maintain":true,"push":true,"triage":true,"pull":true},"temp_clone_token":"","allow_squash_merge":true,"allow_merge_commit":true,"allow_rebase_merge":true,"allow_auto_merge":false,"delete_branch_on_merge":false,"allow_update_branch":false,"use_squash_pr_title_as_default":false,"squash_merge_commit_message":"COMMIT_MESSAGES","squash_merge_commit_title":"COMMIT_OR_PR_TITLE","merge_commit_message":"PR_TITLE","merge_commit_title":"MERGE_MESSAGE","security_and_analysis":{"secret_scanning":{"status":"disabled"},"secret_scanning_push_protection":{"status":"disabled"},"dependabot_security_updates":{"status":"enabled"},"secret_scanning_non_provider_patterns":{"status":"disabled"},"secret_scanning_validity_checks":{"status":"disabled"}},"network_count":298,"subscribers_count":7}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      Cache-Control:
+      - private, max-age=60, s-maxage=60
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 02:51:37 GMT
+      ETag:
+      - W/"80f191406d2c3bcc422f73da0fb91ca3964c0f140ff8e0ec73f6d1d5ed2cab80"
+      Last-Modified:
+      - Thu, 10 Apr 2025 03:27:44 GMT
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+      X-Accepted-OAuth-Scopes:
+      - repo
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - D6D7:38E398:222203:85F74B:69D47139
+      X-OAuth-Scopes:
+      - repo
+      X-RateLimit-Limit:
+      - '5000'
+      X-RateLimit-Remaining:
+      - '4942'
+      X-RateLimit-Reset:
+      - '1775532933'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '58'
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '6349'
+      x-github-api-version-selected:
+      - '2022-11-28'
+    status:
+      code: 200
+      message: OK
+version: 1

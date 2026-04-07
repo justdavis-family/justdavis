@@ -1,0 +1,69 @@
+[tools]
+python = "3.12"
+uv = "0.9.5"
+
+[env]
+# Copy sample.env to .env and set GITHUB_TOKEN before running test:smoke.
+# .env is optional — test:smoke checks for it and fails to run with a warning, if missing.
+_.file = { path = '.env', optional = true }
+
+[tasks.build]
+description = "Sync dependencies and run type checks"
+run = [
+  "uv sync --all-groups",
+  "uv run mypy github_analytics/",
+]
+
+[tasks.test]
+description = "Run tests"
+depends = ["build"]
+run = "uv run pytest"
+
+[tasks.lint]
+description = "Lint and format check"
+depends = ["build"]
+run = [
+  "uv run ruff check .",
+  "uv run ruff format --check .",
+]
+
+[tasks.ci]
+description = "Full CI suite (includes smoke test if .env and config.smoke.yaml are present)"
+depends = ["lint", "test", "test:smoke"]
+
+[tasks."dependencies:check"]
+description = "Check for outdated or vulnerable dependencies"
+depends = ["build"]
+run = "uv tree --outdated"
+
+[tasks."dependencies:update"]
+description = "Update dependencies to latest compatible versions"
+run = "uv lock --upgrade && uv sync --all-groups"
+
+[tasks.collect]
+description = "Collect analytics — pass --data-repo PATH after --"
+depends = ["build"]
+run = "uv run python -m github_analytics collect"
+
+[tasks.report]
+description = "Generate README reports — pass --data-repo PATH after --"
+depends = ["build"]
+run = "uv run python -m github_analytics report"
+
+[tasks."test:smoke"]
+description = "Smoke test: collect + report against live GitHub API into /tmp/"
+depends = ["build"]
+run = """
+if [ ! -f .env ]; then
+  echo "WARNING: Skipping smoke test — .env file not found (copy sample.env to .env and set GITHUB_TOKEN)."
+  exit 0
+fi
+if [ ! -f config.smoke.yaml ]; then
+  echo "WARNING: Skipping smoke test — config.smoke.yaml not found (copy config.smoke.sample.yaml to config.smoke.yaml and add your repos)."
+  exit 0
+fi
+smoke_dir=/tmp/analytics-smoke-$(date +%s)
+uv run python -m github_analytics collect --data-repo "$smoke_dir" --config config.smoke.yaml
+uv run python -m github_analytics report --data-repo "$smoke_dir"
+echo "Smoke output: $smoke_dir"
+"""

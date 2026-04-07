@@ -1,12 +1,8 @@
 experimental_monorepo_root = true
 
 [monorepo]
-# This `config_roots` setting doesn't support recursive searches (e.g. "services/**"),
-#   so this is instead an explicit list of projects
-#   that we must keep updated as the monorepo evolves.
 config_roots = [
-  # FIXME Once we have projects, replace this with the actual project paths
-  "*"
+  "github-analytics",
 ]
 
 [tools]
@@ -14,19 +10,27 @@ yq = "latest"
 
 [tasks.build]
 description = "Build all projects"
-# depends = [] -- add sub-project build tasks as projects are added
+depends = ["//github-analytics:build"]
 
 [tasks."lint:all"]
 description = "Lint all projects"
-# depends = [] -- add sub-project lint tasks as projects are added
+depends = ["//github-analytics:lint"]
 
 [tasks."test:all"]
 description = "Test all projects"
-# depends = [] -- add sub-project test tasks as projects are added
+depends = ["//github-analytics:test"]
 
 [tasks.ci]
 description = "Run full CI suite"
 depends = ["build", "test:all", "lint:all"]
+
+[tasks."dependencies:check"]
+description = "Check for outdated or vulnerable dependencies in all projects"
+depends = ["//github-analytics:dependencies:check"]
+
+[tasks."dependencies:update"]
+description = "Update dependencies to latest compatible versions in all projects"
+depends = ["//github-analytics:dependencies:update"]
 
 [tasks."ci:github:watch"]
 description = "Watch GitHub PR checks"

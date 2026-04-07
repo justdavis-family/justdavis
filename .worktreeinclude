@@ -1,0 +1,8 @@
+# Copy the github-analytics .env file (gitignored credentials) into new worktrees
+# so the smoke test (mise run //github-analytics:test:smoke) works without manual
+# setup after branching. Copy sample.env to .env and set GITHUB_TOKEN.
+github-analytics/.env
+
+# Copy the smoke test config (gitignored personal repo list) into new worktrees.
+# Copy github-analytics/config.smoke.sample.yaml to config.smoke.yaml and add your repos.
+github-analytics/config.smoke.yaml

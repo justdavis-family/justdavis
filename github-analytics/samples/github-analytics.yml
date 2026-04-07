@@ -1,0 +1,100 @@
+name: Collect GitHub Analytics
+
+# Copy this file to .github/workflows/github-analytics.yml in your data repository.
+# Then customize the "Checkout analytics tool" and "Write collector config" steps below.
+#
+# Prerequisites:
+#   - A GitHub Personal Access Token (Classic) with `repo` scope.
+#     See the README for instructions: https://github.com/justdavis-family/justdavis/
+#       blob/main/github-analytics/README.md#create-a-personal-access-token
+#   - The token stored as a repository secret named ANALYTICS_DATA_PAT
+#     under Settings → Secrets and variables → Actions.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 6 AM UTC
+  workflow_dispatch:        # Allow manual trigger
+
+concurrency:
+  group: analytics-collection
+  cancel-in-progress: false  # Serialize runs; don't cancel in-progress
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    env:
+      MISE_EXPERIMENTAL: "1"
+
+    steps:
+      - name: Checkout data repo
+        uses: actions/checkout@v4
+        with:
+          # ANALYTICS_DATA_PAT needs repo scope for both data-repo push and
+          # traffic/star API reads (traffic requires push access to the source repo).
+          # A separate read-only fine-grained PAT could be used for GITHUB_TOKEN
+          # in the collect step if the data-repo push scope ever needs to be reduced.
+          token: ${{ secrets.ANALYTICS_DATA_PAT }}
+
+      - name: Checkout analytics tool
+        uses: actions/checkout@v4
+        with:
+          repository: justdavis-family/justdavis
+          # Pin to a specific commit for reproducibility in production deployments,
+          # e.g.: ref: abc1234
+          ref: main
+          path: tool
+
+      - name: Install mise
+        uses: jdx/mise-action@v2
+        with:
+          install: false  # Tools are installed from ./tool below
+
+      - name: Install tool dependencies
+        working-directory: ./tool
+        run: mise install
+
+      - name: Write collector config
+        # Config is written to /tmp so it is never staged by git add -A below.
+        # Define the repositories to collect here. Supported patterns:
+        #   owner/repo         - a specific repository
+        #   org:<orgname>      - all repos in a GitHub org
+        #   user:<username>    - all repos for a GitHub user
+        # See github-analytics/samples/config.yaml for a full example.
+        run: |
+          cat > /tmp/config.yaml <<'EOF'
+          repos:
+            - "owner/repo-name"
+          EOF
+
+      - name: Collect analytics
+        id: collect
+        continue-on-error: true
+        working-directory: ./tool
+        env:
+          GITHUB_TOKEN: ${{ secrets.ANALYTICS_DATA_PAT }}
+        run: >
+          mise run '//github-analytics:collect'
+          -- --data-repo ${{ github.workspace }}
+          --config /tmp/config.yaml
+
+      - name: Generate reports
+        id: report
+        continue-on-error: true
+        working-directory: ./tool
+        run: >
+          mise run '//github-analytics:report'
+          -- --data-repo ${{ github.workspace }}
+
+      - name: Commit and push data
+        run: |
+          git config user.name "GitHub Analytics Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Exclude the tool checkout (a nested git repo) from staging.
+          git add -A -- ':!tool'
+          git diff --cached --quiet \
+            || git commit -m "data: collect analytics $(date -u +%Y-%m-%d)"
+          git push || (git pull --rebase && git push)
+
+      - name: Fail if collection had errors
+        if: steps.collect.outcome == 'failure' || steps.report.outcome == 'failure'
+        run: exit 1
