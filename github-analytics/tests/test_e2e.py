@@ -55,10 +55,13 @@ def test_collect_creates_ndjson_files(data_repo: Path, fixture_config: Path) -> 
 def test_collect_is_idempotent(data_repo: Path, fixture_config: Path) -> None:
     """Running collect twice produces no extra records in any NDJSON file.
 
-    Upsert metrics (views, clones, metadata, referrers, paths, releases,
-    workflow_runs) replace existing records on the second run, so line counts
-    stay the same.  Append-only metrics (stars, forks) skip duplicates, so
-    their line counts also stay the same.
+    Upsert metrics (views, clones, metadata, referrers, paths, workflow_runs)
+    replace existing records on the second run, so line counts stay the same.
+    Append-only metrics (stars, forks) skip duplicates, so their line counts
+    also stay the same.
+    Note: releases idempotency is not exercised here because ksoap2-android
+    has no releases; the upsert mechanism for releases is covered by the
+    test_writer.py unit tests.
     """
     import argparse
 
