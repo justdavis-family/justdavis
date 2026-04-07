@@ -44,10 +44,10 @@ Engineering design decisions should generally be preceded by analysis:
    - Define configuration and setup details.
    - Document rationale linking back to analysis.
 
-3. **Implementation phase** ([implementation-plans/](../implementation-plans/)):
-   - Break design into concrete implementation tasks.
-   - Specify exact file changes and code structure.
-   - Create step-by-step implementation guide.
+3. **Delivery phase** ([delivery-plans/](../delivery-plans/)):
+   - Plan the iterations and PRs that will deliver the design.
+   - Define milestones and scope boundaries across PRs.
+   - Surface over-commitment early by making sequencing explicit.
 
 Not all engineering decisions require formal analysis documents (especially straightforward choices),
   but significant decisions with multiple viable options should be analyzed before design.
@@ -72,15 +72,15 @@ The template includes sections for Overview, Technology Choices, Architecture,
   Atomic, implementable requirements.
 - [**Engineering Designs**](../engineering-designs/) (this directory):
   Defines technical implementation approach.
-- [**Implementation Plans**](../implementation-plans/):
-  Breaks designs into actionable tasks.
+- [**Delivery Plans**](../delivery-plans/):
+  Plans iterations and milestones for delivering on designs.
 - [**Analyses**](../analyses/):
   Evaluates options to inform design decisions.
 - [**Notes**](../notes/):
   Exploratory thinking and broader technical concepts.
 
 The typical flow is:
-  Product Vision → Product Requirements → Engineering Design → Implementation Plans → Code.
+  Product Vision → Product Requirements → Engineering Design → Delivery Plans → Code.
 
 Engineering design docs typically address a set of related requirements
   and should reference them in their content.
