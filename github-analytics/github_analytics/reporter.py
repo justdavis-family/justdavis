@@ -142,7 +142,7 @@ def _sum_by_period(
     return dict(sorted(by_period.items()))
 
 
-_MAX_CHART_TICKS = 25
+_MAX_CHART_TICKS = 12
 
 # Granularities tried in order from finest to coarsest.
 _CHART_GRANULARITIES: list[tuple[str, Callable[[str], str]]] = [
@@ -466,7 +466,7 @@ def _write_repo_readmes(
     for (owner, name), data in all_data.items():
         lines: list[str] = [f"# {owner}/{name}\n\n", f"_Last updated: {_now_str()}_\n"]
 
-        # Charts — auto-aggregate to ≤25 ticks so labels remain legible.
+        # Charts — auto-aggregate to ≤_MAX_CHART_TICKS ticks so labels remain legible.
         views = sorted(data["views"], key=lambda r: r["date"])
         if views:
             view_dates = [r["date"] for r in views]

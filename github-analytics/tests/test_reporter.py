@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from github_analytics.reporter import (
+    _MAX_CHART_TICKS,
+    _auto_aggregate,
     _current_totals_pivoted,
     _current_totals_table,
     _date_to_quarter,
@@ -166,3 +168,62 @@ def test_releases_table_sorts_by_release_creation_date() -> None:
     result = "".join(_releases_table(data))
     # v2.0 (newer release_created_at) should appear before v1.0 (older)
     assert result.index("v2.0") < result.index("v1.0")
+
+
+# ---------------------------------------------------------------------------
+# _auto_aggregate
+# ---------------------------------------------------------------------------
+
+
+def _daily_dates(n: int, start: str = "2024-01-01") -> list[str]:
+    """Generate n consecutive ISO date strings starting from start."""
+    from datetime import date, timedelta
+
+    d = date.fromisoformat(start)
+    return [(d + timedelta(days=i)).isoformat() for i in range(n)]
+
+
+def test_auto_aggregate_stays_daily_at_limit() -> None:
+    """Exactly _MAX_CHART_TICKS daily dates stays at Day granularity."""
+    dates = _daily_dates(_MAX_CHART_TICKS)
+    labels, values, gran = _auto_aggregate(dates, list(range(_MAX_CHART_TICKS)))
+    assert gran == "Day"
+    assert len(labels) == _MAX_CHART_TICKS
+
+
+def test_auto_aggregate_escalates_to_week_beyond_limit() -> None:
+    """_MAX_CHART_TICKS + 1 daily dates escalates to Week granularity."""
+    dates = _daily_dates(_MAX_CHART_TICKS + 1)
+    _, _, gran = _auto_aggregate(dates, [1] * (_MAX_CHART_TICKS + 1))
+    assert gran == "Week"
+
+
+def test_auto_aggregate_escalates_to_month() -> None:
+    """Enough daily dates that even weekly grouping exceeds the limit escalates to Month."""
+    # 7 * (_MAX_CHART_TICKS + 1) days spans more than _MAX_CHART_TICKS ISO weeks.
+    n = 7 * (_MAX_CHART_TICKS + 1)
+    dates = _daily_dates(n)
+    _, _, gran = _auto_aggregate(dates, [1] * n)
+    assert gran == "Month"
+
+
+def test_auto_aggregate_sums_values_within_period() -> None:
+    """Values for dates in the same period are summed, not averaged."""
+    # Two dates in the same ISO week, values 3 and 5 → week total = 8.
+    dates = ["2024-01-01", "2024-01-02"]  # both in 2024-W01
+    labels, values, gran = _auto_aggregate(dates, [3, 5])
+    assert gran == "Week" or gran == "Day"
+    if gran == "Week":
+        assert len(values) == 1
+        assert values[0] == 8
+    else:
+        # If Day fits within limit, individual values are preserved.
+        assert values == [3.0, 5.0]
+
+
+def test_auto_aggregate_empty_input() -> None:
+    """Empty input returns empty output at Day granularity."""
+    labels, values, gran = _auto_aggregate([], [])
+    assert labels == []
+    assert values == []
+    assert gran == "Day"
