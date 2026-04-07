@@ -60,7 +60,7 @@ NDJSON formats (one JSON object per line, all timestamps ISO 8601 UTC):
 - `paths.ndjson`: `{"date": "YYYY-MM-DD", "path": "...", "title": "...", "count": N, "uniques": N}`.
 - `stars.ndjson`: `{"starred_at": "...", "user": "..."}`.
 - `forks.ndjson`: `{"forked_at": "...", "owner": "..."}`.
-- `releases.ndjson`: `{"date": "YYYY-MM-DD", "tag": "...", "asset": "...", "download_count": N}`.
+- `releases.ndjson`: `{"date": "YYYY-MM-DD", "tag": "...", "release_created_at": "...", "asset": "...", "download_count": N}`.
 - `metadata.ndjson`: `{"date": "YYYY-MM-DD", "stars": N, "forks": N, "watchers": N,
     "open_issues": N, "network_count": N|null, "subscribers": N|null, "size_kb": N|null}`.
 - `workflow_runs.ndjson`: `{"date": "YYYY-MM-DD", "name": "...", "path": "...",
