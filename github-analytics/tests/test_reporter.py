@@ -142,3 +142,27 @@ def test_releases_table_uses_latest_per_tag_asset() -> None:
     # Should use the last-seen download_count (75), not the first (50)
     assert "75" in result
     assert "50" not in result
+
+
+def test_releases_table_sorts_by_release_creation_date() -> None:
+    """Rows are ordered by release_created_at newest-first."""
+    data = _empty_repo_data()
+    data["releases"] = [
+        {
+            "date": "2024-01-01",
+            "tag": "v1.0",
+            "release_created_at": "2024-01-01T00:00:00Z",
+            "asset": "app.zip",
+            "download_count": 10,
+        },
+        {
+            "date": "2024-02-01",
+            "tag": "v2.0",
+            "release_created_at": "2024-02-01T00:00:00Z",
+            "asset": "app.zip",
+            "download_count": 20,
+        },
+    ]
+    result = "".join(_releases_table(data))
+    # v2.0 (newer release_created_at) should appear before v1.0 (older)
+    assert result.index("v2.0") < result.index("v1.0")
