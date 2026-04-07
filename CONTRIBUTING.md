@@ -93,7 +93,7 @@ As an intro to the process, here's the overview section from it...
 >
 >     subgraph development [Development Workflow]
 >         direction LR
->         plans["Implementation Plans<br/>(tasks)"]
+>         plans["Delivery Plans<br/>(iterations)"]
 >         pull-requests["Pull Requests"]
 >         plans --> pull-requests
 >     end
@@ -117,15 +117,16 @@ As an intro to the process, here's the overview section from it...
 >    Should be evergreen: Engineering Designs should be updated as the system evolves.
 >     1. [**Engineering Principles**](design/engineering-principles/README.md):
 >        codify the higher-level, cross-cutting, or philosophical standards and norms
->        that all Engineering Designs, Implementation Plans, and code should align with.
+>        that all Engineering Designs, Delivery Plans, and code should align with.
 > 2. The **Development Workflow** is...
->   1. [**Implementation Plans**](design/implementation-plans/README.md):
->      capture the detailed steps and tasks that are planned to implement a feature or capability.
->    These plans are ephemeral: they capture a specific plan at a specific point in time
->      and may change or be superceded as the implementation evolves.
+>   1. [**Delivery Plans**](design/delivery-plans/README.md):
+>      capture the planned iterations, PRs, and milestones that will deliver a product vision
+>      or set of requirements — and in what order.
+>    The primary value is scope management: making explicit decisions about what goes into
+>      each PR before development begins, to surface over-commitment early.
 >   2. [**Pull Requests**](.claude/rules/pr-workflow.md):
 >      are used to prepare, review, and merge all changes
->      \— design documents, implementation plans, and the actual implementations \—
+>      \— design documents, delivery plans, and the actual implementations \—
 >      and this is enforced via the GitHub project's branch protection rules.
 >    Note that, unless a PR's commits are very carefully curated,
 >      they should generally be squashed before merging;
@@ -143,7 +144,7 @@ This repository's conventions and standards apply to both humans and agents,
 
 In particular, the project's [**Engineering Principles**](design/engineering-principles/README.md)
   codify the higher-level, cross-cutting, or philosophical standards and norms
-  that all Engineering Designs, Implementation Plans, and code should align with.
+  that all Engineering Designs, Delivery Plans, and code should align with.
 
 ## What If I Encounter Issues or Have Questions?
 

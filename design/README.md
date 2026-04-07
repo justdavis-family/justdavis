@@ -22,7 +22,7 @@ flowchart TB
 
     subgraph development [Development Workflow]
         direction LR
-        plans["Implementation Plans<br/>(tasks)"]
+        plans["Delivery Plans<br/>(iterations)"]
         pull-requests["Pull Requests"]
         plans --> pull-requests
     end
@@ -46,15 +46,16 @@ flowchart TB
      Should be evergreen: Engineering Designs should be updated as the system evolves.
     1. [**Engineering Principles**](engineering-principles/README.md):
        codify the higher-level, cross-cutting, or philosophical standards and norms
-       that all Engineering Designs, Implementation Plans, and code should align with.
+       that all Engineering Designs, Delivery Plans, and code should align with.
 2. The **Development Workflow** is...
-  1. [**Implementation Plans**](implementation-plans/README.md):
-     capture the detailed steps and tasks that are planned to implement a feature or capability.
-     These plans are ephemeral: they capture a specific plan at a specific point in time
-     and may change or be superceded as the implementation evolves.
+  1. [**Delivery Plans**](delivery-plans/README.md):
+     capture the planned iterations, PRs, and milestones that will deliver a product vision
+     or set of requirements — and in what order.
+     The primary value is scope management: making explicit decisions about what goes into
+     each PR before development begins, to surface over-commitment early.
   2. [**Pull Requests**](/.claude/rules/pr-workflow.md):
      are used to prepare, review, and merge all changes
-     \— design documents, implementation plans, and the actual implementations \—
+     \— design documents, delivery plans, and the actual implementations \—
      and this is enforced via the GitHub project's branch protection rules.
      Note that, unless a PR's commits are very carefully curated,
      they should generally be squashed before merging;
@@ -94,8 +95,8 @@ The design and development documentation is broken out into the following subdir
     higher-level, cross-cutting, or philosophical standards and norms.
 - [`engineering-designs/`](engineering-designs/):
     significant decisions that guide architecture and design.
-- [`implementation-plans/`](implementation-plans/):
-    detailed steps and tasks that are planned to implement a feature or capability.
+- [`delivery-plans/`](delivery-plans/):
+    planned iterations, PRs, and milestones for delivering on a product vision or requirements.
 - [`analyses/`](analyses/):
     research, experiments, and/or evaluations that inform design and implementation decisions.
 - [`notes/`](notes/):
@@ -116,7 +117,7 @@ Examples:
 #### Multi-File Documents
 
 For documents that require multiple files
-  (e.g., phased implementation plans, analysis with supporting materials):
+  (e.g., phased delivery plans, analysis with supporting materials):
 
 Format: `YYYY-MM-DD-short-name/` directory containing:
 
