@@ -145,6 +145,21 @@ def test_append_record_upsert_replaces_existing(tmp_path: Path) -> None:
     assert json.loads(lines[0])["count"] == 99
 
 
+def test_append_records_upsert_deduplicates_within_batch(tmp_path: Path) -> None:
+    """Duplicate keys within the incoming batch are written only once (last-wins)."""
+    dest = tmp_path / "views.ndjson"
+    written = append_records(
+        dest,
+        [{"date": "2026-04-03", "count": 10}, {"date": "2026-04-03", "count": 99}],
+        key_fields=["date"],
+        upsert=True,
+    )
+    assert written == 1
+    lines = [ln for ln in dest.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 1
+    assert json.loads(lines[0])["count"] == 99  # last-wins
+
+
 def test_append_records_upsert_replaces_matching_key(tmp_path: Path) -> None:
     """upsert=True replaces existing records whose keys match an incoming record."""
     dest = tmp_path / "views.ndjson"

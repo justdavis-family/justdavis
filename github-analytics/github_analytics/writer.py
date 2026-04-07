@@ -103,8 +103,14 @@ def append_records(
         existing_content += "\n"
 
     if upsert:
+        # Deduplicate incoming records (last-wins), consistent with the append path.
+        deduped: dict[tuple[Any, ...], dict[str, Any]] = {}
+        for r in records:
+            deduped[tuple(r.get(f) for f in key_fields)] = r
+        records = list(deduped.values())
+
         # Build the set of incoming keys so we can evict matching existing lines.
-        incoming_keys = {tuple(r.get(f) for f in key_fields) for r in records}
+        incoming_keys = set(deduped.keys())
         kept_lines = [
             line
             for line in existing_content.splitlines()
