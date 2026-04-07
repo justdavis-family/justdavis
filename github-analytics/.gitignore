@@ -1,6 +1,6 @@
 # Collector config (personal repo list — define repos in the GH Actions workflow instead;
 # see README.md for setup instructions).
-config.yaml
+/config.yaml
 
 # Smoke test config (personal repo list — copy config.smoke.sample.yaml to create your own).
 config.smoke.yaml

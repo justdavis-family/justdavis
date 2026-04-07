@@ -70,9 +70,12 @@ For local development and the smoke test, store it in `github-analytics/.env`
 2. **Add the PAT as a secret** — create a PAT per the section above, then add it
    as a repository secret named `ANALYTICS_DATA_PAT`.
 
-3. **Update the workflow** — open `.github/workflows/github-analytics.yml` and:
-   - Set the `repository` field under "Checkout data repo" to your data repository name.
-   - Edit the "Write collector config" step to list the repositories you want to track.
+3. **Copy the sample workflow** into your data repo.
+   Copy [`github-analytics/samples/github-analytics.yml`](samples/github-analytics.yml)
+     to `.github/workflows/github-analytics.yml` in your data repository, then customize:
+
+   - **Repo list** — edit the "Write collector config" step to list the repositories you want to
+       track.
      Supported patterns:
 
      ```yaml
@@ -82,8 +85,11 @@ For local development and the smoke test, store it in `github-analytics/.env`
        - user:your-username    # all repos for a GitHub user
      ```
 
-   The repository list lives in the workflow rather than a checked-in config file
-     so that each fork or deployment maintains its own list without risk of merge conflicts.
+     The repository list lives in the workflow rather than a checked-in config file
+       so that each deployment maintains its own list without risk of merge conflicts.
+
+   - **Tool ref** (optional) — the "Checkout analytics tool" step defaults to `ref: main`.
+     For reproducibility, pin it to a specific commit SHA instead.
 
 4. **Trigger the workflow** — navigate to
    **Actions → Collect GitHub Analytics → Run workflow**
