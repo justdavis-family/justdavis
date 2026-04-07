@@ -44,8 +44,8 @@ As Karl, I want all my GitHub repository analytics automatically collected daily
         against recorded cassettes.
 - [x] All `(repo, metric)` pairs are fetched concurrently (bounded by `--max-concurrent`,
         default 20) so total collection time scales with the slowest repo, not all repos summed.
-- [ ] Collection completes within 5 minutes for a typical repo set on GitHub Actions.
-- [ ] The workflow's total GitHub Actions runtime stays within 5% of the account's
+- [x] Collection completes within 5 minutes for a typical repo set on GitHub Actions.
+- [x] The workflow's total GitHub Actions runtime stays within 5% of the account's
         monthly allotment (3,000 min/month = 150 min/month ceiling).
 - [x] `collect` prints a ✔ or ✗ line per repo as it completes, showing elapsed time
         and a count of records fetched per metric.
