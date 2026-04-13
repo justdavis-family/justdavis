@@ -18,7 +18,7 @@ There should never be more than one blank line before or after headers;
 ## Line Structure
 
 - One sentence per line for better version control.
-- 110-character line wrap limit at natural break points,
+- 110-character line wrap limit at natural breakpoints,
     such as after punctuation like commas, colons, semicolons,
     and also at the start of new clauses/sentence parts.
   - Lines _can_ optionally be wrapped more aggressively than that at natural breakpoints,
