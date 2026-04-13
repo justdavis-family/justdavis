@@ -35,8 +35,8 @@ The description for all PRs should have the following sections.
 - **Summary**: 1-3 sentences explaining things at a user story level:
     _who_ the changes are for and the _why_ (i.e. the motivation).
   Follow that with 1-3 bullet points explaining _what_ changed.
-- **Design Process**: Link to all of the `design/` process docs that the PR
-    adds, modifies, and/or implements.
+- **Design Process**: Link to all of the [`design/`](../../design/README.md) process docs
+    that the PR adds, modifies, and/or implements.
 - **Success Criteria**: Include the success criteria checklist (see below).
 - **Test Plan**: How the changes were tested (commands run, test coverage, manual verification).
 - **Context**: Link to related issues or provide background for the change.
@@ -61,7 +61,8 @@ Accordingly, our usual line-wrapping and continuation formatting rules should no
 - [ ] **No TODO/FIXME without tracking**: All TODOs tracked in GitHub issues with references.
 - [ ] **Deferred work tracked in GitHub issues**: Any work deferred for future implementation
         must be tracked in GitHub issues with clear descriptions and acceptance criteria.
-- [ ] **Follows Engineering Principles**: Code adheres to all `engineering-principles/` or has
+- [ ] **Follows Engineering Principles**: Code adheres to all
+        [`design/engineering-principles/`](design/engineering-principles/) or has
         documented (and reasonable) explanations for any divergences.
 
 #### Task-Specific Criteria
