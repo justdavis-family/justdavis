@@ -6,6 +6,13 @@ on:
   push:
     branches: [main]
 
+# Group by PR number for pull_request events, ref for push-to-main.
+# Cancel in-progress runs on feature branches when superseded by new commits,
+# but always let main-branch runs complete so a broken main is never masked.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   ci:
     name: CI
