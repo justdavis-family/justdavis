@@ -12,7 +12,7 @@ Every header should have one blank line above it,
   which should not have any blank lines above them.
 
 There should never be more than one blank line before or after headers;
-  normalize multiple line breaks right before and after headers
+  normalize multiple blank lines right before and after headers
   to a single blank line.
 
 ## Line Structure
