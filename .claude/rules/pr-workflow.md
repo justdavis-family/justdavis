@@ -26,34 +26,46 @@ This repository uses a **PR-based workflow** with branch protection rules enforc
 6. Merge PR: `gh pr merge --squash` or `gh pr merge --merge`.
 7. Branches are automatically deleted after merge (GitHub setting).
 
-## PR Description Requirements
+## PR Requirements
 
-- **Summary**: 1-3 bullet points explaining what changed and why.
-- **Test plan**: How the changes were tested (commands run, test coverage, manual verification).
-- **Success criteria**: Include the success criteria checklist (see below).
+### Description Outline
+
+The description for all PRs should have the following sections.
+
+- **Summary**: 1-3 sentences explaining things at a user story level:
+    _who_ the changes are for and the _why_ (i.e. the motivation).
+  Follow that with 1-3 bullet points explaining _what_ changed.
+- **Design Process**: Link to all of the [`design/`](../../design/README.md) process docs
+    that the PR adds, modifies, and/or implements.
+- **Success Criteria**: Include the success criteria checklist (see below).
+- **Test Plan**: How the changes were tested (commands run, test coverage, manual verification).
 - **Context**: Link to related issues or provide background for the change.
 
-PRs implementing features should follow the design process
-  (see `.claude/rules/design-process.md`).
+### Description Formatting
 
-## Success Criteria
+GitHub PR and issue descriptions and comments support GitHub Flavored Markdown,
+  with one important difference:
+  all line breaks are preserved.
+Accordingly, our usual line-wrapping and continuation formatting rules should not be applied
+  to PR or issue descriptions or comments.
+
+### Success Criteria
 
 **Every pull request must include a "Success Criteria" section** in the PR description.
 
-### General Criteria (Required for All PRs)
+#### General Criteria (Required for All PRs)
 
-- [ ] **PR description complete** — Include summary, test plan, success criteria, and context.
-- [ ] **No stubbed/incomplete code** — All implementations are complete and tested.
-- [ ] **No TODO/FIXME without tracking** — All TODOs tracked in GitHub issues with references.
-- [ ] **Deferred work tracked in GitHub issues** — Any work deferred for future implementation
+- [ ] **All CI checks pass**: Tests pass, linting succeeds, formatting correct.
+- [ ] **Code review recommendations addressed**: All review feedback implemented.
+- [ ] **No stubbed/incomplete code**: All implementations are complete and tested.
+- [ ] **No TODO/FIXME without tracking**: All TODOs tracked in GitHub issues with references.
+- [ ] **Deferred work tracked in GitHub issues**: Any work deferred for future implementation
         must be tracked in GitHub issues with clear descriptions and acceptance criteria.
-- [ ] **No needless duplication** — Code reuses existing utilities and follows DRY principles.
-- [ ] **All CI checks pass** — Tests pass, linting succeeds, formatting correct.
-- [ ] **Work committed and pushed** — All changes committed with descriptive messages
-        and pushed to remote.
-- [ ] **Code review recommendations addressed** — All review feedback implemented.
+- [ ] **Follows Engineering Principles**: Code adheres to all
+        [`design/engineering-principles/`](design/engineering-principles/) or has
+        documented (and reasonable) explanations for any divergences.
 
-### Task-Specific Criteria
+#### Task-Specific Criteria
 
 Add task-specific criteria based on the work being done.
 
