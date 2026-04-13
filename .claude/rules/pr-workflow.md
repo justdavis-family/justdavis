@@ -53,7 +53,7 @@ Accordingly, our usual line-wrapping and continuation formatting rules should no
 
 **Every pull request must include a "Success Criteria" section** in the PR description.
 
-### General Criteria (Required for All PRs)
+#### General Criteria (Required for All PRs)
 
 - [ ] **All CI checks pass**: Tests pass, linting succeeds, formatting correct.
 - [ ] **Code review recommendations addressed** — All review feedback implemented.
