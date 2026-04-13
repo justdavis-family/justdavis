@@ -39,7 +39,7 @@ There should never be more than one blank line preceding or trailing headers;
 
 All sentences within a block should start at the same column.
 All lines wrapped _within_ a sentence
-  should be indented 2 characters past the sentence start's column.
+  should be indented 2 spaces past the sentence start's column.
 List item and task checkbox decorations set the sentence start column:
   sentences start one space past the end of the decoration.
 Continuation lines within those sentences follow the same
