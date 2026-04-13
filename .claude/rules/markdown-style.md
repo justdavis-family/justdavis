@@ -32,9 +32,8 @@ There should never be more than one blank line preceding or trailing headers;
     e.g., URLs, Markdown links, Markdown table rows,
     and reference-style link definitions.
 - Always use POSIX line endings.
-- Remove any trailing whitespace, except:
-	- Don't remove trailing whitespace that is required by Markdown.
-	- Every file should end with a blank line.
+- Remove trailing whitespace, except where required by Markdown.
+- Always end files with a trailing newline.
 
 ## Continuation Indentation
 
