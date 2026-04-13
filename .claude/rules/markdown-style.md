@@ -19,7 +19,7 @@ There should never be more than one blank line preceding or trailing headers;
 
 - One sentence per line for better version control.
 - 110-character line wrap limit at natural break points,
-    such as after punctuation like commas, colons, semi-colons,
+    such as after punctuation like commas, colons, semicolons,
     and also at the start of new clauses/sentence parts.
   - Lines _can_ optionally be wrapped more aggressively than that at natural breakpoints,
       even when not needed to avoid exceeding the length limit,
