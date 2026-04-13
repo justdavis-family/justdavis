@@ -56,7 +56,7 @@ Accordingly, our usual line-wrapping and continuation formatting rules should no
 #### General Criteria (Required for All PRs)
 
 - [ ] **All CI checks pass**: Tests pass, linting succeeds, formatting correct.
-- [ ] **Code review recommendations addressed** — All review feedback implemented.
+- [ ] **Code review recommendations addressed**: All review feedback implemented.
 - [ ] **No stubbed/incomplete code**: All implementations are complete and tested.
 - [ ] **No TODO/FIXME without tracking**: All TODOs tracked in GitHub issues with references.
 - [ ] **Deferred work tracked in GitHub issues**: Any work deferred for future implementation
