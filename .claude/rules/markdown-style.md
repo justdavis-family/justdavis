@@ -11,7 +11,7 @@ Every header should have one blank line above it,
   except for headers at the start of a file,
   which should not have any blank lines above them.
 
-There should never be more than one blank line preceding or trailing headers;
+There should never be more than one blank line before or after headers;
   normalize multiple line breaks right before and after headers
   to a single blank line.
 
