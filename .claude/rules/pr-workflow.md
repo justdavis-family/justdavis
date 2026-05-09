@@ -23,8 +23,61 @@ This repository uses a **PR-based workflow** with branch protection rules enforc
 3. Push branch: `git push -u origin feature/your-feature-name`.
 4. Create PR: `gh pr create --title "Title" --body "Description"`.
 5. Review and approve PR (self-review is acceptable, particularly for small changes).
-6. Merge PR: `gh pr merge --squash` or `gh pr merge --merge`.
+6. Merge the PR — squash by default; see [Merging PRs](#merging-prs) below
+     for the commit-message convention and exact `gh` invocation.
 7. Branches are automatically deleted after merge (GitHub setting).
+
+## Merging PRs
+
+Default to **squash merges** to keep `main`'s history linear and easy to scan.
+The squashed commit lives in `git log` forever, so invest in writing a good message.
+
+### Commit Message
+
+- **Subject**: `<type>: <description> (#<PR-number>)`.
+  Use the same `<type>:` prefixes as recent history
+    (e.g. `docs:`, `fix:`, `chore:`, `ci:`, `feat:`, `refactor:`).
+  GitHub does not append `(#<PR-number>)` automatically when `--subject` is supplied,
+    so include it manually for traceability back to the PR.
+- **Body**: copy the **Summary** and **Context** sections of the PR description verbatim,
+    separated by a blank line.
+  These two sections explain _what_ changed and _why_,
+    and are the most useful parts for a future reader of `git log` or `git blame`.
+  Drop the `## Summary` / `## Context` headers if the prose reads naturally without them.
+
+### Command
+
+Pass `--subject` and `--body` explicitly
+  so the merge commit is composed deliberately
+  rather than inheriting the entire PR description (success-criteria checklist included):
+
+```bash
+gh pr merge <PR#> --squash --delete-branch \
+  --subject "<type>: <description> (#<PR#>)" \
+  --body "$(cat <<'EOF'
+<Summary section text>
+
+<Context section text>
+EOF
+)"
+```
+
+`--delete-branch` removes the remote branch after merging
+  and switches the local checkout back to `main`,
+  also deleting the merged local branch.
+
+### Other Merge Strategies
+
+- `--merge` (true merge commit) is acceptable
+    when preserving individual commits has value
+    — e.g. a series of independent commits that each stand on their own
+    and are worth keeping in history separately.
+- `--rebase` is generally avoided in this repo.
+
+### Bypassing Review
+
+Use `--admin` only when bypassing review has been explicitly authorized
+  (e.g. trivial changes the author has confirmed, or hotfixes).
 
 ## PR Requirements
 
