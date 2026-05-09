@@ -13,7 +13,7 @@ Thumbs.db
 .mise.lock
 
 # Git worktrees
-.worktrees/
+.claude/worktrees/
 
 # Language-specific patterns added per sub-project
 
