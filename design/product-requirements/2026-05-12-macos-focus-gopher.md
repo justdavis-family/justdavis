@@ -53,6 +53,9 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
         Its primary transport is a local Unix domain socket; a thin command-line wrapper is also
         provided that performs the same `get_focus()` call over that socket and prints the `FocusState`
         as JSON. Both transports expose the same single operation and nothing more.
+- [ ] The command-line wrapper exits with a non-zero status when `ok` is `false` (and zero otherwise),
+        so shell scripts can branch on the exit code without parsing the JSON; the JSON body still
+        carries `ok` and `error` for programmatic consumers reading the socket directly.
 - [ ] The helper does not expose `read_file(path)`, `run_shell(command)`, `run_shortcut(name)`,
         `run_osascript(script)`, `query_db(path)`, or any other general-purpose or arbitrary operation.
 - [ ] The helper is read-only: it never modifies Focus, notifications, or any system setting.
@@ -63,8 +66,8 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 ### `FocusState` Data Model
 
-- [ ] `FocusState` is a single, flat object (a small single-purpose response; deliberately not nested),
-        with these fields and meanings:
+- [ ] `FocusState` is a single, flat object — a small single-purpose response, flat rather than nested
+        (see the JSON-shape analysis referenced below) — with these fields and meanings:
       - `ok` (boolean): whether the helper successfully determined the Focus state.
       - `focus_enabled` (boolean or null): whether a Focus is currently active;
           `null` only when `ok` is `false`.
@@ -186,6 +189,9 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md) —
     Where the Focus state lives, how the format has held up across macOS 12–15, and the basis for the
     compatibility-table seeding (specific versions vs. major-version wildcards).
+- [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md) —
+    Why `FocusState` is a flat object rather than a nested envelope, and why the CLI wrapper carries the
+    success/failure signal in its exit code as well as in `ok`.
 
 ### Engineering Principles
 

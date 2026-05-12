@@ -34,7 +34,8 @@ The Focus Gopher solves this by being a small, stable-identity broker:
     of these files.
 - **Unix domain socket** for client IPC, created in a per-user, user-only-permissioned location,
     plus a **thin CLI wrapper** (`focus-gopher`) that connects to that socket, performs `get_focus()`,
-    and prints the resulting `FocusState` as JSON — so callers can use whichever they prefer.
+    and prints the resulting `FocusState` as JSON, exiting non-zero when `ok` is `false` — so callers
+    can use whichever they prefer, and shell scripts can branch on the exit code without parsing JSON.
     No network listener is opened.
 - **A small line-delimited JSON request/response protocol** over that socket:
     the client sends a fixed request, the helper replies with one `FocusState` JSON object.
@@ -86,8 +87,10 @@ A single, flat, fixed-schema object, deliberately separating orthogonal facts so
 - `message` (string?) — human-readable guidance only; never used for program logic.
 - `error` (string) — present on failures; a stable machine-readable code (see error taxonomy below).
 
-The model is intentionally flat: it is one small response, so flat well-named fields parse most easily;
-  the clarity comes from the orthogonal fields, not from nesting. The four response shapes:
+The model is flat: for a single small fixed-schema response, flat well-named fields parse most easily,
+  and well-regarded minimal JSON APIs lean flat at this size — the clarity comes from the orthogonal
+  fields, not from nesting (see
+  [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md)). The four response shapes:
 
 ```json
 // (a) success, Focus on
@@ -206,6 +209,12 @@ New codes may be added; existing codes are not repurposed.
     Chosen: `get_focus()` and nothing else. A general RPC surface (read arbitrary files, run shell,
     run shortcuts, run AppleScript) would re-create exactly the over-broad capability the design exists
     to avoid. See [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md).
+- **A flat `FocusState` vs. a nested `focus`/`meta` envelope.**
+    Chosen: flat. It is one small fixed-schema response; an envelope mainly buys extensibility we don't
+    plan for (a second operation would be its own schema) plus a level of indirection every consumer
+    must walk. The success/failure signal lives in `ok` *and* in the CLI wrapper's exit code, so we get
+    the "proper status channel plus details in the body" pattern without an envelope. See
+    [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md).
 
 ## Success Criteria
 
@@ -230,7 +239,8 @@ New codes may be added; existing codes are not repurposed.
 
 - **Product Vision**: [macOS Focus Gopher](../product-vision/2026-05-12-macos-focus-gopher.md).
 - **Product Requirements**: [macOS Focus Gopher](../product-requirements/2026-05-12-macos-focus-gopher.md).
-- **Analysis**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md).
+- **Analyses**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md);
+    [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md).
 - **Delivery Plan**: [macOS Focus Gopher Delivery Plan](../delivery-plans/2026-05-12-macos-focus-gopher.md).
 - **Engineering Principles**:
     [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md);

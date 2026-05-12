@@ -9,11 +9,11 @@ This plan sequences delivery of the
 
 The main delivery risk is the *undocumented, version-fragile Focus database*
   (see the [format-stability analysis](../analyses/2026-05-12-macos-focus-db-format.md)).
-The plan front-loads the stable parts (the project skeleton and the wire contract),
-  then tackles parsing for the verified macOS versions, then packaging/distribution, then compatibility
-  breadth and the agent ecosystem — so each milestone delivers something a consumer or contributor can
-  actually exercise, and so a parser surprise on a future macOS version does not block the earlier
-  milestones.
+The plan front-loads the stable parts (the project skeleton and the wire contract), then the CLI
+  wrapper (so the service is usable without `socat`/`nc` + `jq`), then parsing for the verified macOS
+  versions, then packaging/distribution, then compatibility breadth and the agent ecosystem — so each
+  milestone delivers something a consumer or contributor can actually exercise, and so a parser surprise
+  on a future macOS version does not block the earlier milestones.
 
 ## Delivery Conventions
 
@@ -29,27 +29,41 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
 
 **In scope:**
 
-- Scaffold `macos-focus-gopher/` at the repo root: a Rust crate (the helper binary plus the
-    `focus-gopher` CLI wrapper) and the `.app` bundle packaging, a `mise.toml` exposing
+- Scaffold `macos-focus-gopher/` at the repo root: a Rust crate (the helper binary; the CLI binary is
+    stubbed in but not yet wired up) and the `.app` bundle packaging, a `mise.toml` exposing
     `build` / `test` / `lint` / `dependencies:check` / `dependencies:update` / `ci`, wired into the
     root `mise.toml`, and CI invoking those Mise tasks.
 - Define the `FocusState` model, publish its versioned **JSON Schema**, and define the line-delimited
-    JSON request/response protocol over a per-user Unix domain socket; the CLI wrapper relays
-    `get_focus()` over that socket and prints the result.
+    JSON request/response protocol over a per-user Unix domain socket.
 - Implement `get_focus()` as a stub that returns a well-formed `FocusState`
     (e.g. `ok: false`, `error: "macos_unsupported"`) without touching any database file.
-- Unit tests for `FocusState` encoding/decoding, schema validation, and the socket/CLI round-trip.
+- Unit tests for `FocusState` encoding/decoding, JSON-Schema validation, and the socket round-trip.
 - Initial `README.md` (clearly marked early-development / not yet usable), an OSS `LICENSE` (MIT), and a
     `CONTRIBUTING.md` stub that points at the repository-root `CONTRIBUTING.md` and these design docs.
 
-**Deliverable:** the project builds, tests, and lints in CI;
-  a local client can connect to the running helper over the socket — or run `focus-gopher` — and
-  receive a well-formed (stubbed) `FocusState` that validates against the published schema.
+**Deliverable:** the project builds, tests, and lints in CI; a local client can connect to the running
+  helper over the socket and receive a well-formed (stubbed) `FocusState` that validates against the
+  published schema. (For local poking before M2, a raw socket tool like `nc`/`socat` is enough.)
 
-**Deferred to later milestones:** any real Focus parsing; packaging as an installed LaunchAgent;
-  distribution.
+**Deferred to later milestones:** the CLI wrapper; any real Focus parsing; packaging as an installed
+  LaunchAgent; distribution.
 
-### M2 — Read-only Focus parsing on the verified macOS versions
+### M2 — The `focus-gopher` CLI wrapper
+
+**In scope:**
+
+- Implement the thin `focus-gopher` CLI: it connects to the socket, performs `get_focus()`, prints the
+    `FocusState` as JSON, and exits non-zero when `ok` is `false` (zero otherwise).
+- `--help` output with worked examples.
+- Tests covering the CLI round-trip and exit-code behavior.
+- `README.md` updated with CLI usage (so the service is usable without `socat`/`nc` + `jq`).
+
+**Deliverable:** a human or agent can run `focus-gopher` and get the (stubbed, until M3) `FocusState`
+  without touching the raw socket.
+
+**Deferred:** real Focus parsing; packaging/install; distribution.
+
+### M3 — Read-only Focus parsing on the verified macOS versions
 
 **In scope:**
 
@@ -67,15 +81,15 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
 - Fixture-based unit/integration tests: captured `Assertions.json` / `ModeConfigurations.json` shapes
     for manual-Focus-on, scheduled-Focus-on, Focus-off (including the empty file), malformed, and
     unknown-schema cases, per supported macOS major.
-- `README.md` updated to reflect "works on macOS 12–15, run from source"; first cut of `--help` output
-    with examples.
+- `README.md` updated to reflect "works on macOS 12–15, run from source".
 
-**Deliverable:** `get_focus()` returns a correct `FocusState` for Focus-on (manual and scheduled) and
-  Focus-off on the supported macOS versions, and an explicit error on unreadable/malformed/unknown data.
+**Deliverable:** `get_focus()` (via socket or `focus-gopher`) returns a correct `FocusState` for
+  Focus-on (manual and scheduled) and Focus-off on the supported macOS versions, and an explicit error
+  on unreadable/malformed/unknown data.
 
 **Deferred:** packaging/install; distribution; broader macOS version coverage; bundled agent skills.
 
-### M3 — Packaging, install, and distribution
+### M4 — Packaging, install, and distribution
 
 **In scope:**
 
@@ -87,8 +101,8 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
     `PATH` — installs with a single command.
 - Documentation of the macOS privacy permission the *helper* needs (Full Disk Access, if required) and
     how to grant it — and confirmation that no client receives any permission as a result.
-- An end-to-end test: a client connects to the installed, running helper (and the CLI wrapper works)
-    and receives a `FocusState` (against a real macOS session where feasible; otherwise the real
+- An end-to-end test: a client connects to the installed, running helper (and `focus-gopher` works) and
+    receives a `FocusState` (against a real macOS session where feasible; otherwise the real
     socket/process over fixture data).
 - `README.md` updated with one-command install instructions and a short, deliberately slow/clear
     screen-recording GIF; a `man` page.
@@ -98,7 +112,7 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
 
 **Deferred:** auto-update; broader macOS version coverage; bundled agent skills.
 
-### M4 — Compatibility breadth, the agent ecosystem, and docs polish
+### M5 — Compatibility breadth, the agent ecosystem, and docs polish
 
 **In scope:**
 
@@ -119,8 +133,8 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
 
 ## Explicitly Deferred (out of scope for this plan)
 
-- A packaged client library (Rust, Python, or otherwise) for consumers — clients can speak the
-    documented socket protocol or use the CLI wrapper until there is a concrete need.
+- A packaged client *library* (Rust, Python, or otherwise) for consumers — clients can speak the
+    documented socket protocol or use the `focus-gopher` CLI until there is a concrete need.
 - Distribution beyond Homebrew (e.g. a standalone downloadable installer) and auto-update.
 - Any operation beyond `get_focus()` — the narrow API is the point.
 
@@ -129,4 +143,5 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
 - **Product Vision**: [macOS Focus Gopher](../product-vision/2026-05-12-macos-focus-gopher.md).
 - **Product Requirements**: [macOS Focus Gopher](../product-requirements/2026-05-12-macos-focus-gopher.md).
 - **Engineering Design**: [macOS Focus Gopher Engineering Design](../engineering-designs/2026-05-12-macos-focus-gopher.md).
-- **Analysis**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md).
+- **Analyses**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md);
+    [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md).
