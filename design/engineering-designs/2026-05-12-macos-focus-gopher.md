@@ -131,9 +131,7 @@ New codes may be added; existing codes are not repurposed.
 ## Configuration
 
 - **Install path:** `/Applications/FocusGopher.app` (stable; updated infrequently).
-- **Bundle identifier:** a reverse-DNS identifier under the org's domain
-    (exact value — e.g. `family.justdavis.FocusGopher` — is an implementation detail to settle
-    when the project is scaffolded; once chosen it is stable).
+- **Bundle identifier:** `justdavis.FocusGopher` (stable once shipped).
 - **LaunchAgent plist:** `~/Library/LaunchAgents/<bundle-id>.plist`, registering the helper to run
     in the user's session; installed/removed by the helper's install/uninstall flow.
 - **Socket path:** a per-user, user-only-permissioned path (e.g. under the user's
