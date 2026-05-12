@@ -18,6 +18,10 @@ During design discussions, watch for generalizable patterns that could become
   Model all errors explicitly; never suppress error information.
 - [Fail Fast and Loud](/design/engineering-principles/2026-01-09-fail-fast.md):
   Crash immediately on impossible states with clear messages.
+- [Least Privilege](/design/engineering-principles/2026-05-12-least-privilege.md):
+  Grant the narrowest capability that does the job; broker privileged access, especially for agents.
+- [Clear, Unambiguous, Easily-Parsed Data Models](/design/engineering-principles/2026-05-12-clear-data-models.md):
+  Separate orthogonal facts; never collapse "failed" into "negative result".
 
 ### Testing Principles
 
