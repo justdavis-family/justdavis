@@ -44,8 +44,6 @@ In particular, distinguish "the operation failed" from "the operation succeeded 
 
 ## When to Break This Rule
 
-- Throwaway internal scripts where the producer and the consumer are the same code and always change
-    together — there is no boundary to be careful at.
 - Cases where you must conform to an external format that is itself ambiguous — wrap and normalize it
     into a clear model at the boundary rather than propagating the ambiguity inward.
 
