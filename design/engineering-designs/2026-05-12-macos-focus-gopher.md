@@ -92,7 +92,7 @@ The model is flat: for a single small fixed-schema response, flat well-named fie
   fields, not from nesting (see
   [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md)). The four response shapes:
 
-```json
+```jsonc
 // (a) success, Focus on
 {"ok": true, "focus_enabled": true, "focus_name": "Sleep",
  "macos_version": "15.5", "macos_compatibility": "supported", "message": null}
@@ -158,9 +158,15 @@ New codes may be added; existing codes are not repurposed.
 - **Bundle identifier:** `justdavis.FocusGopher` (stable once shipped).
 - **LaunchAgent plist:** `~/Library/LaunchAgents/<bundle-id>.plist`, registering the helper to run
     in the user's session; installed/removed by the install/uninstall flow.
-- **Socket path:** a per-user, user-only-permissioned path (e.g. under the user's
-    `~/Library/Application Support/<bundle-id>/` or a per-user temporary directory);
-    no network listener. The CLI wrapper knows this path.
+- **Socket path:** a deliberately short, per-user, user-only-permissioned path — short because
+    `sockaddr_un.sun_path` is capped (~104 bytes on macOS), so deep locations like
+    `~/Library/Application Support/<bundle-id>/…` (and `$TMPDIR`, which on macOS expands to a long
+    `/var/folders/…/T/` path) risk runtime bind/connect failures depending on the username. The
+    concrete path — e.g. a short fixed name such as `/tmp/justdavis.focusgopher.<uid>.sock`, with the
+    socket file created mode `0600` and the helper unlinking-then-binding and verifying owner/peer
+    identity on connect; or, preferably, a `Sockets` entry in the LaunchAgent plist so `launchd`
+    creates and owns the socket and passes the descriptor in — is fixed in M1. No network listener; the
+    CLI wrapper uses the same path.
 - **`FocusState` JSON Schema:** a versioned schema published in the repository and referenced by the
     README and `--help`/`man` docs.
 - **macOS compatibility table:** maintained in the project repository as the source of truth, seeded
