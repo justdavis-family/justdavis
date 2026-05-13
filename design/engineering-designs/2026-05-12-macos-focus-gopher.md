@@ -158,15 +158,20 @@ New codes may be added; existing codes are not repurposed.
 - **Bundle identifier:** `justdavis.FocusGopher` (stable once shipped).
 - **LaunchAgent plist:** `~/Library/LaunchAgents/<bundle-id>.plist`, registering the helper to run
     in the user's session; installed/removed by the install/uninstall flow.
-- **Socket path:** a deliberately short, per-user, user-only-permissioned path — short because
-    `sockaddr_un.sun_path` is capped (~104 bytes on macOS), so deep locations like
-    `~/Library/Application Support/<bundle-id>/…` (and `$TMPDIR`, which on macOS expands to a long
-    `/var/folders/…/T/` path) risk runtime bind/connect failures depending on the username. The
-    concrete path — e.g. a short fixed name such as `/tmp/justdavis.focusgopher.<uid>.sock`, with the
-    socket file created mode `0600` and the helper unlinking-then-binding and verifying owner/peer
-    identity on connect; or, preferably, a `Sockets` entry in the LaunchAgent plist so `launchd`
-    creates and owns the socket and passes the descriptor in — is fixed in M1. No network listener; the
-    CLI wrapper uses the same path.
+- **Socket path:** macOS has no `XDG_RUNTIME_DIR`-style blessed per-user socket directory (no
+    `/run/user/<uid>/`), and `sockaddr_un.sun_path` is capped (~104 bytes), so this is a deliberate,
+    deliberately-short choice. Preferred: a **`launchd`-managed socket** — declare a `Sockets` entry
+    (with `SockPathName`) in the LaunchAgent plist so `launchd` creates, owns, and tears down the
+    socket and hands the helper the descriptor via `launch_activate_socket()`, which also takes care of
+    socket lifecycle. Fallback if the helper manages it itself: **`$TMPDIR`** (i.e.
+    `confstr(_CS_DARWIN_USER_TEMP_DIR)`, e.g. `/var/folders/…/T/`) — the per-user, mode-`0700`,
+    user-owned directory that is the closest macOS analog to a per-user runtime dir — with a short
+    filename, since that path already eats most of the `sun_path` budget. (`~/Library/Application
+    Support/<bundle-id>/` is idiomatic for app *data* but is the deepest option and the most likely to
+    overflow the limit; a bare `/tmp/…` path is short but world-writable, so it needs unlink-then-bind
+    plus an owner check on both ends.) Whichever is chosen, the socket is user-only and the helper
+    verifies peer/owner identity on connect; the concrete path is pinned in M1. No network listener;
+    the CLI wrapper uses the same path.
 - **`FocusState` JSON Schema:** a versioned schema published in the repository and referenced by the
     README and `--help`/`man` docs.
 - **macOS compatibility table:** maintained in the project repository as the source of truth, seeded
