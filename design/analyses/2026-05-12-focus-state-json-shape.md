@@ -62,10 +62,46 @@ No. That principle is about *separating orthogonal facts into their own fields* 
   Nesting those same facts under `focus`/`meta` would not make them any more orthogonal; it would just
   add a level of indirection that every consumer (and every `jq`/`grep` one-liner) has to walk through.
 
+### When nesting *does* earn its keep: making invalid states unrepresentable
+
+The strongest argument for grouping fields is not aesthetics or extensibility — it is *making invalid
+  states unrepresentable*. When several fields are conceptually one unit that must vary together (the
+  classic example: `x`, `y`, `z` that are always all-`Some` or all-`None`, far better modeled as one
+  `position: Option<Coordinates>` than three independent `Option`s), grouping them turns "every
+  consumer must remember to check the combination" into "the type system checks it for you." This is
+  exactly the [Strong Typing and Information
+  Preservation](../engineering-principles/2026-01-07-strong-typing.md) principle.
+
+`FocusState` *does* have such a unit: when `ok` is `false`, `focus_enabled` and `focus_name` are
+  meaningless; when `focus_enabled` is `false`, `focus_name` is meaningless. A flat wire object can
+  literally represent the nonsense `{"ok": false, "focus_enabled": true, …}`. So this is a real
+  consideration here, not a strawman — and it is resolved by splitting the question in two:
+
+- **The helper's *internal* model is a sum type, where the invalid states are unrepresentable.**
+    The Rust side is modeled as roughly `enum FocusState { Determined { focus: Option<FocusInfo>,
+    macos: MacosCompat }, Failed { error: ErrorCode, macos: MacosCompat } }` (with
+    `FocusInfo { name: Option<String> }`) — there is no way to construct "failed but Focus on", or "no
+    Focus but here's its name". This is where the strong-typing win is captured, in the code that
+    actually branches on it.
+- **The *wire* form is a flat, schema-validated projection of that sum type.** JSON has no native sum
+    types; any consumer — `jq`, a shell `case`, a five-line Python script — branches on a discriminant
+    regardless of whether the bytes are flat or nested. A nested `{"focus": {...}|null, "meta": {...}}`
+    does not make the wire format self-checking; the consumer still has to know the `ok`/`error` rule.
+    What actually constrains the valid combinations on the wire is the **published JSON Schema**
+    (conditional `required`/`oneOf` on `ok`), which both flat and nested forms need equally. Given
+    that, the flat projection keeps the ergonomics (shallow paths, trivial `jq`) without giving up any
+    enforceable guarantee the nested form would have provided.
+
+In short: capture the "illegal states unrepresentable" guarantee in the strongly-typed *internal*
+  model (where it has teeth), and let the *wire* contract be the flat projection plus its schema.
+
 ## Recommendation
 
-- **Keep `FocusState` flat.** It is one small, fixed-schema response; flat well-named orthogonal fields
-    are the easiest to read, parse, and document, and that is what comparable well-regarded APIs do.
+- **Keep `FocusState` flat *on the wire*, backed by a strongly-typed internal sum type.** It is one
+    small, fixed-schema response; flat well-named orthogonal fields are the easiest to read, parse, and
+    document, and that is what comparable well-regarded APIs do. The "make invalid states
+    unrepresentable" guarantee is captured in the helper's internal model and enforced on the wire by
+    the published JSON Schema, not by nesting.
 - **The CLI wrapper exits non-zero when `ok` is `false`** (and zero otherwise), so shell scripts can
     branch on the exit code without parsing JSON; the JSON body still carries `ok` and `error` for
     programmatic consumers reading the socket directly. This gives us the "proper status channel *and*
@@ -78,7 +114,8 @@ No. That principle is about *separating orthogonal facts into their own fields* 
 
 - **Product Requirement**: [macOS Focus Gopher](../product-requirements/2026-05-12-macos-focus-gopher.md).
 - **Engineering Design**: [macOS Focus Gopher Engineering Design](../engineering-designs/2026-05-12-macos-focus-gopher.md).
-- **Engineering Principle**: [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md).
+- **Engineering Principles**: [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md);
+    [Strong Typing and Information Preservation](../engineering-principles/2026-01-07-strong-typing.md).
 - Sources:
   - [Vinay Sahni — Best Practices for Designing a Pragmatic RESTful API](https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api).
   - [On shapes, sizes and envelopes (REST API ones) — fleetster Tech Blog](https://medium.com/fleetster-tech-blog/on-shapes-sizes-and-envelopes-rest-api-ones-272549d17108).

@@ -28,10 +28,15 @@ The Focus Gopher solves this by being a small, stable-identity broker:
     helps with authoring and review.
 - **`serde` / `serde_json`** for the `FocusState` model and the socket protocol; a small blocking
     accept-loop for the socket server (no async runtime needed for a one-shot request/response).
-- **Per-user LaunchAgent** (`~/Library/LaunchAgents/<bundle-id>.plist`) — not a system LaunchDaemon.
-    Focus state is per-user, the database lives under the user's home directory,
-    and GUI-session context may matter; a LaunchAgent runs in the user's session with the user's view
-    of these files.
+- **LaunchAgent — not a system LaunchDaemon.** Focus state is per-user, the database lives under the
+    user's home directory, and GUI-session context may matter; a LaunchAgent runs *in each user's own
+    session* with that user's view of these files (one instance per logged-in user), whereas a
+    LaunchDaemon would run once as `root` and see the wrong (or no) user context. The plist location
+    sets *who it is installed for*, independent of that per-user execution: a shared/system install
+    (Homebrew, which has admin rights) places it in **`/Library/LaunchAgents/<bundle-id>.plist`** so it
+    runs for every user on the machine; a single-user developer install (e.g. `cargo install`, which is
+    per-user and has no admin rights) places it in **`~/Library/LaunchAgents/<bundle-id>.plist`** for
+    the current user only.
 - **Unix domain socket** for client IPC, created in a per-user, user-only-permissioned location,
     plus a **thin CLI wrapper** (`focus-gopher`) that connects to that socket, performs `get_focus()`,
     and prints the resulting `FocusState` as JSON, exiting non-zero when `ok` is `false` — so callers
@@ -87,10 +92,14 @@ A single, flat, fixed-schema object, deliberately separating orthogonal facts so
 - `message` (string?) — human-readable guidance only; never used for program logic.
 - `error` (string) — present on failures; a stable machine-readable code (see error taxonomy below).
 
-The model is flat: for a single small fixed-schema response, flat well-named fields parse most easily,
-  and well-regarded minimal JSON APIs lean flat at this size — the clarity comes from the orthogonal
-  fields, not from nesting (see
-  [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md)). The four response shapes:
+The wire form is flat: for a single small fixed-schema response, flat well-named fields parse most
+  easily, and well-regarded minimal JSON APIs lean flat at this size — the clarity comes from the
+  orthogonal fields, not from nesting. The helper's *internal* representation is a strongly-typed sum
+  type (roughly `Determined { focus: Option<FocusInfo>, … }` vs. `Failed { error, … }`) so invalid
+  combinations like "failed but Focus on" are unrepresentable in code; the flat JSON is a projection of
+  that, with the valid combinations enforced on the wire by the published JSON Schema rather than by
+  nesting (see [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md)). The four
+  response shapes:
 
 ```jsonc
 // (a) success, Focus on
@@ -156,8 +165,10 @@ New codes may be added; existing codes are not repurposed.
     formula/tap installs the bundle, registers the LaunchAgent, and links the `focus-gopher` CLI onto
     the user's `PATH`.
 - **Bundle identifier:** `justdavis.FocusGopher` (stable once shipped).
-- **LaunchAgent plist:** `~/Library/LaunchAgents/<bundle-id>.plist`, registering the helper to run
-    in the user's session; installed/removed by the install/uninstall flow.
+- **LaunchAgent plist:** `/Library/LaunchAgents/<bundle-id>.plist` for a shared/system install
+    (the Homebrew path — installs once for all users), or `~/Library/LaunchAgents/<bundle-id>.plist`
+    for a single-user developer install (e.g. `cargo install`); either way it registers the helper to
+    run in each user's session and is installed/removed by the install/uninstall flow.
 - **Socket path:** macOS has no `XDG_RUNTIME_DIR`-style blessed per-user socket directory (no
     `/run/user/<uid>/`), and `sockaddr_un.sun_path` is capped (~104 bytes), so this is a deliberate,
     deliberately-short choice. Preferred: a **`launchd`-managed socket** — declare a `Sockets` entry
