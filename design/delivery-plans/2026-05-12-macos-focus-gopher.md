@@ -98,6 +98,13 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
 - `README.md` updated to reflect "works on macOS 12–15, run from source", **including a clear
     "grant Full Disk Access to the helper" section** (the exact System Settings steps, and that the
     grant must be re-applied after each upgrade on the build-from-source channels).
+- **Dev docs — developing against the live Focus database (first milestone that reads the protected
+    files):** the contributor docs (`CONTRIBUTING.md` and/or a README "Developing" section) gain a
+    local-development guide: the fixture suite needs no Full Disk Access, and live-database smoke
+    testing needs FDA granted either to the developer's terminal/IDE (TCC responsible-process
+    attribution, for run-from-terminal iteration) or via a self-signed local code-signing certificate
+    so the grant survives rebuilds — per the
+    [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 
 **Deliverable:** `get_focus()` (via socket or `focus-gopher`) returns a correct `FocusState` for
   Focus-on (manual and scheduled) and Focus-off on the supported macOS versions, and an explicit error
@@ -127,6 +134,13 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
     is absent.
 - `README.md` updated with one-command install instructions and a short, deliberately slow/clear
     screen-recording GIF; a `man` page.
+- **Dev docs + tooling — the LaunchAgent shape (first milestone that builds a user LaunchAgent):**
+    because LaunchAgent-attributed access keys TCC to the helper binary's own (per-rebuild churning)
+    cdhash, the contributor docs document the self-signed local code-signing certificate workflow, and
+    the project ships a `mise`/build task that signs dev builds with that local certificate, so the
+    Full Disk Access grant persists across rebuilds during LaunchAgent testing without an Apple
+    Developer account — per the
+    [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 
 **Deliverable:** an installable helper (`brew install …` from a tap, or `cargo install`) that an
   unprivileged out-of-process client can query, with honest install-and-use docs that set correct

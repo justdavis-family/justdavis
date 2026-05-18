@@ -147,6 +147,41 @@ The message should print the *canonical resolved* executable path
 It does **not** enable programmatic FDA granting,
   and it does **not** remove the one-time manual System Settings step on any channel.
 
+### 6. Developing and testing locally without a Developer ID signature
+
+Because an unsigned/ad-hoc binary's TCC identity is its cdhash,
+  every rebuild produces a new identity and invalidates the Full Disk Access grant —
+  *even when the binary is rebuilt in place at a stable path*.
+A naive inner loop (build → run as a LaunchAgent against the live database → repeat) would therefore
+  require re-adding the binary in System Settings after every build,
+  which would make local development of this project genuinely painful.
+
+Three things defuse this, and together they should be the documented default workflow:
+
+- **Fixtures need no FDA.**
+  The fixture-based test strategy (captured `Assertions.json` / `ModeConfigurations.json` files in the
+    repo, not the TCC-protected path) means the bulk of the unit/integration suite reads ordinary files
+    and never touches TCC.
+  Full Disk Access is exercised only by live smoke tests and the end-to-end test.
+- **A self-signed local code-signing certificate gives a stable identity with no Apple account.**
+  A one-time Keychain step creates a self-signed code-signing certificate;
+    signing dev builds with it (`codesign -s "<local cert>"`) yields a stable TCC *Designated
+    Requirement* on the developer's machine, so the FDA grant **persists across rebuilds** —
+    the same property the shipped product only gains at M6, achievable locally for free.
+  This matters most for LaunchAgent-shape testing, where access is attributed to the helper binary
+    itself rather than to a parent process.
+- **Granting FDA to the responsible parent process covers run-from-terminal iteration.**
+  When the helper is run directly (not via the LaunchAgent), TCC attributes file access to the
+    responsible parent process, so granting Full Disk Access once to the developer's terminal/IDE lets
+    anything launched from it read the protected files without per-build re-granting.
+  (This grants broad FDA to that terminal — acceptable on a dev machine, and never part of the shipped
+    artifact.)
+
+The genuinely painful scenario occurs only if a developer uses none of these and tests exclusively
+  through the LaunchAgent path against the live database.
+The self-signed-certificate and responsible-process behaviors are the established approaches but are
+  version-sensitive, and belong in the same on-device verification bucket as the rest of this analysis.
+
 ## Recommendation
 
 - Treat **code signing + notarization** (and a **cask** channel) as
@@ -163,6 +198,11 @@ It does **not** enable programmatic FDA granting,
     (including that it must be re-granted after upgrades on the from-source channels).
 - Keep the **bundle / stable-identity architecture** (LaunchAgent and `.app` layout) intact;
     only the Developer ID **signature + notarization** and the **cask** channel are deferred.
+- **Document the local-development workflow** (fixtures-need-no-FDA, a self-signed dev signing
+    certificate, and terminal/responsible-process FDA), and ship a dev build task that signs with the
+    local certificate so it is the default path rather than tribal knowledge.
+  Capture it in the contributor docs of the first milestone that reads the protected files,
+    and again in the first milestone that builds the user LaunchAgent.
 
 This analysis should be revisited if the project gains an Apple Developer Program membership,
   if a cask channel is pursued, or if on-device verification contradicts the
