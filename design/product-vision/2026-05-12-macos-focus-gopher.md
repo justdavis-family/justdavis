@@ -31,10 +31,13 @@ What's missing is a way for an unprivileged agent to ask a single, narrow questi
 A small, single-purpose macOS helper — the **Focus Gopher** — that owns the macOS-specific access
   and exposes exactly one read-only operation to local clients: `get_focus() -> FocusState`.
 
-The helper is a code-signed (and notarized) app with a stable install path, stable bundle identifier,
-  and stable signing identity, run as a per-user LaunchAgent, so the macOS privacy permission it needs
-  (Full Disk Access, if macOS requires it) attaches to *the helper* and survives agent rebuilds,
+The helper is a stable-identity app with a fixed install path and bundle identifier,
+  run as a per-user LaunchAgent, so the macOS privacy permission it needs
+  (Full Disk Access) attaches to *the helper* and survives agent rebuilds,
   reinstalls, and identity churn.
+Developer ID code signing and notarization are an optional later enhancement that additionally lets the
+  helper's own grant persist across the helper's *own* upgrades; they are not required for the core
+  value above, and the helper is fully functional when built from source and granted access manually.
 Clients reach it over a local Unix domain socket; a thin command-line wrapper ships alongside it
   for callers (humans and agents) who prefer to just run a command.
 
@@ -63,8 +66,9 @@ The Focus Gopher should also be *pleasant to discover and adopt*: easy to instal
     via a single local call, without holding Full Disk Access or any other broad macOS privacy permission.
 - Rebuilding, reinstalling, or relaunching the agent — or changing how it is launched —
     does not break Focus retrieval, because no macOS permission is attached to the agent's identity.
-- The helper has a stable macOS identity: a fixed install path, bundle ID, and signing identity,
-    updated infrequently.
+- The helper has a stable macOS identity: a fixed install path and bundle ID, updated infrequently
+    (with an optional Developer ID signing identity that additionally persists the grant across the
+    helper's own upgrades).
 - The helper exposes exactly one read-only operation and no arbitrary filesystem, shell, Shortcut,
     or AppleScript access.
 - The helper's responses unambiguously distinguish *no Focus is on*, *a Focus is on* (with or without

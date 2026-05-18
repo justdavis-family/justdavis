@@ -19,10 +19,13 @@ prs: []
 A per-user macOS helper that an unprivileged local client (e.g. an LLM/agent system) can query
   to learn the current macOS Focus state, without the client process itself holding Full Disk Access
   or any other broad macOS privacy permission.
-The helper is a code-signed (and notarized) app with a stable identity, run as a per-user LaunchAgent,
-  exposing exactly one read-only operation, `get_focus()`, returning a fixed-schema `FocusState`,
-  over a local Unix domain socket — with a thin command-line wrapper for callers who prefer to run a
-  command.
+The helper is a stable-identity app bundle (a fixed install path and bundle identifier), run as a
+  per-user LaunchAgent, exposing exactly one read-only operation, `get_focus()`, returning a
+  fixed-schema `FocusState`, over a local Unix domain socket — with a thin command-line wrapper for
+  callers who prefer to run a command.
+Developer ID code signing and notarization are an optional later enhancement — they make the Full Disk
+  Access grant persist across upgrades and improve first-run signposting, but are not required for the
+  helper to be fully functional.
 The helper performs the privileged, undocumented Focus-database read itself,
   reports an explicit error when it cannot determine the state (never a silent "no Focus"),
   and reports whether the running macOS version is known-supported.
@@ -38,12 +41,17 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 ### Helper Identity and Lifecycle
 
-- [ ] The helper is distributed as a code-signed and notarized app bundle installed at a stable path
-        with a stable bundle identifier and a stable signing identity.
+- [ ] The helper is distributed as an app bundle installed at a stable path with a stable bundle
+        identifier (the unit the macOS privacy grant attaches to).
+- [ ] Developer ID code signing and Apple notarization are an *optional* later enhancement, not
+        required for the helper to be fully functional; when present they make the Full Disk Access
+        grant persist across helper upgrades (otherwise the user re-applies it after each upgrade on
+        the build-from-source channels). See the analysis referenced below.
 - [ ] The helper runs as a per-user LaunchAgent — not a system LaunchDaemon —
         because Focus state is user-specific and the relevant files live under the user's home directory.
-- [ ] Any macOS privacy permission the helper needs (Full Disk Access, if macOS requires it
-        to read the Focus database) is granted to the helper, not to any client.
+- [ ] Any macOS privacy permission the helper needs (Full Disk Access, which macOS requires to read the
+        Focus database) is granted to the helper, not to any client; this grant is always a manual
+        System Settings action, as macOS exposes no programmatic prompt for it.
 - [ ] Clients that talk to the helper receive no Full Disk Access, Accessibility, Screen Recording,
         or Automation permission as a result.
 
@@ -78,7 +86,7 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
           or `unsupported`.
       - `message` (string or null): human-readable guidance; never load-bearing for program logic.
       - `error` (string, present on failures): a stable machine-readable error code
-          (e.g. `focus_db_unreadable`, `schema_unknown`).
+          (e.g. `focus_permission_denied`, `focus_db_unreadable`, `schema_unknown`).
 - [ ] The helper does not include speculative fields (e.g. `normalized`, `source`, or a list of all
         known-compatible macOS versions) without a concrete consumer need.
 - [ ] All four documented response shapes are produced correctly:
@@ -119,11 +127,15 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 ### Failure Handling
 
-- [ ] The helper tolerates missing files, unreadable files, malformed JSON, schema changes,
-        and partially-written files without crashing.
+- [ ] The helper tolerates missing files, permission-denied files, unreadable files, malformed JSON,
+        schema changes, and partially-written files without crashing.
 - [ ] Any failure to determine the Focus state is reported explicitly:
         `ok: false`, `focus_enabled: null`, `focus_name: null`, and a stable `error` code.
 - [ ] A parsing or schema failure is never reported as `ok: true`, `focus_enabled: false`.
+- [ ] A missing Full Disk Access grant is detected (a permission denial on the existing Focus
+        database) and reported as a dedicated `focus_permission_denied` error code — never as
+        `ok: true, focus_enabled: false` — with an actionable `message`: the canonical resolved helper
+        binary path to add and a System Settings deep link to the Full Disk Access pane.
 
 ### macOS Compatibility
 
@@ -142,8 +154,13 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 ### Distribution and Documentation
 
-- [ ] The helper can be installed with a single command via Homebrew (a formula or tap), which handles
-        the app bundle, the LaunchAgent registration, and putting the CLI wrapper on the user's `PATH`.
+- [ ] The helper can be installed with a single command via build-from-source channels — Homebrew
+        (a formula in a tap) or `cargo install` — which handle the app bundle, the LaunchAgent
+        registration, and putting the CLI wrapper on the user's `PATH`. A signed + notarized Homebrew
+        cask is an optional later addition, not required here.
+- [ ] The documentation explains, prominently, exactly how to grant Full Disk Access to the helper
+        (the precise System Settings steps and the resolved binary path), and that on the
+        build-from-source channels the grant must be re-applied after each upgrade.
 - [ ] The project `README.md` clearly and concisely explains who the Focus Gopher is for, what problem
         it solves, and how to start using it — written to engage both human and agent readers, with at
         least one short, deliberately slow/clear screen-recording GIF demonstrating it, and including or
@@ -180,9 +197,9 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 ### Engineering Design
 
 - [macOS Focus Gopher Engineering Design](../engineering-designs/2026-05-12-macos-focus-gopher.md) —
-    The technical approach: a Rust helper packaged as a code-signed `.app` LaunchAgent, a
-    Unix-domain-socket JSON protocol with a thin CLI wrapper, and a versioned read-only parser of the
-    macOS Focus database.
+    The technical approach: a Rust helper packaged as a stable-identity `.app` LaunchAgent
+    (Developer ID signing/notarization an optional later enhancement), a Unix-domain-socket JSON
+    protocol with a thin CLI wrapper, and a versioned read-only parser of the macOS Focus database.
 
 ### Analysis
 
@@ -192,6 +209,10 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md) —
     Why `FocusState` is a flat object rather than a nested envelope, and why the CLI wrapper carries the
     success/failure signal in its exit code as well as in `ok`.
+- [macOS Full Disk Access, Code Signing, and Distribution Channels](../analyses/2026-05-18-macos-fda-distribution-signing.md) —
+    Why signing/notarization are deferred optional UX improvements, how each distribution channel
+    interacts with the Full Disk Access grant, and why graceful missing-FDA handling is a first-class
+    early requirement.
 
 ### Engineering Principles
 

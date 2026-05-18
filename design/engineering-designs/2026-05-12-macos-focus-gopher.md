@@ -20,9 +20,15 @@ The Focus Gopher solves this by being a small, stable-identity broker:
 ## Technology Choices
 
 - **Rust**, building a small headless helper binary plus a thin CLI wrapper.
-    The helper is packaged as a code-signed and notarized macOS `.app` bundle so it has a stable bundle
-    identifier, a stable signing identity, and a TCC (privacy permission) grant that attaches to the
-    bundle's code signature — none of which depends on the implementation language.
+    The helper is laid out as a macOS `.app` bundle with a stable install path and stable bundle
+    identifier, run as a per-user LaunchAgent — that bundle/LaunchAgent *architecture* is the unit the
+    macOS TCC (privacy permission) grant attaches to, and none of it depends on the implementation
+    language. **Developer ID signing and Apple notarization are a deferred, optional enhancement**
+    (delivery-plan M6): the earlier milestones ship build-from-source distribution where the binary is
+    unsigned/ad-hoc, so TCC keys the Full Disk Access grant off the binary's cdhash and the user
+    re-applies the grant on each upgrade; a Developer ID signature later makes the grant persist across
+    upgrades without changing the architecture. See the
+    [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
     Because the helper is headless (no GUI), there is no AppKit/SwiftUI "native feel" to preserve,
     so Rust costs us nothing here and is the team's preferred language for this kind of tool, which
     helps with authoring and review.
@@ -137,8 +143,8 @@ The wire form is flat: for a single small fixed-schema response, flat well-named
     (or `focus_name: null` if the identifier could not be mapped).
 9. If parsing succeeded but the macOS version is not on the known-supported list:
     set `macos_compatibility: unknown_but_working` and the corresponding `message`.
-10. If any step fails (missing/unreadable/malformed/partially-written file, or unrecognized schema):
-    return `ok: false` with an explicit `error` code, never `focus_enabled: false`.
+10. If any step fails (permission-denied, missing/unreadable/malformed/partially-written file, or
+    unrecognized schema): return `ok: false` with an explicit `error` code, never `focus_enabled: false`.
 
 The parser is **versioned and swappable**: the macOS Focus database format is undocumented and may
   change between releases, so the parsing logic is internal and may be reorganized per macOS version
@@ -151,7 +157,10 @@ See [the format-stability analysis](../analyses/2026-05-12-macos-focus-db-format
 
 A small, stable set of `error` codes, e.g.:
 
-- `focus_db_unreadable` — a required database file is missing, permission-denied, or otherwise unreadable.
+- `focus_permission_denied` — the Focus database exists but the helper was denied access to it
+    (an `EPERM` on `open()`), overwhelmingly meaning the helper has not been granted Full Disk Access.
+- `focus_db_unreadable` — a required database file is genuinely missing or otherwise unreadable for a
+    reason other than a permission denial.
 - `focus_db_malformed` — a database file exists but is not parseable (truncated/partial write, invalid JSON).
 - `schema_unknown` — the file parsed as JSON but its structure does not match any known schema.
 - `macos_unsupported` — the running macOS version is explicitly marked unsupported in the compatibility table.
@@ -159,12 +168,33 @@ A small, stable set of `error` codes, e.g.:
 
 New codes may be added; existing codes are not repurposed.
 
+`focus_permission_denied` is a distinct, first-class code because Full Disk Access can never be granted
+  programmatically — it is always a manual System Settings step, and on the unsigned/from-source
+  channels it must be re-applied after every upgrade. Its `message` is therefore *actionable*: the
+  *canonical resolved* helper binary path to add (cargo and Homebrew both symlink into `bin/`, and TCC
+  matches the real binary), plus the
+  `x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles` deep link. A missing FDA
+  grant is **never** collapsed into `ok: true, focus_enabled: false`. Detection is reactive: a denied
+  `open()` on the protected, existing file returns `EPERM` (not `ENOENT`); because the protecting
+  directory is itself TCC-gated, a would-be `ENOENT` can also surface as `EPERM` when unprivileged, so
+  `EPERM` is treated as the dependable "denied" signal while `ENOENT` is only trusted as "absent" once
+  access is confirmed (the benign "Focus off" state is empty *content*, not an absent file). See the
+  [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
+
 ## Configuration
 
-- **Install path:** `/Applications/FocusGopher.app` (stable; updated infrequently). The Homebrew
-    formula/tap installs the bundle, registers the LaunchAgent, and links the `focus-gopher` CLI onto
-    the user's `PATH`.
+- **Install path:** `/Applications/FocusGopher.app` (stable; updated infrequently). A build-from-source
+    install (the Homebrew formula/tap, or `cargo install`) installs the bundle, registers the
+    LaunchAgent, and links the `focus-gopher` CLI onto the user's `PATH`; the optional M6 cask installs
+    the prebuilt signed + notarized bundle at the same path.
 - **Bundle identifier:** `justdavis.FocusGopher` (stable once shipped).
+- **Full Disk Access & distribution:** the helper requires Full Disk Access to read the Focus
+    database. That grant is always a manual System Settings action (no programmatic prompt exists on
+    any channel), and on the unsigned build-from-source channels it is keyed to the binary's cdhash, so
+    it must be re-applied after each upgrade; Developer ID signing + notarization (M6, optional) makes
+    it persist across upgrades and improves first-run OS signposting. The install/uninstall flow and
+    docs surface the exact grant steps. See the
+    [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 - **LaunchAgent plist:** `/Library/LaunchAgents/<bundle-id>.plist` for a shared/system install
     (the Homebrew path — installs once for all users), or `~/Library/LaunchAgents/<bundle-id>.plist`
     for a single-user developer install (e.g. `cargo install`); either way it registers the helper to
@@ -208,6 +238,17 @@ New codes may be added; existing codes are not repurposed.
     command-line tools is unreliable. The thin CLI wrapper gives consumers command-line ergonomics
     without giving up the stable-identity broker. The delivery plan includes an explicit checkpoint to
     validate agent-integration ergonomics at the MVP and revisit this if the socket proves awkward.
+- **Signed + notarized prebuilt distribution vs. build-from-source.**
+    Chosen: build-from-source (`cargo install`, Homebrew formula/tap) for the delivered milestones,
+    with Developer ID signing + notarization + a cask as an *optional* later enhancement (M6).
+    Signing/notarization cannot grant Full Disk Access programmatically and cannot remove the one-time
+    manual grant; their only benefits are that the grant *persists across upgrades* and that the OS
+    signposts the grant better — real but incremental UX wins that cost an Apple Developer Program
+    membership and release-pipeline complexity. The from-source path delivers full functionality now,
+    at the cost of the user re-granting Full Disk Access on each upgrade, which the explicit
+    `focus_permission_denied` code, the actionable message, and the docs are designed to make
+    painless. See the
+    [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 - **Reading the undocumented database vs. Shortcuts / AppleScript / a public API.**
     Chosen: read the database, inside the helper. There is no stable public API for "current Focus
     state"; Shortcuts and AppleScript require Automation permissions and would widen the helper's
@@ -242,7 +283,11 @@ New codes may be added; existing codes are not repurposed.
 
 - An agent can retrieve the current Focus state via a single local call (socket or CLI wrapper).
 - The agent itself has no Full Disk Access (or any other broad macOS privacy permission).
-- The helper has a stable macOS identity (fixed install path, bundle ID, signing identity).
+- The helper has a stable macOS identity: a fixed install path and bundle ID on every channel, plus a
+    stable Developer ID signing identity on the optional signed channel (M6).
+- A missing Full Disk Access grant is surfaced as the dedicated `focus_permission_denied` error with an
+    actionable, deep-linked `message`, never as `ok: true, focus_enabled: false`, and the docs explain
+    exactly how to grant (and, on from-source channels, re-grant) Full Disk Access.
 - The helper exposes only a narrow read-only API (`get_focus()`), and no arbitrary filesystem,
     shell, Shortcut, or AppleScript access.
 - Rebuilding or upgrading the agent does not break the helper's TCC permissions.
@@ -255,14 +300,16 @@ New codes may be added; existing codes are not repurposed.
 - A schema change or parse failure is surfaced as an explicit `error`, never as
     `ok: true, focus_enabled: false`.
 - A versioned JSON Schema for `FocusState` is published and the helper's output validates against it.
-- The helper installs with a single Homebrew command.
+- The helper installs with a single command via `cargo install` or Homebrew (formula/tap; the optional
+    M6 cask for the signed build).
 
 ## References
 
 - **Product Vision**: [macOS Focus Gopher](../product-vision/2026-05-12-macos-focus-gopher.md).
 - **Product Requirements**: [macOS Focus Gopher](../product-requirements/2026-05-12-macos-focus-gopher.md).
 - **Analyses**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md);
-    [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md).
+    [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md);
+    [macOS Full Disk Access, Code Signing, and Distribution Channels](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 - **Delivery Plan**: [macOS Focus Gopher Delivery Plan](../delivery-plans/2026-05-12-macos-focus-gopher.md).
 - **Engineering Principles**:
     [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md);
