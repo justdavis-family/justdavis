@@ -83,14 +83,19 @@ The strongest argument for grouping fields is not aesthetics or extensibility �
     `FocusInfo { name: Option<String> }`) — there is no way to construct "failed but Focus on", or "no
     Focus but here's its name". This is where the strong-typing win is captured, in the code that
     actually branches on it.
-- **The *wire* form is a flat, schema-validated projection of that sum type.** JSON has no native sum
-    types; any consumer — `jq`, a shell `case`, a five-line Python script — branches on a discriminant
-    regardless of whether the bytes are flat or nested. A nested `{"focus": {...}|null, "meta": {...}}`
-    does not make the wire format self-checking; the consumer still has to know the `ok`/`error` rule.
-    What actually constrains the valid combinations on the wire is the **published JSON Schema**
-    (conditional `required`/`oneOf` on `ok`), which both flat and nested forms need equally. Given
-    that, the flat projection keeps the ergonomics (shallow paths, trivial `jq`) without giving up any
-    enforceable guarantee the nested form would have provided.
+- **The *wire* form is a flat, schema-validated projection of that sum type — and the schema itself
+    rejects the incoherent combinations.** JSON Schema can enforce cross-field coherence directly: a
+    `oneOf` over the success/failure variants, `if`/`then` (or `dependentRequired`), and `const`/`enum`
+    on the discriminant let the published schema make `{"ok": false, "focus_enabled": true, …}` *fail
+    validation*, require `error` exactly when `ok` is `false` (and forbid it when `ok` is `true`), and
+    require `focus_name` to be null when `focus_enabled` is false. So the "illegal states" guarantee is
+    enforceable on the wire, not only in the Rust model — and it holds for the **flat** object just as
+    well as for a nested one, so nesting buys no enforcement here. The one thing no schema (flat or
+    nested) can do is force an *ad-hoc consumer that never validates* — a `jq` or shell one-liner — to
+    branch correctly; JSON has no native sum types, so such a reader still keys off the `ok`/`error`
+    discriminant by hand. Net: the JSON Schema protects the contract boundary (producers, conformance
+    tests, validating clients), the internal sum type stops the producer from ever emitting nonsense,
+    and the flat projection keeps shallow paths and trivial `jq` — none of which nesting improves.
 
 In short: capture the "illegal states unrepresentable" guarantee in the strongly-typed *internal*
   model (where it has teeth), and let the *wire* contract be the flat projection plus its schema.
