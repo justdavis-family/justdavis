@@ -186,8 +186,11 @@ Everything in M1–M5 is fully usable without it; per the
     artifact (clears the Gatekeeper launch wall that quarantined casks otherwise hit).
 - The payoff, documented in the `README.md`: the Full Disk Access grant now **persists across
     updates** (TCC keys off the stable Developer ID identity rather than the per-build cdhash), and the
-    OS surfaces its redirect dialog / FDA-pane pre-listing on first denial. The build-from-source
-    channels (M4) remain supported and unchanged for users without the signed channel.
+    OS surfaces its redirect dialog / FDA-pane pre-listing on first denial. That signposting is a
+    human-facing *side channel* the helper never sees — the FDA-gated read still returns the same
+    permission error either way — so it changes only the install UX, not the helper's behavior or its
+    `focus_permission_denied` handling. The build-from-source channels (M4) remain supported and
+    unchanged for users without the signed channel.
 
 **Deliverable:** a signed + notarized `brew install --cask …` path whose Full Disk Access grant
   survives upgrades, alongside the still-supported build-from-source channels.

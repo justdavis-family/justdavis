@@ -243,8 +243,10 @@ New codes may be added; existing codes are not repurposed.
     with Developer ID signing + notarization + a cask as an *optional* later enhancement (M6).
     Signing/notarization cannot grant Full Disk Access programmatically and cannot remove the one-time
     manual grant; their only benefits are that the grant *persists across upgrades* and that the OS
-    signposts the grant better — real but incremental UX wins that cost an Apple Developer Program
-    membership and release-pipeline complexity. The from-source path delivers full functionality now,
+    signposts the grant better (an out-of-band System Settings redirect dialog + FDA-pane pre-listing
+    for signed apps — a human-facing side channel the helper never sees, since the FDA-gated read still
+    returns the same permission error either way) — real but incremental UX wins that cost an Apple
+    Developer Program membership and release-pipeline complexity. The from-source path delivers full functionality now,
     at the cost of the user re-granting Full Disk Access on each upgrade, which the explicit
     `focus_permission_denied` code, the actionable message, and the docs are designed to make
     painless. See the

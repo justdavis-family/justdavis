@@ -60,14 +60,18 @@ Narrower scopes — Desktop, Documents, Downloads, removable/network volumes, Co
   Photos, and similar — *do* have inline consent prompts whose "Allow" grants that scope immediately.
 The Focus database falls under broad FDA, not these friendlier per-folder prompts.
 
-What signing *does* improve here is **discoverability of the need**, not the grant itself:
-  on a denied access, macOS often surfaces a system-initiated *redirect* dialog
-  ("…go to System Settings", with an **Open System Settings** button)
-  and frequently pre-lists the app in the FDA pane (toggled off).
-That redirect reliably fires for **properly code-signed apps with a bundle identity**;
-  a bare **unsigned/ad-hoc CLI binary** (the build-from-source case)
-  often gets only a raw `EPERM` with **no dialog and no auto-listing**.
-This is why signed terminal apps (iTerm, Ghostty, Terminal) get OS signposting toward the FDA pane
+What signing *does* improve here is **discoverability of the need**, not the grant itself — and it is
+  a pure side channel that the app never sees.
+In **both** the signed and unsigned cases the FDA-gated operation itself fails identically: the app
+  receives an `EPERM` and nothing more.
+The difference is what macOS does *alongside* that failure, out of band: for a **properly code-signed
+  app with a bundle identity**, the system often raises a *redirect* dialog
+  ("…go to System Settings", with an **Open System Settings** button) and pre-lists the app in the Full
+  Disk Access pane (toggled off, ready to flip); for a bare **unsigned/ad-hoc CLI binary** (the
+  build-from-source case) it typically raises no dialog and adds no pre-listing.
+The app cannot observe, trigger, or depend on that dialog either way — it only ever sees the `EPERM` —
+  so this is purely a human-facing convenience, not anything the helper's own error handling can lean on.
+This is why signed apps (iTerm, Ghostty, Terminal) get OS signposting toward the FDA pane
   while ad-hoc command-line tools tend to fail silently.
 
 Note: the exact redirect-dialog behavior (when it fires, for which signing state, per macOS major)
