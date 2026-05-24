@@ -90,7 +90,7 @@ In M1 the reply is always the stubbed `failed` / `macos_unsupported` result.
 The work is sequenced in the
   [delivery plan](../design/delivery-plans/2026-05-12-macos-focus-gopher.md):
 
-- **M1 — project skeleton and the `get_focus()` contract.** ✅ _(this state)_
+- **M1 — project skeleton and the `get_focus()` contract.** ✅ _(this state)_.
 - **M2 — the `focus-gopher` CLI wrapper.**
 - **M3 — read-only Focus parsing on the verified macOS versions** (the real `get_focus()`).
 - **M4 — build-from-source packaging, install, and distribution** (the `.app` bundle, LaunchAgent,

@@ -1,5 +1,7 @@
 [tools]
-rust = "1.91"
+# `profile = "default"` pulls in rustfmt and clippy (the minimal profile, which
+# mise/rustup would otherwise install in CI, omits them and breaks `lint`).
+rust = { version = "1.91", profile = "default" }
 "cargo:cargo-audit" = "latest"
 "cargo:cargo-outdated" = "latest"
 

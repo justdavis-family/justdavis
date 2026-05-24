@@ -41,7 +41,7 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
     stubbed in but not yet wired up), a `mise.toml` exposing
     `build` / `test` / `lint` / `dependencies:check` / `dependencies:update` / `ci`, wired into the
     root `mise.toml`, and CI invoking those Mise tasks.
-    The `.app` bundle packaging is **not** part of M1: the bundle is the carrier of the stable TCC
+  The `.app` bundle packaging is **not** part of M1: the bundle is the carrier of the stable TCC
     identity and is not installed, signed, or read from until M4 (which already owns the full
     bundle/LaunchAgent layout), so building it here would be unused scaffolding.
 - Define the `FocusState` model, publish its versioned **JSON Schema**, and define the line-delimited

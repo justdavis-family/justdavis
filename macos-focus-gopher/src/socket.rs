@@ -92,8 +92,33 @@ pub fn connect(path: &Path) -> io::Result<UnixStream> {
 
 /// The uid of the process on the other end of `stream`.
 ///
-/// Uses `getpeereid`, which is portable across macOS and Linux (unlike std's
-/// `peer_cred`, whose availability varies by platform).
+/// There is no single stable, portable API for this: std's `peer_cred` is still
+/// unstable, so we go through `libc`. Linux/Android use `getsockopt(SO_PEERCRED)`
+/// (the `libc` crate does not declare `getpeereid` for those targets), while the
+/// BSD/Apple family uses `getpeereid`.
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn peer_uid(stream: &UnixStream) -> io::Result<u32> {
+    let mut cred: libc::ucred = unsafe { std::mem::zeroed() };
+    let mut len = std::mem::size_of::<libc::ucred>() as libc::socklen_t;
+    // SAFETY: the fd is valid for the lifetime of `stream`; `cred`/`len` are valid
+    // out-params sized for `SO_PEERCRED`.
+    let rc = unsafe {
+        libc::getsockopt(
+            stream.as_raw_fd(),
+            libc::SOL_SOCKET,
+            libc::SO_PEERCRED,
+            std::ptr::addr_of_mut!(cred).cast(),
+            &mut len,
+        )
+    };
+    if rc != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(cred.uid)
+}
+
+/// See the Linux variant above.
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn peer_uid(stream: &UnixStream) -> io::Result<u32> {
     let mut uid: libc::uid_t = 0;
     let mut gid: libc::gid_t = 0;
