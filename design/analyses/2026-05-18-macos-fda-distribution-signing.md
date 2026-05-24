@@ -102,10 +102,11 @@ The benign "Focus is off" state is represented by *empty file content*, not file
 This detection works **on every channel and signing state** — it is unaffected by not signing.
 Per [Comprehensive Error Modeling](../engineering-principles/2026-01-08-error-modeling.md) and
   [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md),
-  the denied case must surface as its **own dedicated error code** with actionable, deep-linked
-  remediation (the resolved binary path to add, and the
+  the denied case must surface as its **own dedicated error code** (`focus_permission_denied`, a
+  `failed` outcome) with actionable, deep-linked remediation in the `failed` variant's `message` (the
+  resolved binary path to add, and the
   `x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles` deep link),
-  and must **never** be collapsed into `ok: true, focus_enabled: false`.
+  and must **never** be collapsed into a `determined` result.
 The message should print the *canonical resolved* executable path
   (cargo and Homebrew both symlink into `bin/`, and TCC matches the real binary,
   so naming the symlink can misfire).

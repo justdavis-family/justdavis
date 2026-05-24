@@ -145,21 +145,26 @@ This is *not* collapsing a positive result into a failure (which our
 { "macos_version": "15.5", "macos_compatibility": "supported",
   "determined": { "focus_off": {} } }
 
-// (c) determined on an unknown-but-working macOS version
-{ "macos_version": "26.0", "macos_compatibility": "unknown_but_working",
-  "message": "Focus parsing appears to work, but this macOS version is not on the known-supported list. Please submit an issue or PR marking macOS 26.0 as compatible if this looks right.",
+// (c) determined on an unknown (unlisted) macOS version — the unknown variant carries the report message
+{ "macos_version": "26.0",
+  "macos_compatibility": { "unknown": { "message": "macOS 26.0 is not on the known-supported list. Please file an issue or PR reporting whether Focus parsing works here, so it can be added." } },
   "determined": { "focus_on": { "name": "Do Not Disturb" } } }
 
-// (d) failure (here: an active Focus whose name could not be resolved)
-{ "macos_version": "26.0", "macos_compatibility": "unknown",
-  "message": "A Focus appears active but its name could not be resolved. Please file an issue or PR with your macOS version, helper version, and this error code.",
-  "failed": { "error": "focus_name_unresolved" } }
+// (d) failure — the failed variant carries the guidance message (here, FDA remediation)
+{ "macos_version": "15.5", "macos_compatibility": "supported",
+  "failed": { "error": "focus_permission_denied",
+    "message": "Full Disk Access is required. Grant it to /Applications/FocusGopher.app under System Settings > Privacy & Security > Full Disk Access, then retry." } }
 ```
 
 - **`focus_on` always carries a real `name`**; an active Focus whose name cannot be resolved is a
     `failed` with `focus_name_unresolved`, not a partial success (see above).
-- **Shared metadata stays at the top level** (`macos_version`, `macos_compatibility`, and an optional
-    `message`, omitted when there is none), since it is reported on both success and failure.
+- **Shared metadata stays at the top level** (`macos_version` and `macos_compatibility`), since it is
+    reported on both success and failure. **Human-readable guidance lives *inside the variant that owns
+    it*** — a `message` on the `macos_compatibility` `unknown` variant (report whether this version
+    works) and a `message` on the `failed` variant (what went wrong / how to fix or report) — rather
+    than as a single overloaded, free-floating top-level field. Because the CLI prints the raw JSON, the
+    text must travel on the wire; attaching each message to its triggering variant keeps it
+    single-purpose and means it can't appear without its condition.
 - **The CLI wrapper exits non-zero when the outcome is `failed`** (and zero otherwise), so shell
     scripts can branch on the exit code without parsing JSON.
 - **No `data`/`meta` envelope and no `errors` array** — YAGNI; `get_focus()` either determines the

@@ -95,9 +95,10 @@ A single fixed-schema object whose shape **mirrors the helper's internal strongl
 Shared fields, always present:
 
 - `macos_version` (string) — the detected macOS version (e.g. `"15.5"`).
-- `macos_compatibility` (enum) — `supported` | `unknown_but_working` | `unknown` | `unsupported`.
-- `message` (string, optional) — human-readable guidance; omitted when there is none,
-    and never used for program logic.
+- `macos_compatibility` — a tagged enum: `supported`, `unsupported`, or `unknown` (the version is on
+    neither list). The `unknown` variant carries a `message` asking the user to report whether Focus
+    parsing worked on this version; whether it actually *did* work is conveyed by the `outcome`
+    (`determined` vs. `failed`), not by this field.
 
 Plus exactly one **outcome**, an externally-tagged discriminated union — the `Result`/`Option` plumbing
   is hidden behind domain-named keys rather than serialized as Rust's `Ok`/`Err`/`null`:
@@ -108,22 +109,29 @@ Plus exactly one **outcome**, an externally-tagged discriminated union — the `
       with `focus_name_unresolved`, not as a success — see the error taxonomy below).
   - `focus_off` — no Focus is active (an empty object).
 - `failed` — the helper could not determine the state. Carries a stable machine-readable `error` code
-    (see the error taxonomy below).
+    (see the error taxonomy below) plus a human-readable `message` with guidance for that error (the
+    FDA-grant instructions for `focus_permission_denied`, a "file an issue/PR" nudge otherwise).
 
 The internal Rust model the wire mirrors:
 
 ```rust
 struct FocusState {
     macos_version: String,
-    macos_compatibility: MacosCompat,
-    message: Option<String>,          // #[serde(skip_serializing_if = "Option::is_none")]
+    macos_compatibility: MacosCompatibility,
     outcome: Outcome,                 // #[serde(flatten)]
+}
+
+#[serde(rename_all = "snake_case")]   // externally tagged: "supported" | "unsupported" | "unknown"
+enum MacosCompatibility {
+    Supported,
+    Unsupported,
+    Unknown { message: String },
 }
 
 #[serde(rename_all = "snake_case")]   // externally tagged: "determined" | "failed"
 enum Outcome {
     Determined(Focus),
-    Failed { error: ErrorCode },
+    Failed { error: ErrorCode, message: String },
 }
 
 #[serde(rename_all = "snake_case")]   // externally tagged: "focus_on" | "focus_off"
@@ -151,15 +159,15 @@ Why this shape rather than a flat object of nullable siblings: the helper has no
 { "macos_version": "15.5", "macos_compatibility": "supported",
   "determined": { "focus_off": {} } }
 
-// (c) determined on an unknown-but-working macOS version
-{ "macos_version": "26.0", "macos_compatibility": "unknown_but_working",
-  "message": "Focus parsing appears to work, but this macOS version is not on the known-supported list. Please submit an issue or PR marking macOS 26.0 as compatible if this looks right.",
+// (c) determined on an unknown (unlisted) macOS version — the unknown variant carries the report message
+{ "macos_version": "26.0",
+  "macos_compatibility": { "unknown": { "message": "macOS 26.0 is not on the known-supported list. Please file an issue or PR reporting whether Focus parsing works here, so it can be added." } },
   "determined": { "focus_on": { "name": "Do Not Disturb" } } }
 
-// (d) failure (here: an active Focus whose name could not be resolved)
-{ "macos_version": "26.0", "macos_compatibility": "unknown",
-  "message": "A Focus appears active but its name could not be resolved. Please file an issue or PR with your macOS version, helper version, and this error code.",
-  "failed": { "error": "focus_name_unresolved" } }
+// (d) failure — the failed variant carries the guidance message (here, FDA remediation)
+{ "macos_version": "15.5", "macos_compatibility": "supported",
+  "failed": { "error": "focus_permission_denied",
+    "message": "Full Disk Access is required. Grant it to /Applications/FocusGopher.app under System Settings > Privacy & Security > Full Disk Access, then retry." } }
 ```
 
 ### Retrieval pipeline
@@ -178,9 +186,11 @@ Why this shape rather than a flat object of nullable siblings: the helper has no
     mapped to a name, return `failed` with `focus_name_unresolved` — in normal operation an active Focus
     is always nameable, so this signals a schema/coverage gap, not a steady-state success.
 9. If parsing succeeded but the macOS version is not on the known-supported list:
-    set `macos_compatibility: unknown_but_working` and the corresponding `message`.
+    set `macos_compatibility` to the `unknown` variant, carrying a `message` asking the user to report
+    whether parsing worked (independent of the outcome).
 10. If any step fails (permission-denied, missing/unreadable/malformed/partially-written file, or
-    unrecognized schema): return `failed` with an explicit `error` code, never a `determined` result.
+    unrecognized schema): return `failed` with an explicit `error` code and a guidance `message`, never
+    a `determined` result.
 
 The parser is **versioned and swappable**: the macOS Focus database format is undocumented and may
   change between releases, so the parsing logic is internal and may be reorganized per macOS version
@@ -211,7 +221,8 @@ New codes may be added; existing codes are not repurposed.
 
 `focus_permission_denied` is a distinct, first-class code because Full Disk Access can never be granted
   programmatically — it is always a manual System Settings step, and on the unsigned/from-source
-  channels it must be re-applied after every upgrade. Its `message` is therefore *actionable*: the
+  channels it must be re-applied after every upgrade. The `failed` variant's `message` is therefore
+  *actionable* text (no structured `grant_path` field — that would be detail nobody asked for): the
   *canonical resolved* helper binary path to add (cargo and Homebrew both symlink into `bin/`, and TCC
   matches the real binary), plus the
   `x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles` deep link. A missing FDA
@@ -341,7 +352,8 @@ New codes may be added; existing codes are not repurposed.
 - The helper exposes only a narrow read-only API (`get_focus()`), and no arbitrary filesystem,
     shell, Shortcut, or AppleScript access.
 - Rebuilding or upgrading the agent does not break the helper's TCC permissions.
-- The helper distinguishes *no Focus*, *active Focus* (named or unnamed), and *error* states.
+- The helper distinguishes *no Focus*, *active Focus* (always named), and *error* states (an
+    active-but-unnameable Focus is an error, `focus_name_unresolved`).
 - The helper reports known/unknown macOS compatibility.
 - The helper never exposes arbitrary filesystem, shell, Shortcut, or AppleScript access.
 - The parser correctly handles fixture databases for each supported macOS major version

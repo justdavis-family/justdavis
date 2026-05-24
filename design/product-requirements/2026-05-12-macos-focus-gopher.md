@@ -80,10 +80,9 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
         JSON-shape analysis referenced below); Rust's `Result`/`Option` plumbing is hidden behind
         domain-named keys, never serialized as `Ok`/`Err`/`null`. It has these shared fields and meanings:
       - `macos_version` (string): the detected macOS version.
-      - `macos_compatibility` (enum): one of `supported`, `unknown_but_working`, `unknown`,
-          or `unsupported`.
-      - `message` (string, optional): human-readable guidance; omitted when there is none, and never
-          load-bearing for program logic.
+      - `macos_compatibility` (tagged enum): `supported`, `unsupported`, or `unknown` (on neither
+          list). The `unknown` variant carries a `message` asking the user to report whether parsing
+          worked; whether it actually worked is conveyed by the outcome, not this field.
 - [ ] Alongside the shared fields, the response carries **exactly one outcome**:
       - `determined`: the helper determined the state. Its value is itself a tagged union of exactly one
           of:
@@ -91,7 +90,7 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
         - `focus_off`: no Focus is active (an empty object).
       - `failed`: the helper could not determine the state; carries a stable machine-readable `error`
           code (e.g. `focus_permission_denied`, `focus_db_unreadable`, `schema_unknown`,
-          `focus_name_unresolved`).
+          `focus_name_unresolved`) plus a human-readable `message` with guidance for that error.
 - [ ] An active Focus whose identifier cannot be mapped to a name is reported as `failed` with
         `focus_name_unresolved`, not as a success — the name is the primary thing consumers want, and in
         normal operation an active Focus is always nameable, so a nameless "Focus is on" indicates a
@@ -101,10 +100,11 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [ ] All four documented response shapes are produced correctly:
         (a) `determined` → `focus_on` with a name;
         (b) `determined` → `focus_off`;
-        (c) `determined` on an unknown-but-working macOS version (with `macos_compatibility:
-        unknown_but_working` and a "please report this version" `message`);
-        (d) `failed` (with an `error` code and a "please file an issue/PR with your macOS version,
-        helper version, and this error code" `message`).
+        (c) `determined` on an `unknown` (unlisted) macOS version, where `macos_compatibility` is the
+        `unknown` variant carrying a "please report whether this version works" `message`;
+        (d) `failed` (with an `error` code and a guidance `message` — e.g. the FDA-grant steps for
+        `focus_permission_denied`, or a "file an issue/PR with your macOS version, helper version, and
+        this error code" nudge otherwise).
 
 ### Consumer Logic
 
@@ -131,9 +131,9 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [ ] The helper accounts for the documented quirks of the Focus database (see the analysis referenced
         below): a Focus activated by schedule or automation is reflected differently than a manually
         toggled one, so both the active-assertions data and the mode-configuration data are consulted.
-- [ ] If parsing succeeds on a macOS version that is not on the known-supported list,
-        the response sets `macos_compatibility: unknown_but_working` and includes the
-        "please report this version" guidance.
+- [ ] If the running macOS version is on neither the supported nor the unsupported list, the response
+        sets `macos_compatibility` to the `unknown` variant, carrying a "please report whether this
+        version works" `message` (whether parsing actually worked is conveyed by the outcome).
 
 ### Failure Handling
 
@@ -157,8 +157,8 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [ ] The table is seeded per that analysis: macOS 12–15 are reasonable `supported` (wildcard) entries
         once verified; macOS 11 and earlier are out of scope (a different mechanism); the current macOS
         26 starts as `unknown` until verified.
-- [ ] On an unknown-but-working macOS version, the response asks the user to submit an issue or PR
-        marking that version as compatible.
+- [ ] On an `unknown` (unlisted) macOS version, the `macos_compatibility` `unknown` variant's `message`
+        asks the user to submit an issue or PR reporting whether this version works.
 - [ ] On a parsing failure, the response asks the user to file an issue or PR with their macOS version,
         the helper version, and the error code.
 

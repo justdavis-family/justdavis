@@ -21,13 +21,15 @@ In particular, distinguish "the operation failed" from "the operation succeeded 
 
 **Good (clear-data-model-compliant):**
 
-- A response that separates orthogonal facts into their own fields — e.g. `FocusState` with
-    `ok` (did we determine the state?), `focus_enabled` (is a Focus on?), `focus_name` (do we have a
-    name?), and `macos_compatibility` (is this OS version supported?) — each with documented null
-    semantics.
-- Returning `{"ok": false, "error": "schema_unknown"}` on a parse failure, rather than
-    `{"ok": true, "focus_enabled": false}`.
-- A `message` field that is explicitly human-only guidance, with all machine-relevant facts carried
+- A response that separates orthogonal facts and models its states as a tagged union — e.g.
+    `FocusState`, whose outcome is `determined` (itself `focus_on` with a `name`, or `focus_off`) or
+    `failed` (with an `error` code), alongside `macos_compatibility` (`supported` / `unsupported` /
+    `unknown`) — so each state is its own variant rather than a set of independently-nullable fields
+    that can combine into nonsense.
+- Returning `{"failed": {"error": "schema_unknown", …}}` on a parse failure, rather than a
+    `determined` → `focus_off` result that would disguise the failure as "no Focus is on".
+- A `message` field that is explicitly human-only guidance — attached to the variant that needs it
+    (e.g. `failed`, or the `unknown` compatibility variant) — with all machine-relevant facts carried
     in their own typed fields.
 - A fixed, documented schema for everything that crosses the boundary.
 

@@ -155,9 +155,9 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
 **In scope:**
 
 - Maintain/expand the compatibility table: add macOS versions as they are verified (updating the
-    format-stability analysis as needed), wire `macos_compatibility: unknown_but_working` (parsing
-    succeeded on an unlisted version) with the "please submit an issue or PR" `message`, and the
-    parse-failure `message` asking for an issue/PR with macOS version, helper version, and error code.
+    format-stability analysis as needed), wire the `macos_compatibility` `unknown` variant (version on
+    neither list) carrying its "please report whether this works" `message`, and the `failed` variant's
+    guidance `message` asking for an issue/PR with macOS version, helper version, and error code.
 - Contributor documentation: how to add support for a new macOS version (capture fixtures, adjust the
     parser if the schema changed, add the table entry, add tests).
 - Ship bundled **agent skills** plus a command that installs them into the user's home directory or a

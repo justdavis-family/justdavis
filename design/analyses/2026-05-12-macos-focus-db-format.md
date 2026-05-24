@@ -83,8 +83,10 @@ Recommendation:
     least one *current* point release of that major. On that basis, `12.*`–`15.*` are reasonable
     `supported` entries once verified.
 - macOS **11 and earlier** are out of scope (different mechanism).
-- macOS **26** (and any future major) starts as `unknown until tested`; on a successful parse it is
-    reported as `unknown_but_working` until added to the table.
+- macOS **26** (and any future major) starts as `unknown until tested`; it is reported with the
+    `unknown` compatibility variant (carrying a "please report whether this version works" message)
+    until added to the table — whether parsing actually worked is conveyed by the result's outcome, not
+    the compatibility field.
 
 This analysis should be revisited whenever a new major macOS release ships, or whenever the parser
   encounters a `schema_unknown` failure in the field.
