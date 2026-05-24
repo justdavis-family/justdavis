@@ -20,6 +20,9 @@ Function and service results should expose all failure modes to enable debugging
 - Include context in errors: what operation failed, with what inputs, and why.
 - Log errors with full context before returning them.
 - Chain errors to preserve original cause (e.g., Rust's `context()` or Swift's `NSError.userInfo`).
+- Errors that cross a *published boundary* (a wire protocol or public API) are enumerated, serializable
+    domain types that callers match on — distinct from internal propagation errors, which may be
+    dynamic (e.g., Rust's `anyhow`) since nothing downstream matches on them.
 
 **Bad (suppresses or loses error information):**
 - Using `unwrap()` in Rust or force-unwrapping (`!`) in Swift without clear justification.

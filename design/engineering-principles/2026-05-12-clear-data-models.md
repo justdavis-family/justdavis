@@ -7,6 +7,9 @@ Design data models — especially those that cross a process, network, or API bo
   no overloaded fields, and a clear separation of orthogonal facts so a consumer never has to guess.
 In particular, distinguish "the operation failed" from "the operation succeeded and the answer is
   negative"; never collapse genuinely distinct states into a single ambiguous value.
+Frame the model around the consumer's primary decision: surface the states a consumer actually acts on,
+  and let that goal classify edge cases rather than minting a new state for every technical
+  possibility.
 
 ## Rationale
 
@@ -42,7 +45,8 @@ In particular, distinguish "the operation failed" from "the operation succeeded 
 - Adding speculative fields (e.g. `normalized`, `source`) with no concrete consumer — clarity is not
     maximalism, and unused fields are just more surface to misinterpret.
 - Reusing one field for different meanings depending on another field's value, without that being an
-    explicit, documented tagged union.
+    explicit, documented tagged union — which, at a boundary, must be encoded *as* a tagged union (see
+    [Strong Typing and Information Preservation](2026-01-07-strong-typing.md)), not as nullable siblings.
 
 ## When to Break This Rule
 
