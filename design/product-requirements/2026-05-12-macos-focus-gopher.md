@@ -16,19 +16,16 @@ prs: []
 
 ## Summary
 
-A per-user macOS helper that an unprivileged local client (e.g. an LLM/agent system) can query
-  to learn the current macOS Focus state, without the client process itself holding Full Disk Access
-  or any other broad macOS privacy permission.
-The helper is a stable-identity app bundle (a fixed install path and bundle identifier), run as a
-  per-user LaunchAgent, exposing exactly one read-only operation, `get_focus()`, returning a
-  fixed-schema `FocusState`, over a local Unix domain socket — with a thin command-line wrapper for
-  callers who prefer to run a command.
-Developer ID code signing and notarization are an optional later enhancement — they make the Full Disk
-  Access grant persist across upgrades and improve first-run signposting, but are not required for the
-  helper to be fully functional.
-The helper performs the privileged, undocumented Focus-database read itself,
-  reports an explicit error when it cannot determine the state (never a silent "no Focus"),
-  and reports whether the running macOS version is known-supported.
+A small macOS helper that an unprivileged local client (e.g. an LLM/agent system) can query to learn
+  the current macOS Focus state, without the client process itself holding Full Disk Access or any
+  other broad macOS privacy permission.
+It answers exactly one question — "what is the current Focus state?" — callable over a local socket or
+  via a one-line command, and it has a stable identity so the macOS permission it needs is tied to the
+  helper rather than to the client's churning identity.
+The helper performs the privileged read itself and answers from a fixed, documented schema: a Focus is
+  on (with its name), no Focus is on, or the state could not be determined — the last reported as an
+  explicit error with guidance, never a silent "no Focus" — along with whether the running macOS version
+  is known to be supported.
 
 ## User Story
 
@@ -39,144 +36,68 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 ## Acceptance Criteria
 
-### Helper Identity and Lifecycle
+### Privacy and Trust
 
-- [ ] The helper is distributed as an app bundle installed at a stable path with a stable bundle
-        identifier (the unit the macOS privacy grant attaches to).
-- [ ] Developer ID code signing and Apple notarization are an *optional* later enhancement, not
-        required for the helper to be fully functional; when present they make the Full Disk Access
-        grant persist across helper upgrades (otherwise the user re-applies it after each upgrade on
-        the build-from-source channels). See the analysis referenced below.
-- [ ] The helper runs as a per-user LaunchAgent — not a system LaunchDaemon —
-        because Focus state is user-specific and the relevant files live under the user's home directory.
-- [ ] Any macOS privacy permission the helper needs (Full Disk Access, which macOS requires to read the
-        Focus database) is granted to the helper, not to any client; this grant is always a manual
-        System Settings action, as macOS exposes no programmatic prompt for it.
-- [ ] Clients that talk to the helper receive no Full Disk Access, Accessibility, Screen Recording,
-        or Automation permission as a result.
+- [ ] A client can learn the current Focus state without itself holding Full Disk Access or any other
+        broad macOS privacy permission.
+- [ ] Talking to the helper grants a client no Full Disk Access, Accessibility, Screen Recording, or
+        Automation permission.
+- [ ] Whatever macOS permission the helper needs (Full Disk Access) is held by the helper, not by any
+        client. Granting it is a one-time manual step in System Settings (macOS offers no programmatic
+        prompt); on build-from-source installs the user re-applies it after an upgrade, and an optional
+        signed distribution (later) removes that re-grant.
+- [ ] The helper's access is not broken by the client being rebuilt, reinstalled, or launched
+        differently — the permission is tied to the helper's stable identity, not the client's.
 
-### API Surface
+### Capability and Surface
 
-- [ ] The helper exposes exactly one operation, `get_focus()`, returning a `FocusState`.
-        Its primary transport is a local Unix domain socket; a thin command-line wrapper is also
-        provided that performs the same `get_focus()` call over that socket and prints the `FocusState`
-        as JSON. Both transports expose the same single operation and nothing more.
-- [ ] The command-line wrapper exits with a non-zero status when the outcome is `failed` (and zero
-        otherwise), so shell scripts can branch on the exit code without parsing the JSON; the JSON body
-        still carries the `determined`/`failed` outcome (and, on failure, the `error` code) for
-        programmatic consumers reading the socket directly.
-- [ ] The helper does not expose `read_file(path)`, `run_shell(command)`, `run_shortcut(name)`,
-        `run_osascript(script)`, `query_db(path)`, or any other general-purpose or arbitrary operation.
-- [ ] The helper is read-only: it never modifies Focus, notifications, or any system setting.
-- [ ] The agent-facing interface (`get_focus() -> FocusState`) is stable and decoupled from the
-        underlying Focus-database schema; parser changes do not change the interface.
-- [ ] A versioned JSON Schema for `FocusState` is published and referenced from all of the project's
-        documentation; the helper's output validates against it.
+- [ ] The helper answers exactly one question — the current Focus state — callable over a local socket
+        or via a one-line command; both expose the same single operation and nothing more.
+- [ ] The helper is read-only: it never changes Focus, notifications, or any system setting.
+- [ ] The helper offers no general-purpose or arbitrary capability — no reading arbitrary files,
+        running shell commands, running Shortcuts, or running AppleScript — so a client that can reach
+        it gains only the ability to read Focus state.
 
-### `FocusState` Data Model
+### Response and Behavior
 
-- [ ] `FocusState` is an **externally-tagged discriminated union** whose wire shape mirrors the helper's
-        internal strongly-typed model rather than flattening it into nullable siblings (see the
-        JSON-shape analysis referenced below); Rust's `Result`/`Option` plumbing is hidden behind
-        domain-named keys, never serialized as `Ok`/`Err`/`null`. It has these shared fields and meanings:
-      - `macos_version` (string): the detected macOS version.
-      - `macos_compatibility` (tagged enum): `supported`, `unsupported`, or `unknown` (on neither
-          list). The `unknown` variant carries a `message` asking the user to report whether parsing
-          worked; whether it actually worked is conveyed by the outcome, not this field.
-- [ ] Alongside the shared fields, the response carries **exactly one outcome**:
-      - `determined`: the helper determined the state. Its value is itself a tagged union of exactly one
-          of:
-        - `focus_on`: a Focus is active; carries its human-readable `name` (always present).
-        - `focus_off`: no Focus is active (an empty object).
-      - `failed`: the helper could not determine the state; carries a stable machine-readable `error`
-          code (e.g. `focus_permission_denied`, `focus_db_unreadable`, `schema_unknown`,
-          `focus_name_unresolved`) plus a human-readable `message` with guidance for that error.
-- [ ] An active Focus whose identifier cannot be mapped to a name is reported as `failed` with
-        `focus_name_unresolved`, not as a success — the name is the primary thing consumers want, and in
-        normal operation an active Focus is always nameable, so a nameless "Focus is on" indicates a
-        schema/coverage gap worth reporting rather than a steady-state partial success.
-- [ ] The helper does not include speculative fields (e.g. `normalized`, `source`, or a list of all
-        known-compatible macOS versions) without a concrete consumer need.
-- [ ] All four documented response shapes are produced correctly:
-        (a) `determined` → `focus_on` with a name;
-        (b) `determined` → `focus_off`;
-        (c) `determined` on an `unknown` (unlisted) macOS version, where `macos_compatibility` is the
-        `unknown` variant carrying a "please report whether this version works" `message`;
-        (d) `failed` (with an `error` code and a guidance `message` — e.g. the FDA-grant steps for
-        `focus_permission_denied`, or a "file an issue/PR with your macOS version, helper version, and
-        this error code" nudge otherwise).
+- [ ] A consumer can unambiguously distinguish: no Focus is active; an active Focus together with its
+        name; the helper could not determine the state (with a machine-readable reason and a
+        human-readable explanation); and the running macOS version being unsupported.
+- [ ] A failure to determine the state is always reported explicitly — never as a silent "no Focus is
+        on".
+- [ ] When the state cannot be determined because the helper lacks Full Disk Access, the response says
+        so and tells the user exactly what to grant and where to fix it.
+- [ ] The active Focus is reported whether it was turned on manually or by a schedule/automation.
+- [ ] The helper fails gracefully — a missing, unreadable, or malformed Focus database yields an
+        explicit error, not a crash.
+- [ ] The command-line wrapper exits non-zero when the state cannot be determined (and zero otherwise),
+        so scripts can branch on the exit code without parsing the output.
+- [ ] The response conforms to a fixed, versioned, published schema (a JSON Schema) referenced from the
+        project's documentation, so consumers can validate and rely on it; the answer interface stays
+        stable even as macOS changes the underlying data format.
 
-### Consumer Logic
+### macOS Support Reporting
 
-- [ ] The response model lets a consumer decide the state with a simple, unambiguous rule
-        (exactly one of `determined`/`failed` is present):
-        if `failed` is present, the state is unknown (consult its `error`);
-        else `determined` is present and holds exactly one of `focus_off` (no Focus active) or
-        `focus_on` (a Focus is active, carrying its `name`).
-- [ ] A consumer can distinguish "no Focus is active", "an active Focus with its name",
-        "the helper failed" (including an active-but-unnameable Focus, via `focus_name_unresolved`),
-        and "the macOS version is unsupported" from each other.
+- [ ] Each response states whether the running macOS version is known-supported, known-unsupported, or
+        unknown.
+- [ ] On an unknown (unlisted) macOS version, the response asks the user to report whether it worked,
+        so coverage can be extended.
+- [ ] On a failure, the response asks the user to file an issue or PR with their macOS version, the
+        helper version, and the error.
 
-### Retrieval Logic
+### Installation, Documentation, and Adoption
 
-- [ ] Determining the Focus state follows this logic: detect the macOS version;
-        check it against the known-supported list;
-        read the active-assertions data and determine whether an active Focus assertion exists;
-        if none exists, return `determined` → `focus_off`
-        (an empty active-assertions file is a valid "Focus is off" result, not an error);
-        if one exists, extract the active Focus identifier, read the mode-configuration data,
-        and map the identifier to a human-readable Focus name (returned as `determined` → `focus_on`
-        with that `name`; if the identifier cannot be mapped, return `failed` with
-        `focus_name_unresolved`).
-- [ ] The helper accounts for the documented quirks of the Focus database (see the analysis referenced
-        below): a Focus activated by schedule or automation is reflected differently than a manually
-        toggled one, so both the active-assertions data and the mode-configuration data are consulted.
-- [ ] If the running macOS version is on neither the supported nor the unsupported list, the response
-        sets `macos_compatibility` to the `unknown` variant, carrying a "please report whether this
-        version works" `message` (whether parsing actually worked is conveyed by the outcome).
-
-### Failure Handling
-
-- [ ] The helper tolerates missing files, permission-denied files, unreadable files, malformed JSON,
-        schema changes, and partially-written files without crashing.
-- [ ] Any failure to determine the Focus state is reported explicitly as `failed` with a stable `error`
-        code (never as a `determined` result).
-- [ ] A parsing or schema failure is never reported as `determined` → `focus_off`.
-- [ ] A missing Full Disk Access grant is detected (a permission denial on the existing Focus
-        database) and reported as `failed` with a dedicated `focus_permission_denied` error code — never
-        as a `determined` result — with an actionable `message`: the canonical resolved helper binary
-        path to add and a System Settings deep link to the Full Disk Access pane.
-
-### macOS Compatibility
-
-- [ ] The project maintains an explicit macOS-version compatibility table, keyed by macOS version
-        string. An entry may be a specific point release (e.g. `15.5`) or a major-version wildcard
-        (e.g. `15.*`). A major-version wildcard is permitted only when the format-stability analysis
-        (referenced below) supports it for that major *and* the parser has been verified against at
-        least one current point release of that major.
-- [ ] The table is seeded per that analysis: macOS 12–15 are reasonable `supported` (wildcard) entries
-        once verified; macOS 11 and earlier are out of scope (a different mechanism); the current macOS
-        26 starts as `unknown` until verified.
-- [ ] On an `unknown` (unlisted) macOS version, the `macos_compatibility` `unknown` variant's `message`
-        asks the user to submit an issue or PR reporting whether this version works.
-- [ ] On a parsing failure, the response asks the user to file an issue or PR with their macOS version,
-        the helper version, and the error code.
-
-### Distribution and Documentation
-
-- [ ] The helper can be installed with a single command via build-from-source channels — Homebrew
-        (a formula in a tap) or `cargo install` — which handle the app bundle, the LaunchAgent
-        registration, and putting the CLI wrapper on the user's `PATH`. A signed + notarized Homebrew
-        cask is an optional later addition, not required here.
-- [ ] The documentation explains, prominently, exactly how to grant Full Disk Access to the helper
-        (the precise System Settings steps and the resolved binary path), and that on the
-        build-from-source channels the grant must be re-applied after each upgrade.
-- [ ] The project `README.md` clearly and concisely explains who the Focus Gopher is for, what problem
-        it solves, and how to start using it — written to engage both human and agent readers, with at
+- [ ] The helper installs with a single command (e.g. Homebrew or `cargo install`), setting itself up
+        to run and putting the command-line wrapper on the user's `PATH`.
+- [ ] The documentation explains, prominently, how to grant Full Disk Access to the helper (the precise
+        steps), including that on build-from-source installs the grant must be re-applied after an
+        upgrade.
+- [ ] The `README.md` clearly and concisely explains who the Focus Gopher is for, what problem it
+        solves, and how to start using it — written to engage both human and agent readers, with at
         least one short, deliberately slow/clear screen-recording GIF demonstrating it, and including or
         referencing (depending on length) the full `--help`/`man` documentation.
-- [ ] The `--help` output and/or `man` page are themselves clear, concise, useful to both human and
-        agent readers, and include worked examples for every common operation and its result.
+- [ ] The `--help` output and/or `man` page are clear, concise, useful to both human and agent readers,
+        and include worked examples for every common operation and its result.
 - [ ] The project ships bundled agent skills plus a simple command that installs them into the user's
         home directory or a specified project for common agent harnesses (e.g. Claude Code, Codex).
 - [ ] The project has a clear OSS license (MIT, unless a better-established commercially-friendly choice
@@ -184,17 +105,6 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [ ] The project has a `CONTRIBUTING.md` that orients contributors by briefly introducing the
         architecture and development workflow (largely by linking to these design docs) and by pointing
         at the repository-root `CONTRIBUTING.md`, without duplicating its content.
-
-### Testing
-
-- [ ] At least one unit or integration test covers the retrieval logic against fixture
-        Focus-database files representing Focus-on (manual and scheduled), Focus-off (including the
-        empty-file case), and malformed/unknown-schema cases, for each supported macOS major version
-        (verified against at least one current point release of each).
-- [ ] An end-to-end test verifies that a client can connect to the running helper over the socket
-        (and that the CLI wrapper works) and receive a well-formed `FocusState` (exercised against a
-        real macOS session where feasible, otherwise against fixture data with the real socket and
-        process).
 
 ## References
 
@@ -207,9 +117,10 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 ### Engineering Design
 
 - [macOS Focus Gopher Engineering Design](../engineering-designs/2026-05-12-macos-focus-gopher.md) —
-    The technical approach: a Rust helper packaged as a stable-identity `.app` LaunchAgent
+    The technical approach (the *how*): a Rust helper packaged as a stable-identity `.app` LaunchAgent
     (Developer ID signing/notarization an optional later enhancement), a Unix-domain-socket JSON
-    protocol with a thin CLI wrapper, and a versioned read-only parser of the macOS Focus database.
+    protocol with a thin CLI wrapper, the `FocusState` data model and retrieval pipeline, the
+    compatibility table, and the testing approach.
 
 ### Analysis
 
