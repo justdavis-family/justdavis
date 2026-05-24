@@ -48,12 +48,13 @@ It exposes `get_focus()` and nothing else — no `read_file(path)`, `run_shell(c
 
 Because the macOS Focus database format is undocumented and changes between releases,
   the helper's value is its *stable interface*, not the schema it parses.
-The response model separates orthogonal facts — whether the helper succeeded, whether a Focus is enabled,
-  whether a Focus name is available, and whether this macOS version is known-supported —
-  so consumers never have to guess, and a parsing failure is reported as an explicit error
-  rather than silently masquerading as "no Focus is on".
-The helper ships a macOS-version compatibility table, asks users to report unknown-but-working versions,
-  and asks for an issue or PR (with version and error details) when parsing fails on a new release.
+The response model keeps the possible outcomes distinct — a Focus is on (with its name), no Focus is on,
+  or the state could not be determined — so consumers never have to guess, and a parsing failure (or an
+  active Focus whose name cannot be resolved) is reported as an explicit error rather than silently
+  masquerading as "no Focus is on".
+The helper ships a macOS-version compatibility table, asks users to report whether unlisted ("unknown")
+  versions work, and asks for an issue or PR (with version and error details) when parsing fails on a
+  new release.
 
 The Focus Gopher should also be *pleasant to discover and adopt*: easy to install, well-documented for
   both human and agent readers, and obviously useful at a glance.
@@ -71,11 +72,11 @@ The Focus Gopher should also be *pleasant to discover and adopt*: easy to instal
     helper's own upgrades).
 - The helper exposes exactly one read-only operation and no arbitrary filesystem, shell, Shortcut,
     or AppleScript access.
-- The helper's responses unambiguously distinguish *no Focus is on*, *a Focus is on* (with or without
-    a resolved name), and *the state could not be determined*; a parsing failure is never reported as
-    "no Focus is on".
+- The helper's responses unambiguously distinguish *no Focus is on*, *a Focus is on* (with its name),
+    and *the state could not be determined* (including an active Focus whose name cannot be resolved);
+    a parsing failure is never reported as "no Focus is on".
 - The helper reports whether the running macOS version is known-supported, and emits actionable
-    guidance on unknown-but-working versions and on parsing failures.
+    guidance on unlisted ("unknown") versions and on parsing failures.
 
 ### Discoverability and adoption
 

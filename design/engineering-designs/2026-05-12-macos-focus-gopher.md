@@ -313,8 +313,8 @@ New codes may be added; existing codes are not repurposed.
     handling are designed to absorb.
 - **Rust vs. Swift.**
     Chosen: Rust. The helper is a headless background process, so there is no AppKit/SwiftUI "native
-    feel" at stake; a Rust binary packages into a code-signed/notarized `.app` and a LaunchAgent just
-    as well, and the TCC grant attaches to the bundle, not the language. Rust is the team's preferred
+    feel" at stake; a Rust binary packages into an `.app` and a LaunchAgent just as well (signed or
+    not), and the TCC grant attaches to the bundle, not the language. Rust is the team's preferred
     language for tools like this, which improves authoring and review. Swift would only win if deep
     macOS-framework integration were needed — reading two JSON files does not require it. If a future
     version needs significant native-framework work, this can be revisited.
@@ -357,8 +357,9 @@ New codes may be added; existing codes are not repurposed.
 - The helper reports known/unknown macOS compatibility.
 - The helper never exposes arbitrary filesystem, shell, Shortcut, or AppleScript access.
 - The parser correctly handles fixture databases for each supported macOS major version
-    (manual-Focus-on, scheduled-Focus-on, Focus-off including the empty-file case, malformed, and
-    unknown-schema fixtures), verified against a current point release of each.
+    (manual-Focus-on, scheduled-Focus-on, Focus-off including the empty-file case, malformed,
+    unknown-schema, permission-denied, and active-but-unnameable fixtures), verified against a current
+    point release of each.
 - A schema change or parse failure is surfaced as `failed` with an explicit `error`, never as a
     `determined` result.
 - A versioned JSON Schema for `FocusState` is published and the helper's output validates against it.
