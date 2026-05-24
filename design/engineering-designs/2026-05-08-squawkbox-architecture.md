@@ -3,26 +3,25 @@
 ## Overview
 
 Technical design for Squawkbox,
-  the family's voice and text gateway to Claude Code sessions running on the homelab Mac mini.
-Addresses the need for a single, swappable, self-hosted bridge between
-  several user-facing channels (PSTN call, Slack text, Slack Huddle)
-  and one or more Claude Code sessions,
+  a self-hosted voice gateway to Claude Code sessions running on a homelab host.
+It is a single, swappable bridge between a phone call and a Claude Code session,
   with hands-free safety and predictable cost as first-class concerns.
 
-See [Squawkbox: Voice and Text Access to Homelab Agents](../product-vision/2026-05-08-squawkbox.md)
+See [Squawkbox: Voice Access to Homelab Agents](../product-vision/2026-05-08-squawkbox.md)
   for the product context and the requirements documents listed under References for what each
   component must deliver.
+The cost and capability research behind the choices below is captured in the
+  [architecture-research analysis](../analyses/2026-05-08-voice-agent-architecture-research.md).
 
 ## Architecture
 
-Squawkbox is structured as six independent layers
+Squawkbox is structured as independent layers
   so that each can evolve, be swapped, or be rewritten without disturbing the others:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ Layer 1: Channel Adapters                                                    │
 │  - Phone (Twilio/Telnyx WebSocket Media Streams)                             │
-│  - Slack text (Events API + Web API)                                         │
 │  - Apple Shortcuts trigger (HTTP API)                                        │
 └──────────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -34,9 +33,9 @@ Squawkbox is structured as six independent layers
                                     │
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ Layer 3: Conversation Orchestrator                                           │
-│  - Session manager (which Claude Code session is this turn for?)             │
 │  - Permission handler (interrupt, prompt, parse response)                    │
 │  - VAD-gated turn boundary, barge-in, interruption                           │
+│  - Session manager (trivial at MVP: one session; multi-session deferred)     │
 └──────────────────────────────────────────────────────────────────────────────┘
                                     │
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -52,9 +51,8 @@ Squawkbox is structured as six independent layers
 └──────────────────────────────────────────────────────────────────────────────┘
                                     │
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Layer 6: Telephony / Channel Egress                                          │
-│  - Outbound call placement (Twilio REST API)                                 │
-│  - Slack message posting (Web API)                                           │
+│ Layer 6: Telephony Egress                                                    │
+│  - Outbound call placement (telephony provider REST API)                     │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -65,106 +63,104 @@ This is what makes "swap cloud STT for local STT" or "swap MCP polling for Chann
 
 ## Technology Choices
 
-- **Rust** for the core daemon.
-  Single static binary deploy fits Karl's homelab pattern,
-  matches existing skill in Rust-based homelab tooling,
-  and handles audio at low latency without garbage-collection pauses.
-- **Hand-rolled audio pipeline** in Rust with Tokio for async,
-    `bytes` for buffer management,
-    and `tokio-tungstenite` for the Twilio Media Streams WebSocket.
-  Pipecat (via PyO3 bindings) and LiveKit Agents (Rust SDK) were considered and rejected;
-    see the Audio framework row in the Trade-offs table.
-  Hand-rolling is justified by the YAGNI principle:
-    Squawkbox needs only one channel adapter at MVP and one well-defined audio shape
-    (mu-law 8 kHz from Twilio),
-    not the broad menu of transports that Pipecat or LiveKit support.
-- **`hyper` or `axum`** for the HTTP API surface
-  (Apple Shortcuts trigger, Slack webhook receiver, web admin UI).
-- **Twilio** for telephony at MVP.
+- **HTTP API surface** for the Apple Shortcuts trigger and the web admin UI.
+- **Telephony provider: Twilio at MVP.**
   Telnyx is cheaper and the architecture supports it as a swap,
   but Twilio's documentation and Media Streams maturity make it the right MVP target.
-- **OpenAI Whisper API** for STT at MVP and **ElevenLabs Flash** for TTS at MVP,
+- **STT/TTS: cloud at MVP** (OpenAI Whisper + ElevenLabs Flash),
   switching to local providers (whisper.cpp + Piper or Kokoro)
   in a later milestone via the OpenAI-compatible-endpoint trick:
   the production code talks to "OpenAI" but configures `base_url` to a local server.
-- **MCP polling** for the agent adapter at MVP,
+- **Agent adapter: MCP polling at MVP,**
   switching to Claude Code Channels in a later milestone.
   Channels is the architecturally cleaner end state but is too new for the MVP risk budget;
   see Trade-offs.
-- **`slack-morphism`** (Rust Slack SDK) for the Slack channel adapter.
-- **`sqlx` with SQLite** for session metadata, audit logs, and API key storage on the Mac mini.
+- **Storage: SQLite** for session metadata, audit logs, and API key storage on the homelab host.
   The data volume is small and SQLite is the obvious choice for a single-host deployment.
-- **`tracing` with `tracing-subscriber`** for structured logging,
-  matching the project-wide preference for structured observability.
+- **Structured logging** for observability,
+  matching the project-wide preference for structured, queryable logs.
+
+### Open Decision: Orchestrator Implementation and Language
+
+The single shakiest part of this design is the real-time audio orchestration —
+  barge-in, VAD-gated turn boundaries, streaming alignment, and interruption.
+Two paths are on the table, and the choice is deliberately left open
+  until an early spike has built a thin voice loop both ways and compared them:
+
+- **Hand-rolled in Rust.**
+  A single static binary that fits a homelab deploy pattern and handles audio at low latency
+  without garbage-collection pauses,
+  using Tokio for async and `tokio-tungstenite` for the Media Streams WebSocket.
+  The risk is that the orchestration logic above is genuinely hard to get right,
+  and re-implementing what mature frameworks already provide is the costliest part of the build.
+- **Pipecat (Python), the trusted off-the-shelf orchestrator.**
+  Pipecat exists precisely to handle barge-in, streaming alignment, codec negotiation,
+  lifecycle, and metrics — the hard parts above — in roughly thirty lines of pipeline definition.
+  Leaning on it is arguably the leaner, more YAGNI-aligned start
+  (don't rebuild a solved problem),
+  at the cost of a Python runtime rather than a single static binary.
+
+The bake-off spike (see the delivery plan) builds the smallest possible voice loop on each path,
+  measures latency and implementation effort,
+  and commits to one before the rest of the system is built on top of it.
+moltis's `moltis-telephony` Rust crate is the closest reference for the hand-rolled path;
+  Pipecat's MCP-server pattern is the closest reference for the framework path.
+Whichever wins, the layer interfaces above stay the same;
+  the decision is contained to Layer 3's implementation and the daemon's language.
 
 ## Data Flow: Phone Call Path (MVP)
 
 Walking through a single voice turn end-to-end:
 
-1. Karl taps the Apple Shortcut on his Watch.
-2. The Shortcut sends `POST /v1/calls` with API key header to the Squawkbox HTTP API.
-3. Squawkbox validates the API key, looks up Karl's destination phone number from config,
-    and calls the Twilio REST API to place an outbound call to that number.
-4. Karl answers the call.
-   Twilio establishes a Media Streams WebSocket back to Squawkbox,
+1. The operator taps the Apple Shortcut on their Watch.
+2. The Shortcut sends `POST /v1/calls` with an API key header to the Squawkbox HTTP API.
+3. Squawkbox validates the API key, looks up the destination phone number from config,
+    and calls the telephony provider's REST API to place an outbound call to that number.
+4. The operator answers the call.
+   The provider establishes a Media Streams WebSocket back to Squawkbox,
     streaming mu-law 8 kHz audio bidirectionally.
-5. Squawkbox spawns a per-call orchestrator task that:
-   - reads audio frames from the Twilio WS
+5. Squawkbox runs a per-call orchestrator task that:
+   - reads audio frames from the WebSocket
    - feeds them through a VAD (Silero VAD running locally) to detect end-of-utterance
-   - on end-of-utterance, sends the buffered audio to Whisper API and gets back a transcript
+   - on end-of-utterance, sends the buffered audio to STT and gets back a transcript
    - hands the transcript to the Agent Adapter,
-       which conveys it to the chosen Claude Code session and reads the response back
-   - streams the response text through ElevenLabs Flash TTS as it arrives
-   - streams the resulting audio back to Twilio via the same WebSocket
+       which conveys it to the configured Claude Code session and reads the response back
+   - streams the response text through TTS as it arrives
+   - streams the resulting audio back to the provider via the same WebSocket
 6. If Claude Code requests permission mid-conversation,
     the orchestrator interrupts the in-flight TTS,
     speaks the permission prompt,
-    listens for and recognizes Karl's response,
+    listens for and recognizes the operator's response,
     and returns the decision to Claude Code.
-7. Karl says "goodbye" or hangs up.
+7. The operator says "goodbye" or hangs up.
    The orchestrator drains the audio pipeline,
    posts a final message to Claude Code recording the end of the conversation,
    and tears down the per-call task.
-
-## Data Flow: Slack Text Path
-
-1. A family member @-mentions the Squawkbox bot in a Slack channel or DM.
-2. Slack delivers the message to Squawkbox's `/v1/slack/events` HTTP endpoint.
-3. Squawkbox validates the Slack signing secret,
-    identifies the user and intended session,
-    and conveys the message text to the appropriate Claude Code session via the Agent Adapter.
-4. As the agent generates a response, Squawkbox streams updates to the Slack thread
-    using `chat.update` calls bounded by Slack's rate limits.
-5. Permission requests are posted as interactive Slack messages with Approve/Deny buttons;
-    button presses come back via the same `/v1/slack/events` endpoint
-    and are routed to the agent.
 
 ## Authentication and Authorization
 
 ### Apple Shortcuts API key
 
-A 32-byte URL-safe random key, stored in iOS Keychain via the Shortcut definition,
-  sent as `X-Squawkbox-Key` header on every trigger request.
+A 32-byte URL-safe random key, stored in the iOS Keychain via the Shortcut definition,
+  sent as an `X-Squawkbox-Key` header on every trigger request.
 Squawkbox stores key fingerprints (Argon2id-hashed) in SQLite
   with creation, last-used, and revocation timestamps.
 Plaintext keys are never written to disk by Squawkbox.
 
 ### Telephony authentication
 
-Outbound calls use the same authenticated trigger as above.
-Inbound calls are not accepted at MVP;
-  if they are added later, authentication will require both:
-1. Caller ID match against a tight allowlist (Karl's phone numbers only).
-2. DTMF PIN entry within the first 10 seconds, with three-strike lockout.
-The combination provides defense in depth against caller-ID spoofing.
-
-### Slack authentication
-
-Slack Events API requests are authenticated by Slack's signing secret on every webhook,
-  with the request timestamp validated against the local clock to a 5-minute tolerance
-  to mitigate replay attacks.
-Per-user authorization comes from a Squawkbox-side allowlist mapping Slack user IDs
-  to permitted sessions and capabilities.
+Only authenticated outbound calls are bridged;
+  the authenticated trigger above is the sole way to start a call.
+Inbound calls are not accepted:
+  PSTN caller ID is spoofable, and no sufficiently strong inbound authentication path
+  has been chosen.
+If inbound is revisited later, candidate approaches include authenticated SIP or WebRTC
+  from a homelab-controlled client (sidestepping PSTN caller-ID spoofing entirely):
+  SIP digest auth or mutual TLS, or WebRTC with a short-lived token.
+That is an open investigation, not a committed path;
+  see the architecture-research analysis.
+As optional defense-in-depth on outbound calls,
+  Squawkbox can require a DTMF digit before bridging the call to the agent.
 
 ### Network exposure
 
@@ -172,7 +168,7 @@ The daemon's HTTP listener binds to a Tailscale-managed socket;
   it is never bound directly to a public network interface.
 Two paths reach this socket:
 
-- From within the family's Tailscale tailnet,
+- From within the operator's Tailscale tailnet,
     peers connect directly to the daemon on its tailnet address.
 - From the public internet,
     requests reach the daemon via Tailscale Funnel,
@@ -181,11 +177,11 @@ Two paths reach this socket:
     and proxies traffic to the same socket.
 
 The Apple Shortcuts trigger uses the public Funnel path
-  when Karl is off the home network,
+  when the operator is off the home network,
   protected by the API key.
-The Twilio webhook endpoint must be publicly reachable;
+The telephony provider's webhook endpoint must be publicly reachable;
   it is exposed via the same Funnel path,
-  with Squawkbox validating Twilio's signature on every inbound request.
+  with Squawkbox validating the provider's signature on every inbound request.
 
 ## Permission Handler Design
 
@@ -231,9 +227,9 @@ The migration to local providers does not require any code changes in Squawkbox 
   at the local server.
 
 The migration is gated by:
-- whisper.cpp turbo running on the Mac mini's Apple Neural Engine
-    matches cloud Whisper accuracy on Karl's normal speech, and
-- a local Piper or Kokoro voice is acceptable to Karl's family
+- whisper.cpp turbo running on the homelab host's Apple Neural Engine
+    matching cloud Whisper accuracy on the operator's normal speech, and
+- a local Piper or Kokoro voice being acceptable to the operator
     relative to ElevenLabs Flash quality.
 
 ## Configuration
@@ -242,14 +238,14 @@ Single TOML config file at `~/.squawkbox/squawkbox.toml`:
 
 ```toml
 [server]
-listen = "100.64.0.5:8443"   # Tailscale IP
+listen = "100.64.0.5:8443"   # Tailscale-managed socket
 
 [telephony]
 provider = "twilio"
 account_sid_env = "TWILIO_ACCOUNT_SID"
 auth_token_env = "TWILIO_AUTH_TOKEN"
 caller_id_number = "+15551234567"
-karl_phone_number = "+15557654321"
+operator_phone_number = "+15557654321"
 
 [stt]
 provider = "openai"
@@ -267,22 +263,17 @@ model = "eleven_flash_v2_5"
 [agent]
 adapter = "mcp_polling"
 poll_interval_ms = 200
-
-[slack]
-enabled = false               # MVP defers Slack
-signing_secret_env = "SLACK_SIGNING_SECRET"
-bot_token_env = "SLACK_BOT_TOKEN"
-allowed_user_ids = []
+session = "default"           # single session at MVP; multi-session deferred
 ```
 
 Secrets are referenced by environment variable name only;
   the daemon reads them from the environment at startup,
-  and the homelab uses systemd to inject them from a secrets manager.
+  and the homelab uses its service manager to inject them from a secrets manager.
 
 ## Observability
 
-- Structured `tracing` events bound to a per-call or per-message correlation ID.
-- One log line per turn: timestamp, correlation ID, channel, latency breakdown
+- Structured logging events bound to a per-call correlation ID.
+- One log line per turn: timestamp, correlation ID, latency breakdown
     (STT ms, agent ms, TTS ms, total).
 - Audit log table in SQLite for every authentication attempt, every API key use,
     and every permission decision.
@@ -295,45 +286,54 @@ Secrets are referenced by environment variable name only;
 
 | Decision | Chosen for MVP | Alternative considered | Rationale |
 |---|---|---|---|
-| Agent adapter | MCP polling | Claude Code Channels | Channels is newer, less battle-tested, and adds a learning-curve risk to the MVP timeline. Polling is a stable, well-documented MCP pattern. The two adapters live behind the same trait, so a swap is a contained later milestone. |
-| Audio framework | Hand-rolled with Tokio | Pipecat (Python) or LiveKit Agents (Rust SDK) | Squawkbox needs one transport (Twilio Media Streams) at MVP, not the broad menu these frameworks ship. YAGNI says: don't take the dep until a second transport demands it. |
+| Agent adapter | MCP polling | Claude Code Channels | Channels is newer, less battle-tested, and adds a learning-curve risk to the MVP timeline. Polling is a stable, well-documented MCP pattern. The two adapters live behind the same abstraction, so a swap is a contained later milestone. |
+| Orchestrator + language | Open decision, resolved by an early bake-off spike | Commit up front to hand-rolled Rust, or up front to Pipecat | The orchestration logic (barge-in, streaming, lifecycle) is the real complexity, not the number of transports. Rather than guess, the spike builds the thinnest voice loop both ways, measures latency and effort, and commits. See "Open Decision" above. |
 | STT/TTS at MVP | Cloud (OpenAI / ElevenLabs) | Local (whisper.cpp / Piper) | Cloud removes one dimension of integration risk from the MVP. The base_url-config trick makes the swap to local a configuration change, not a code change. |
 | Telephony at MVP | Twilio | Telnyx, Plivo | Twilio has the most mature Media Streams docs, Anthropic-published reference patterns, and lowest setup friction. Telnyx is ~35% cheaper per minute and is the obvious second-milestone swap once Squawkbox proves out. |
-| Inbound vs outbound calls | Outbound only | Inbound also accepted | PSTN caller ID is spoofable; an inbound-call auth scheme would either rely on weak signals or require a DTMF-PIN dance that defeats hands-free safety on first connect. Outbound-from-trigger is strictly more secure and only marginally less convenient. |
-| Language | Rust | Python, Go, TypeScript | Single static binary, low-latency audio handling, matches Karl's existing homelab tooling preferences, and aligns with the [moltis](https://github.com/moltis-org/moltis) ecosystem he is already familiar with. |
+| Inbound vs outbound calls | Outbound only | Inbound also accepted | PSTN caller ID is spoofable; an inbound-PSTN auth scheme would either rely on weak signals or require a DTMF-PIN dance that defeats hands-free safety on first connect. Outbound-from-trigger is strictly more secure. Authenticated SIP/WebRTC inbound is a possible future path (see analysis), not committed. |
 
 ## Success Criteria
 
-- The MVP daemon runs as a single Rust binary on the Mac mini under launchd or systemd
-    with no manual intervention required between releases.
-- An Apple Shortcut on Karl's Watch initiates an authenticated outbound call to his phone
+- The MVP daemon runs as a single self-contained service on the homelab host
+    under its service manager, with no manual intervention required between releases.
+- An Apple Shortcut initiates an authenticated outbound call to the operator's phone
     that bridges to a working Claude Code session within 5 seconds of tap.
-- Hands-free permission flow round-trips in under 3 seconds for ordinary actions
+- Hands-free permission flow round-trips fast enough not to stall the agent
     and is testable against recorded audio fixtures.
-- Cloud-provider costs at 1,500 voice minutes per month land between $25 and $45
+- Cloud-provider costs at the operator's projected usage land well below the third-party baseline,
     inclusive of all line items.
 - A migration to local STT/TTS in a later milestone requires zero changes to the daemon's
-    Rust code; only a configuration update.
+    code; only a configuration update.
 - A migration from MCP polling to Claude Code Channels in a later milestone is contained
     to the Agent Adapter module and does not affect any other layer.
+
+## Testing Approach
+
+The test approach referenced by the requirements:
+
+- **Voice conversation and trigger paths** are covered by automated tests that use
+    mock STT/TTS providers and a real Claude Code session configured against a sandbox
+    repository, so the agent leg is exercised for real while the paid/cloud legs are mocked.
+- **Permission recognition accuracy** is measured against a checked-in set of recorded
+    audio fixtures captured under realistic driving conditions, so the 95% bar is a
+    repeatable measurement rather than a vibe.
+- **End-to-end smoke tests** from a real Apple device and a real phone gate each release.
 
 ## References
 
 - **Product Requirements**:
     [Outbound Call Trigger via Apple Shortcuts](../product-requirements/2026-05-08-outbound-call-trigger.md),
     [Secure Voice Conversations With Homelab Claude Code Sessions](../product-requirements/2026-05-08-secure-voice-calls.md),
-    [Voice Session Management](../product-requirements/2026-05-08-voice-session-management.md),
     [Hands-Free Voice Permission Handling](../product-requirements/2026-05-08-voice-permission-handling.md),
-    [Slack Text Conversations With Claude Code Sessions](../product-requirements/2026-05-08-slack-text-channel.md),
-    [Slack Permission Button Flow](../product-requirements/2026-05-08-slack-permission-flow.md).
+    [Voice Session Management](../product-requirements/2026-05-08-voice-session-management.md) (deferred).
 - **Delivery Plan**:
     [Squawkbox Delivery Plan](../delivery-plans/2026-05-08-squawkbox.md).
 - **Analysis**:
     [Voice Access to Homelab Claude Code: Architecture Research](../analyses/2026-05-08-voice-agent-architecture-research.md) —
     Evaluates the third-party vs. self-hosted decision,
-    surveys voice-agent options at Karl's usage level,
+    surveys voice-agent options at realistic usage levels,
     and grounds the six-layer architecture, Twilio choice, MCP-polling-for-MVP,
-    and cloud-STT/TTS-for-MVP decisions in concrete cost and capability data.
+    cloud-STT/TTS-for-MVP, and orchestrator-bake-off decisions in concrete cost and capability data.
 - **Engineering Principles**:
     [YAGNI](../engineering-principles/2026-01-06-yagni.md),
     [Strong Typing and Information Preservation](../engineering-principles/2026-01-07-strong-typing.md),
@@ -341,6 +341,6 @@ Secrets are referenced by environment variable name only;
     [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md).
 - **Inspiration**:
     [moltis: telephony channel (PR #920)](https://github.com/moltis-org/moltis/pull/920) —
-    moltis is an OpenClaw variant whose recently-merged telephony channel
+    moltis is an OpenClaw variant whose telephony channel
     directly inspired Squawkbox's layered architecture.
     See finding 13 in the analysis above for the current state of moltis PR #920.

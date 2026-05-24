@@ -2,7 +2,7 @@
 
 ## Goals
 
-Karl has been using Happy Coder's voice mode to talk to Claude Code sessions on his homelab Mac mini.
+Karl has been using [Happy Coder](https://happy.engineering/)'s voice mode to talk to Claude Code sessions.
 At his actual usage rate the existing third-party path is uncomfortably expensive
   and binds him to a vendor stack and cloud relay he doesn't control.
 This analysis evaluates whether to keep using Happy as-is,
@@ -121,10 +121,13 @@ At Karl's volume that's a savings of ~$30–50/mo over BYOA ElevenLabs.
 iOS provides three options that touch the "read text from an app aloud" use case,
   but none of them deliver bidirectional voice with turn detection:
 
-- **VoiceOver**: full screen reader; only auto-announces new content if the app marks
-    elements as live regions or fires accessibility announcements.
-  Whether Happy does this is undocumented;
-    even if it works, it only handles the *output* side.
+- **VoiceOver**: full screen reader.
+  Blind users do navigate chat apps like Slack and Messages with VoiceOver,
+    so a workable (if manual, screen-focused) input-and-output UX clearly exists for those apps;
+    whether Happy specifically exposes its streaming content well is undocumented.
+  This bears validation by watching how blind users actually drive chat apps;
+    the working assumption here is that VoiceOver covers the output side
+    but does not provide the hands-free, eyes-off turn-taking a voice agent does.
 - **Speak Screen**: two-finger swipe-down reads the current screen at trigger time;
     does not update as new content streams in.
   Manual re-trigger required for each new agent response.
@@ -132,10 +135,11 @@ iOS provides three options that touch the "read text from an app aloud" use case
   Best zero-effort option for ambient awareness, but only handles notifications,
     not in-conversation speech.
 
-The fundamental problem is that all three options handle output only.
-Voice input still requires the standard iOS dictation flow on the keyboard,
-  which doesn't translate stream-of-consciousness speech into clean prompts
-  the way a voice agent's bridge LLM does.
+The fundamental problem for the hands-free driving use case is that none of these
+  provide eyes-off, touch-free turn-taking.
+VoiceOver can drive input, but by touch on a screen, not by voice while driving;
+  iOS dictation can capture voice input but doesn't translate stream-of-consciousness speech
+  into clean prompts the way a voice agent's bridge LLM does.
 At best, accessibility features could reduce voice-agent usage by 20–30% for
   asynchronous "tell me when Claude is done" scenarios;
   they cannot substitute for the active back-and-forth that drives the bulk of usage.
@@ -185,6 +189,14 @@ Notable near-misses that don't satisfy the "bidirectional voice to self-hosted a
 - **Vapi / Retell / Synthflow**: voice loop runs in their cloud and bills silence by default.
 - **Home Assistant Assist**: technically possible but no published Claude-Code conversation
     integration exists; would be DIY parallel to Pipecat with a worse client.
+
+Relaxing the self-hosting requirement (acceptable if a hosted option is affordable at the
+  expected usage level) does not rescue these near-misses:
+  almost all of them fail on the bidirectional-voice leg (push-to-talk only, or no agent
+  voice back), not on self-hosting.
+The hosted options that *do* close the bidirectional-voice loop affordably
+  (ElevenLabs Agents via Happy BYOA, ~$130/mo) are already captured in the main table above;
+  they remain several times more expensive than the self-hosted floor at the same volume.
 
 ### 7. NetworkChuck's claude-phone Is the DIY Composable Stack with Free SIP Transport
 
@@ -326,28 +338,33 @@ Three significant limitations:
    Poll every 1 second for fast pickup and burn requests; poll every 60 seconds for cheap
      and accept up to a minute of message-queue delay.
    No good answer.
-2. **The model has to be in the loop to poll.**
-   Claude Code can't poll "in the background";
-     the model only does anything when it's actively processing a turn.
-   To poll, either wrap Claude in an agent loop where every N seconds it gets a turn
-     that says "check for messages, then either act or do nothing"
-     (which costs tokens every poll, even when there's nothing to do),
-     or have Claude poll only when idle —
-     but idle in Claude Code means the session is *waiting for the user*,
-     so polls happen on user input boundaries,
-     which means external messages don't arrive until the user types something.
-3. **Polling can't do mid-execution interruption.**
-   Even with aggressive polling, there's a window where Claude is mid-tool-call
+2. **The model reacts between turns, never mid-tool-execution.**
+   Claude Code can in fact watch background processes (the Monitor tool)
+     and receive externally-pushed events (Channels) without the model itself
+     looping on a poll tool — the harness delivers each event reactively.
+   But every such event is surfaced *between* agent turns, not during one:
+     if Claude is mid-tool-call, an incoming message queues until that turn completes.
+   A naive poll-tool loop is worse still:
+     either it burns tokens on every poll even when nothing has happened,
+     or it only checks on user-input boundaries,
+     so external messages don't arrive until the user speaks.
+3. **Nothing interrupts a running tool call.**
+   Even with aggressive polling there's a window where Claude is mid-tool-call
      and hasn't checked the queue.
-   Channels notifications can land between agent steps.
+   Channels notifications land between agent steps, which is better,
+     but they still do not preempt an in-flight turn.
 
-Channels fixes all three: server-pushed events are immediate, free of token cost,
-  and can land mid-stream.
+Channels addresses the first two cleanly:
+  server-pushed events are immediate and free of token cost.
+It does not magically interrupt a running tool call —
+  no mechanism does; external events land between turns either way —
+  but it removes the latency-vs-cost dial and the user-input-boundary problem entirely.
 For Squawkbox the implication is that **MCP polling is acceptable for the MVP**
   (it's stable, well-documented, and lower implementation risk than a research-preview feature),
   but **Channels is the right end-state.**
-Both adapters live behind the same Rust trait in the engineering design,
-  so the swap is a contained later milestone.
+Both adapters live behind the same agent-adapter abstraction in the engineering design,
+  so the swap is a contained later milestone
+  (see the Channels milestone in the delivery plan).
 
 ### 12. Channels Plugins Are Small and Language-Agnostic
 
@@ -409,11 +426,10 @@ The PR's design evolved substantially during review:
 Release timing:
   the merge landed at commit `ce09a59` ~16:00 UTC May 7;
   release `20260507.05` was tagged at commit `c198ac5` 56 minutes later.
-The CHANGELOG.md does not yet have an entry for telephony in `[Unreleased]`
-  or any May release section,
-  so the documentation lags the binary.
-Confirming that telephony shipped in `20260507.05` requires running `moltis voice-call --help`
-  on the latest binary or checking for the Settings > Phone page in the web UI.
+At the time of the original research the CHANGELOG.md had no telephony entry,
+  so the documentation lagged the binary.
+This has since been confirmed: telephony shipped and is live,
+  per the [moltis changelog](https://moltis.org/changelog/) (verified May 2026).
 
 For Squawkbox this means moltis is a viable reference implementation of the same architectural
   pattern: Rust binary, multi-provider telephony, Twilio Media Streams WebSocket, configurable
@@ -442,7 +458,8 @@ Other local STT options considered:
 **Configurability without custom code** is achieved via the OpenAI-compatible-API trick:
   Squawkbox's "OpenAI Whisper STT" provider accepts an arbitrary `base_url`,
   pointing at a local Whisper server (e.g.,
-  [speaches](https://github.com/speaches-ai/speaches),
+  [speaches](https://github.com/speaches-ai/speaches)
+    — the unusual spelling is intentional; that is the project's actual name —
   whisper-asr-webservice, or LocalAI)
   that exposes `/v1/audio/transcriptions`.
 Squawkbox thinks it's talking to OpenAI but it's actually hitting the Mac mini.
@@ -483,25 +500,35 @@ The findings above directly informed the Squawkbox engineering design:
 
 - **Outbound-only authentication** ([secure-voice-calls](../product-requirements/2026-05-08-secure-voice-calls.md),
     [outbound-call-trigger](../product-requirements/2026-05-08-outbound-call-trigger.md)).
-  Finding 5 (Twilio is for telephony) plus the inability to authenticate inbound calls
+  Finding 5 (Twilio is for telephony) plus the inability to authenticate inbound *PSTN* calls
     strongly enough for hands-free safety led to the choice of "Apple Shortcut → Squawkbox →
-    outbound call to Karl" as the must-have authenticated voice path.
-  Inbound calls are deferred indefinitely.
+    outbound call to the operator" as the must-have authenticated voice path.
+  Inbound PSTN calls are deferred indefinitely.
+  One avenue worth revisiting later: authenticated inbound over SIP or WebRTC
+    from a homelab-controlled client could sidestep PSTN caller-ID spoofing entirely
+    (SIP digest auth or mutual TLS; WebRTC with a short-lived token),
+    if mature, reliable homelab servers and iPhone clients exist for either.
+    That is an open investigation, not a committed path.
 - **Six-layer architecture** ([engineering design](../engineering-designs/2026-05-08-squawkbox-architecture.md)).
   Finding 9 is the conceptual scaffold for the entire engineering design.
   Each layer is swappable independently of the others.
 - **MCP polling for MVP, Channels for end state.**
   Findings 11 and 12 establish that polling is acceptable for an MVP with low integration risk
     while Channels is the better end-state pattern.
-  Both adapters are designed to live behind the same trait so the swap is contained.
+  Both adapters are designed to live behind the same agent-adapter abstraction so the swap is
+    contained, and the delivery plan includes a dedicated milestone for the Channels adapter.
 - **Cloud STT/TTS for MVP, local for end state.**
   Finding 14 establishes that local providers are feasible and configurable without
     custom code via the `base_url` trick,
     so the MVP can de-risk integration with cloud and migrate cleanly later.
-- **Hand-rolled Rust orchestrator for MVP.**
-  Finding 10 establishes Pipecat as the obvious off-the-shelf choice but YAGNI applies:
-    Squawkbox needs one transport at MVP, not the broad menu Pipecat ships.
-  If a second transport materializes in a later milestone, re-evaluating Pipecat is reasonable.
+- **Orchestrator implementation left as an open decision.**
+  Finding 10 establishes Pipecat as the obvious off-the-shelf orchestrator,
+    and the real complexity is the orchestration logic (barge-in, streaming, lifecycle),
+    not the number of transports.
+  Rather than commit up front to hand-rolling this in Rust,
+    the engineering design and delivery plan resolve it with an early bake-off spike:
+    build the thinnest voice loop both ways (hand-rolled Rust vs. Pipecat),
+    measure latency and effort, then commit.
 - **Twilio as the MVP telephony provider.**
   Finding 13 (moltis PR #920 working reference) plus the maturity of Twilio's documentation
     led to choosing Twilio over Telnyx for MVP, with Telnyx queued as the obvious migration
