@@ -221,7 +221,7 @@ This analysis should be revisited if the project gains an Apple Developer Progra
 - **Delivery Plan**: [macOS Focus Gopher Delivery Plan](../delivery-plans/2026-05-12-macos-focus-gopher.md).
 - **Related Analyses**:
     [macOS Focus Database Format and Stability](2026-05-12-macos-focus-db-format.md);
-    [`FocusState` JSON Response Shape: Flat vs. Nested](2026-05-12-focus-state-json-shape.md).
+    [`FocusState` JSON Response Shape: Flat vs. Tagged Union](2026-05-12-focus-state-json-shape.md).
 - **Engineering Principles**:
     [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md);
     [Comprehensive Error Modeling](../engineering-principles/2026-01-08-error-modeling.md);
