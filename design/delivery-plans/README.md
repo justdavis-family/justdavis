@@ -37,8 +37,9 @@ Simple, clearly-scoped requirements that fit comfortably in one PR do not need a
 - **Thin slices**: each milestone or PR delivers something independently usable or testable,
     not just an intermediate state that only makes sense in hindsight.
 - **Clear scope boundaries**: what is explicitly *in* each milestone, and what is deferred.
-- **Honest deferral**: if something feels nice-to-have, put it in a later milestone
-    (or drop it entirely) rather than bundling it into the first cut.
+- **Honest deferral**: separate work that is *required for the feature to function* from
+    *nice-to-have UX or polish*; sequence the latter into explicitly-optional later milestones
+    (that may never be reached) or drop it entirely, rather than bundling it into the first cut.
 - **Human decisions recorded**: the plan captures choices about sequencing and scope
     that aren't obvious from the requirements themselves.
 
