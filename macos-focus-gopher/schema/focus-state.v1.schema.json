@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://justdavis.com/schemas/focus-state/v1.json",
+  "title": "FocusState",
+  "description": "The fixed-schema object returned by the Focus Gopher helper's get_focus() operation. Exactly one of `determined` / `failed` is present (the outcome).",
+  "type": "object",
+  "required": ["macos_version", "macos_compatibility"],
+  "additionalProperties": false,
+  "properties": {
+    "macos_version": {
+      "type": "string",
+      "description": "The detected macOS version, e.g. \"15.5\"."
+    },
+    "macos_compatibility": { "$ref": "#/$defs/macos_compatibility" },
+    "determined": { "$ref": "#/$defs/determined" },
+    "failed": { "$ref": "#/$defs/failed" }
+  },
+  "oneOf": [
+    { "required": ["determined"], "not": { "required": ["failed"] } },
+    { "required": ["failed"], "not": { "required": ["determined"] } }
+  ],
+  "$defs": {
+    "macos_compatibility": {
+      "description": "Whether the running macOS version is on the known-compatibility list.",
+      "oneOf": [
+        { "const": "supported" },
+        { "const": "unsupported" },
+        {
+          "type": "object",
+          "required": ["unknown"],
+          "additionalProperties": false,
+          "properties": {
+            "unknown": {
+              "type": "object",
+              "required": ["message"],
+              "additionalProperties": false,
+              "properties": { "message": { "type": "string" } }
+            }
+          }
+        }
+      ]
+    },
+    "determined": {
+      "description": "The helper determined the state: a Focus is on (named) or off.",
+      "type": "object",
+      "oneOf": [
+        {
+          "required": ["focus_on"],
+          "additionalProperties": false,
+          "properties": {
+            "focus_on": {
+              "type": "object",
+              "required": ["name"],
+              "additionalProperties": false,
+              "properties": { "name": { "type": "string" } }
+            }
+          }
+        },
+        {
+          "required": ["focus_off"],
+          "additionalProperties": false,
+          "properties": {
+            "focus_off": { "type": "object", "additionalProperties": false }
+          }
+        }
+      ]
+    },
+    "failed": {
+      "description": "The helper could not determine the state.",
+      "type": "object",
+      "required": ["error", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "description": "A stable, machine-readable failure code.",
+          "enum": [
+            "focus_permission_denied",
+            "focus_db_unreadable",
+            "focus_db_malformed",
+            "schema_unknown",
+            "focus_name_unresolved",
+            "macos_unsupported",
+            "internal_error"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable guidance for this error."
+        }
+      }
+    }
+  }
+}

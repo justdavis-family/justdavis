@@ -3,6 +3,7 @@ experimental_monorepo_root = true
 [monorepo]
 config_roots = [
   "github-analytics",
+  "macos-focus-gopher",
 ]
 
 [tools]
@@ -10,15 +11,15 @@ yq = "latest"
 
 [tasks.build]
 description = "Build all projects"
-depends = ["//github-analytics:build"]
+depends = ["//github-analytics:build", "//macos-focus-gopher:build"]
 
 [tasks."lint:all"]
 description = "Lint all projects"
-depends = ["//github-analytics:lint"]
+depends = ["//github-analytics:lint", "//macos-focus-gopher:lint"]
 
 [tasks."test:all"]
 description = "Test all projects"
-depends = ["//github-analytics:test"]
+depends = ["//github-analytics:test", "//macos-focus-gopher:test"]
 
 [tasks.ci]
 description = "Run full CI suite"
@@ -26,11 +27,11 @@ depends = ["build", "test:all", "lint:all"]
 
 [tasks."dependencies:check"]
 description = "Check for outdated or vulnerable dependencies in all projects"
-depends = ["//github-analytics:dependencies:check"]
+depends = ["//github-analytics:dependencies:check", "//macos-focus-gopher:dependencies:check"]
 
 [tasks."dependencies:update"]
 description = "Update dependencies to latest compatible versions in all projects"
-depends = ["//github-analytics:dependencies:update"]
+depends = ["//github-analytics:dependencies:update", "//macos-focus-gopher:dependencies:update"]
 
 [tasks."ci:github:watch"]
 description = "Watch GitHub PR checks"

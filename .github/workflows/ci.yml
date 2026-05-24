@@ -15,8 +15,12 @@ concurrency:
 
 jobs:
   ci:
-    name: CI
-    runs-on: ubuntu-latest
+    name: CI (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     env:
       MISE_EXPERIMENTAL: '1'
     steps:

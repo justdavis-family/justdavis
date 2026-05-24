@@ -14,6 +14,7 @@ If you _do_ find something here particularly enlightening or useful,
 | Project | Description |
 |---|---|
 | [github-analytics](github-analytics/README.md) | Collects and stores GitHub repository analytics data that the API exposes but the web UI doesn't retain historically. |
+| [macos-focus-gopher](macos-focus-gopher/README.md) | A per-user macOS helper that reports the current Focus / Do Not Disturb state to local clients, so unprivileged agents don't need Full Disk Access (early development). |
 
 ## How is this Repository Organized?
 
@@ -21,11 +22,12 @@ This repository is roughly organized by domain,
   with different subtrees for the different types of projects.
 
 ```
-.github/          GitHub workflows and other config.
-.claude/          Agent instructions and other config.
-design/           Design documents, workflow, and related materials.
-github-analytics/ GitHub analytics collector and reporter.
-mise.toml         mise-en-place: dev env, tools, and tasks.
+.github/            GitHub workflows and other config.
+.claude/            Agent instructions and other config.
+design/             Design documents, workflow, and related materials.
+github-analytics/   GitHub analytics collector and reporter.
+macos-focus-gopher/ macOS Focus / Do Not Disturb state helper.
+mise.toml           mise-en-place: dev env, tools, and tasks.
 ```
 
 ### Why a Monorepo?

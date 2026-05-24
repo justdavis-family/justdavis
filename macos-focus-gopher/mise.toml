@@ -1,0 +1,37 @@
+[tools]
+rust = "1.91"
+"cargo:cargo-audit" = "latest"
+"cargo:cargo-outdated" = "latest"
+
+[tasks.build]
+description = "Compile the helper and CLI, plus tests (debug profile)"
+run = "cargo build --all-targets"
+
+[tasks.test]
+description = "Run unit and integration tests"
+depends = ["build"]
+run = "cargo test"
+
+[tasks.lint]
+description = "Format check and Clippy (warnings as errors)"
+depends = ["build"]
+run = [
+  "cargo fmt --all --check",
+  "cargo clippy --all-targets -- -D warnings",
+]
+
+[tasks.ci]
+description = "Full CI suite for this project (build -> lint + test in parallel)"
+depends = ["lint", "test"]
+
+[tasks."dependencies:check"]
+description = "Audit for security advisories and report outdated dependencies"
+depends = ["build"]
+run = [
+  "cargo audit",
+  "cargo outdated --root-deps-only --exit-code 0",
+]
+
+[tasks."dependencies:update"]
+description = "Update dependencies to latest semver-compatible versions"
+run = "cargo update"
