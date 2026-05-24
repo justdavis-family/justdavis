@@ -1,119 +1,169 @@
-# `FocusState` JSON Response Shape: Flat vs. Nested
+# `FocusState` JSON Response Shape: Flat vs. Tagged Union
 
 ## Question
 
 The [macOS Focus Gopher](../engineering-designs/2026-05-12-macos-focus-gopher.md) returns a single
   `FocusState` object from its one operation, `get_focus()`, over a local socket (and, via a thin CLI
   wrapper, as JSON on stdout).
-Should that object be **flat** —
+The response is conceptually a *sum type*: either the helper **determined** the state (a Focus is on,
+  with its name, or no Focus is on) or it **failed** (with an error code), plus a little shared metadata.
+Should the wire form be a **flat object of nullable siblings** —
 
 ```json
 {"ok": true, "focus_enabled": true, "focus_name": "Sleep",
  "macos_version": "15.5", "macos_compatibility": "supported", "message": null}
 ```
 
-— or **nested**, grouping the "answer" and the "metadata" —
+— or a **tagged discriminated union** that mirrors the sum type —
 
 ```json
-{"focus": {"enabled": true, "name": "Sleep"},
- "meta": {"ok": true, "errors": null, "macos_compatibility": {"macos_version": "15.5", "rating": "supported"}}}
+{"macos_version": "15.5", "macos_compatibility": "supported",
+ "determined": {"focus_on": {"name": "Sleep"}}}
 ```
 
 This came up in PR review (does having `ok` and `error` as flat siblings, alongside the focus fields,
-  risk *immediately* violating our new "clear, unambiguous, easily-parsed data models" principle?),
-  with a request to look at how popular, battle-tested, well-regarded simple JSON APIs do it.
+  risk *immediately* violating our new "clear, unambiguous, easily-parsed data models" principle?).
+This analysis initially landed on **flat**; a deeper survey then reversed that to a **tagged union**.
+It records the final decision and the reasoning, including why the first pass was wrong.
 
 ## Findings
 
-### What the API-design literature says
+### Two different questions, often conflated
 
-- **Envelopes (`{"data": …, "meta": …}`) earn their keep mainly for *collections* and *pagination*** —
-    you should never return a bare JSON array at the top level, and an envelope gives you somewhere to
-    hang `next`/`total`/`links`. For a *single* small object there is much less to gain, and most
-    guidance says return the object at the top level rather than wrapping it.
-- **The "`200 OK` with `success: false` in the body" complaint is specifically about HTTP** — it's bad
-    because it *shadows the HTTP status code*, forcing clients to parse the body to detect failure and
-    muddying monitoring. Our transport is a Unix domain socket plus a CLI printing JSON; there is no
-    HTTP status code for a body-level `ok` to shadow. The recommended pattern there is "use the proper
-    status channel *and* put details in the body" — which, translated to our world, is "the CLI exits
-    non-zero on failure *and* the JSON carries `ok`/`error`".
-- **The dominant value cited for envelopes is future extensibility** (you can add `meta` later without
-    breaking the contract). For a fixed, single-operation contract that we publish as a JSON Schema,
-    that argument is weak — there is nothing planned to extend, and a second operation would be its own
-    schema anyway. Adding structure now for hypothetical future structure is a YAGNI violation.
-- **Consistency matters more than flat-vs-nested in the abstract.** With exactly one operation and one
-    response shape, there is no consistency tension to resolve.
+"Nesting" bundles two unrelated decisions that should be judged separately:
 
-### What well-regarded simple JSON APIs actually do
+- A **`data`/`meta` envelope** — about collections, pagination, links, and forward-compatible
+    extensibility. For a *single* small object this buys little, and adding it now for hypothetical
+    future structure is a YAGNI violation. Not what we need.
+- A **discriminated (tagged) union** — about success-vs-error (or variant) *coherence*: making
+    "determined" and "failed" structurally distinct so the incoherent mixes can't occur. This is the
+    axis that actually matters for a single success-XOR-error response.
 
-Single-resource responses in widely-used, well-liked APIs are overwhelmingly *flat at the top level*:
-  Stripe returns flat objects (with an `object` type discriminator), GitHub returns flat resources, and
-  most "GET one thing" endpoints return the thing's fields directly rather than wrapping a lone resource
-  in `{"data": {...}}`. The `{"data": ..., "meta": ...}` / JSON:API style shows up around *collections*
-  and pagination, not around a single small object.
+The first pass conflated the two: it argued (correctly) against an envelope and then carried that
+  conclusion over to the union question, where it does not apply.
 
-### Does flat conflict with the "clear data models" principle?
+### Why the "flat is fine" precedent does not transfer to us
 
-No. That principle is about *separating orthogonal facts into their own fields* and *never collapsing
-  distinct states into one ambiguous value* — it is agnostic about nesting. `FocusState` already does
-  this: `ok` (did we determine the state?), `focus_enabled` (is a Focus on?), `focus_name` (do we have
-  a name?), and `macos_compatibility` (is this OS version supported?) are four distinct, well-named
-  fields, and a parse failure is `ok: false` with an `error` code, never `focus_enabled: false`.
-  Nesting those same facts under `focus`/`meta` would not make them any more orthogonal; it would just
-  add a level of indirection that every consumer (and every `jq`/`grep` one-liner) has to walk through.
+Single-resource responses in big, well-liked REST APIs *are* mostly flat — GitHub, Stripe, Twilio,
+  much of Slack. But they are flat largely because **HTTP status carries the success-vs-error
+  discriminant**: the body does not have to encode coherence because the status code already did. We
+  have **no HTTP layer** — a Unix domain socket plus a CLI printing JSON — so the body must carry the
+  discriminant itself.
 
-### When nesting *does* earn its keep: making invalid states unrepresentable
+The right comparison is systems that pack success-XOR-error into one JSON object with no transport
+  status to lean on, and those do *not* go flat:
 
-The strongest argument for grouping fields is not aesthetics or extensibility — it is *making invalid
-  states unrepresentable*. When several fields are conceptually one unit that must vary together (the
-  classic example: `x`, `y`, `z` that are always all-`Some` or all-`None`, far better modeled as one
-  `position: Option<Coordinates>` than three independent `Option`s), grouping them turns "every
-  consumer must remember to check the combination" into "the type system checks it for you." This is
-  exactly the [Strong Typing and Information
-  Preservation](../engineering-principles/2026-01-07-strong-typing.md) principle.
+- **JSON-RPC 2.0** (and **LSP**, built on it): a Response object MUST contain `result` *or* `error` and
+    **MUST NOT** contain both — a structural discriminated union, not optional sibling fields
+    ([spec](https://www.jsonrpc.org/specification)). This is the closest structural analogue to
+    `get_focus()`.
 
-`FocusState` *does* have such a unit: when `ok` is `false`, `focus_enabled` and `focus_name` are
-  meaningless; when `focus_enabled` is `false`, `focus_name` is meaningless. A flat wire object can
-  literally represent the nonsense `{"ok": false, "focus_enabled": true, …}`. So this is a real
-  consideration here, not a strawman — and it is resolved by splitting the question in two:
+Honest counter-evidence, kept on the record:
 
-- **The helper's *internal* model is a sum type, where the invalid states are unrepresentable.**
-    The Rust side is modeled as roughly `enum FocusState { Determined { focus: Option<FocusInfo>,
-    macos: MacosCompat }, Failed { error: ErrorCode, macos: MacosCompat } }` (with
-    `FocusInfo { name: Option<String> }`) — there is no way to construct "failed but Focus on", or "no
-    Focus but here's its name". This is where the strong-typing win is captured, in the code that
-    actually branches on it.
-- **The *wire* form is a flat, schema-validated projection of that sum type — and the schema itself
-    rejects the incoherent combinations.** JSON Schema can enforce cross-field coherence directly: a
-    `oneOf` over the success/failure variants, `if`/`then` (or `dependentRequired`), and `const`/`enum`
-    on the discriminant let the published schema make `{"ok": false, "focus_enabled": true, …}` *fail
-    validation*, require `error` exactly when `ok` is `false` (and forbid it when `ok` is `true`), and
-    require `focus_name` to be null when `focus_enabled` is false. So the "illegal states" guarantee is
-    enforceable on the wire, not only in the Rust model — and it holds for the **flat** object just as
-    well as for a nested one, so nesting buys no enforcement here. The one thing no schema (flat or
-    nested) can do is force an *ad-hoc consumer that never validates* — a `jq` or shell one-liner — to
-    branch correctly; JSON has no native sum types, so such a reader still keys off the `ok`/`error`
-    discriminant by hand. Net: the JSON Schema protects the contract boundary (producers, conformance
-    tests, validating clients), the internal sum type stops the producer from ever emitting nonsense,
-    and the flat projection keeps shallow paths and trivial `jq` — none of which nesting improves.
+- The **Slack Web API** is essentially our proposed flat shape — top-level `{"ok": false, "error":
+    "..."}`, often returned under HTTP 200, so it is a real flat precedent that does *not* lean on
+    status ([docs.slack.dev](https://docs.slack.dev/apis/web-api/)). But its body is coherent only by
+    convention (nothing stops `{"ok": false, …success fields…}`), it is tuned for a vast
+    dynamically-typed consumer base, and it is not trying to mirror a producer-side sum type — the
+    opposite of our situation.
+- **GraphQL** deliberately allows a *partial* response (`data` *and* `errors` together)
+    ([graphql.org](https://graphql.org/learn/response/)) — a reason to avoid a strict XOR. We have no
+    partial state, so it does not apply.
 
-In short: capture the "illegal states unrepresentable" guarantee in the strongly-typed *internal*
-  model (where it has teeth), and let the *wire* contract be the flat projection plus its schema.
+### Keep the wire aligned with the internal model (serde, Fowler, "parse, don't validate")
+
+The helper is a Rust producer with a real sum type. That makes the alignment argument concrete:
+
+- **serde** offers four enum representations ([serde.rs](https://serde.rs/enum-representations.html)):
+    externally tagged (default), internally tagged, adjacently tagged, and untagged. A flat
+    struct-of-optionals is closest to **untagged**, which the docs flag as the fragile one — variants
+    are told apart only by which optional fields happen to be present. A tagged enum makes **the wire
+    *be* the serialized internal sum type**, removing the hand-maintained flattening layer that can
+    drift out of sync — exactly the cross-layer-divergence bug class to avoid.
+- **Martin Fowler, Local DTO** ([martinfowler.com](https://martinfowler.com/bliki/LocalDTO.html)): he
+    is against reshaping the wire away from the domain model unless there is a "significant mismatch."
+    For a one-call helper there is none, so flattening would be gratuitous divergence, not a feature.
+- **"Parse, don't validate"** (Alexis King,
+    [lexi-lambda](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)): the wire is the
+    boundary; a tagged shape lets each consumer parse straight into its own sum type instead of
+    re-deriving "if not ok, ignore focus_enabled."
+
+### Making invalid states unrepresentable — in code *and* on the wire
+
+The strongest argument for grouping is *making invalid states unrepresentable* — the
+  [Strong Typing and Information Preservation](../engineering-principles/2026-01-07-strong-typing.md)
+  principle. `FocusState` has such a unit: "failed but a Focus is on" and "no Focus but here's its name"
+  are nonsense. With the tagged union, both the internal model and the wire exclude them structurally:
+
+- The **internal Rust model** is a sum type (`Outcome::Determined(Focus)` vs. `Failed { error }`, with
+    `Focus::FocusOn { name }` vs. `FocusOff`), so the bad combinations are unconstructable in code.
+- The **wire** is that sum type's externally-tagged serialization, so the bad combinations are absent
+    on the wire too — and the published **JSON Schema** adds a `oneOf` as belt-and-suspenders. (JSON
+    Schema can express this coherence for *any* representation — flat or tagged — via
+    `oneOf`/`if`-`then`/`const`, so schema power does not decide the shape; what a schema cannot do is
+    force an ad-hoc consumer that never validates to branch correctly, which is an argument for making
+    the structure itself unambiguous.)
+
+### Why "Focus on but no name" is a failure, not a partial success
+
+A tempting fourth state is "a Focus is on, but its identifier could not be mapped to a name." We model
+  this as a **failure** (`focus_name_unresolved`), not a partial success, for three reasons:
+
+- **The name is the primary thing consumers want**; the on/off boolean is secondary. A nameless "Focus
+    is on" does not satisfy the main use case.
+- **It is effectively hypothetical as a steady state.** Names resolve from `ModeConfigurations.json`
+    (user Foci, which must be configured to be active) plus a fixed table for the small set of
+    built-ins; community tools resolve names reliably, and there is no evidence of a real
+    "active-but-permanently-unnameable" Focus. The realistic causes — schema/format drift, a transient
+    mid-write race, or a brand-new built-in identifier on a new macOS version — are all symptoms of a
+    problem (a coverage/parse gap), not a legitimate ongoing state.
+- **YAGNI:** modeling it as a success variant would complicate every consumer's success path for a
+    state we cannot evidence. Reporting it as `failed` with `focus_name_unresolved` (end-to-end, not a
+    CLI-only nicety) keeps the common path simple.
+
+This is *not* collapsing a positive result into a failure (which our
+  [clear-data-models](../engineering-principles/2026-05-12-clear-data-models.md) principle forbids):
+  by the evidence an unnameable active Focus is a symptom of incomplete parsing, not a legitimate
+  positive result, and the dedicated error code keeps the taxonomy clear rather than lossy.
 
 ## Recommendation
 
-- **Keep `FocusState` flat *on the wire*, backed by a strongly-typed internal sum type.** It is one
-    small, fixed-schema response; flat well-named orthogonal fields are the easiest to read, parse, and
-    document, and that is what comparable well-regarded APIs do. The "make invalid states
-    unrepresentable" guarantee is captured in the helper's internal model and enforced on the wire by
-    the published JSON Schema, not by nesting.
-- **The CLI wrapper exits non-zero when `ok` is `false`** (and zero otherwise), so shell scripts can
-    branch on the exit code without parsing JSON; the JSON body still carries `ok` and `error` for
-    programmatic consumers reading the socket directly. This gives us the "proper status channel *and*
-    details in the body" pattern without an envelope.
-- **Do not add a `meta` block, an `errors` array, or a nested `macos_compatibility` object** unless a
-    concrete consumer need appears — and `errors` plural in particular is unnecessary: `get_focus()`
-    either determines the state or hits exactly one failure, so a single `error` code suffices.
+- **Make `FocusState` an externally-tagged discriminated union that mirrors the internal sum type**,
+    not a flat object of nullable siblings. We have no transport status code, so (like JSON-RPC / LSP)
+    the body carries the discriminant; the tagged form keeps the wire aligned with the Rust model (no
+    divergent mapping), makes illegal states unrepresentable on the wire as well as in code, and is
+    obvious to a human without consulting the schema.
+- **Hide Rust's `Result`/`Option` plumbing behind domain-named keys** — `determined`/`failed` and
+    `focus_on`/`focus_off`, never serialized `Ok`/`Err`/`null`. The shapes:
+
+```jsonc
+// (a) determined, Focus on
+{ "macos_version": "15.5", "macos_compatibility": "supported",
+  "determined": { "focus_on": { "name": "Sleep" } } }
+
+// (b) determined, Focus off
+{ "macos_version": "15.5", "macos_compatibility": "supported",
+  "determined": { "focus_off": {} } }
+
+// (c) determined on an unknown-but-working macOS version
+{ "macos_version": "26.0", "macos_compatibility": "unknown_but_working",
+  "message": "Focus parsing appears to work, but this macOS version is not on the known-supported list. Please submit an issue or PR marking macOS 26.0 as compatible if this looks right.",
+  "determined": { "focus_on": { "name": "Do Not Disturb" } } }
+
+// (d) failure (here: an active Focus whose name could not be resolved)
+{ "macos_version": "26.0", "macos_compatibility": "unknown",
+  "message": "A Focus appears active but its name could not be resolved. Please file an issue or PR with your macOS version, helper version, and this error code.",
+  "failed": { "error": "focus_name_unresolved" } }
+```
+
+- **`focus_on` always carries a real `name`**; an active Focus whose name cannot be resolved is a
+    `failed` with `focus_name_unresolved`, not a partial success (see above).
+- **Shared metadata stays at the top level** (`macos_version`, `macos_compatibility`, and an optional
+    `message`, omitted when there is none), since it is reported on both success and failure.
+- **The CLI wrapper exits non-zero when the outcome is `failed`** (and zero otherwise), so shell
+    scripts can branch on the exit code without parsing JSON.
+- **No `data`/`meta` envelope and no `errors` array** — YAGNI; `get_focus()` either determines the
+    state or hits exactly one failure, so a single `error` code suffices.
 
 ## References
 
@@ -122,8 +172,9 @@ In short: capture the "illegal states unrepresentable" guarantee in the strongly
 - **Engineering Principles**: [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md);
     [Strong Typing and Information Preservation](../engineering-principles/2026-01-07-strong-typing.md).
 - Sources:
-  - [Vinay Sahni — Best Practices for Designing a Pragmatic RESTful API](https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api).
-  - [On shapes, sizes and envelopes (REST API ones) — fleetster Tech Blog](https://medium.com/fleetster-tech-blog/on-shapes-sizes-and-envelopes-rest-api-ones-272549d17108).
-  - [Flat vs Nested REST Endpoints: Why Error Clarity Favors Flat Design](https://medium.com/@kh.taheri/flat-vs-nested-rest-endpoints-why-error-clarity-favors-flat-design-599e77054fa3).
-  - [Speakeasy — Responses Best Practices in REST API Design](https://www.speakeasy.com/api-design/responses).
-  - [Guidelines on JSON responses for RESTful services](https://medium.com/@sunitparekh/guidelines-on-json-responses-for-restful-services-1ba7c0c015d).
+  - [JSON-RPC 2.0 Specification — `result` XOR `error`](https://www.jsonrpc.org/specification).
+  - [serde — enum representations (externally/internally/adjacently/untagged)](https://serde.rs/enum-representations.html).
+  - [Alexis King — Parse, don't validate](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/).
+  - [Martin Fowler — Local DTO](https://martinfowler.com/bliki/LocalDTO.html).
+  - [Slack Web API — top-level `ok`/`error`](https://docs.slack.dev/apis/web-api/).
+  - [GraphQL — response (`data` + `errors`, partial responses)](https://graphql.org/learn/response/).

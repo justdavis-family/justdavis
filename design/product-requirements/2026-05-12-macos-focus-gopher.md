@@ -61,9 +61,10 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
         Its primary transport is a local Unix domain socket; a thin command-line wrapper is also
         provided that performs the same `get_focus()` call over that socket and prints the `FocusState`
         as JSON. Both transports expose the same single operation and nothing more.
-- [ ] The command-line wrapper exits with a non-zero status when `ok` is `false` (and zero otherwise),
-        so shell scripts can branch on the exit code without parsing the JSON; the JSON body still
-        carries `ok` and `error` for programmatic consumers reading the socket directly.
+- [ ] The command-line wrapper exits with a non-zero status when the outcome is `failed` (and zero
+        otherwise), so shell scripts can branch on the exit code without parsing the JSON; the JSON body
+        still carries the `determined`/`failed` outcome (and, on failure, the `error` code) for
+        programmatic consumers reading the socket directly.
 - [ ] The helper does not expose `read_file(path)`, `run_shell(command)`, `run_shortcut(name)`,
         `run_osascript(script)`, `query_db(path)`, or any other general-purpose or arbitrary operation.
 - [ ] The helper is read-only: it never modifies Focus, notifications, or any system setting.
@@ -74,50 +75,59 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 ### `FocusState` Data Model
 
-- [ ] `FocusState` is a single, flat object — a small single-purpose response, flat rather than nested
-        (see the JSON-shape analysis referenced below) — with these fields and meanings:
-      - `ok` (boolean): whether the helper successfully determined the Focus state.
-      - `focus_enabled` (boolean or null): whether a Focus is currently active;
-          `null` only when `ok` is `false`.
-      - `focus_name` (string or null): the human-readable Focus name;
-          `null` when Focus is off, or when the name could not be determined, or when `ok` is `false`.
+- [ ] `FocusState` is an **externally-tagged discriminated union** whose wire shape mirrors the helper's
+        internal strongly-typed model rather than flattening it into nullable siblings (see the
+        JSON-shape analysis referenced below); Rust's `Result`/`Option` plumbing is hidden behind
+        domain-named keys, never serialized as `Ok`/`Err`/`null`. It has these shared fields and meanings:
       - `macos_version` (string): the detected macOS version.
       - `macos_compatibility` (enum): one of `supported`, `unknown_but_working`, `unknown`,
           or `unsupported`.
-      - `message` (string or null): human-readable guidance; never load-bearing for program logic.
-      - `error` (string, present on failures): a stable machine-readable error code
-          (e.g. `focus_permission_denied`, `focus_db_unreadable`, `schema_unknown`).
+      - `message` (string, optional): human-readable guidance; omitted when there is none, and never
+          load-bearing for program logic.
+- [ ] Alongside the shared fields, the response carries **exactly one outcome**:
+      - `determined`: the helper determined the state. Its value is itself a tagged union of exactly one
+          of:
+        - `focus_on`: a Focus is active; carries its human-readable `name` (always present).
+        - `focus_off`: no Focus is active (an empty object).
+      - `failed`: the helper could not determine the state; carries a stable machine-readable `error`
+          code (e.g. `focus_permission_denied`, `focus_db_unreadable`, `schema_unknown`,
+          `focus_name_unresolved`).
+- [ ] An active Focus whose identifier cannot be mapped to a name is reported as `failed` with
+        `focus_name_unresolved`, not as a success — the name is the primary thing consumers want, and in
+        normal operation an active Focus is always nameable, so a nameless "Focus is on" indicates a
+        schema/coverage gap worth reporting rather than a steady-state partial success.
 - [ ] The helper does not include speculative fields (e.g. `normalized`, `source`, or a list of all
         known-compatible macOS versions) without a concrete consumer need.
 - [ ] All four documented response shapes are produced correctly:
-        (a) success, Focus on, with a name;
-        (b) success, no Focus on;
-        (c) success on an unknown-but-working macOS version (with `macos_compatibility:
+        (a) `determined` → `focus_on` with a name;
+        (b) `determined` → `focus_off`;
+        (c) `determined` on an unknown-but-working macOS version (with `macos_compatibility:
         unknown_but_working` and a "please report this version" `message`);
-        (d) failure (`ok: false`, `focus_enabled: null`, `focus_name: null`, an `error` code,
-        and a "please file an issue/PR with your macOS version, helper version, and this error code"
-        `message`).
+        (d) `failed` (with an `error` code and a "please file an issue/PR with your macOS version,
+        helper version, and this error code" `message`).
 
 ### Consumer Logic
 
-- [ ] The response model lets a consumer decide the state with a simple, unambiguous rule:
-        if `ok` is `false`, the state is unknown;
-        else if `focus_enabled` is `false`, Focus is off;
-        else if `focus_enabled` is `true` and `focus_name` is non-null, Focus is on with that name;
-        else (`focus_enabled` is `true` and `focus_name` is null) Focus is on but the name could not
-        be determined.
-- [ ] A consumer can distinguish "no Focus is active", "a Focus is active but unnamed/unmapped",
-        "the helper failed", and "the macOS version is unsupported" from each other.
+- [ ] The response model lets a consumer decide the state with a simple, unambiguous rule
+        (exactly one of `determined`/`failed` is present):
+        if `failed` is present, the state is unknown (consult its `error`);
+        else `determined` is present and holds exactly one of `focus_off` (no Focus active) or
+        `focus_on` (a Focus is active, carrying its `name`).
+- [ ] A consumer can distinguish "no Focus is active", "an active Focus with its name",
+        "the helper failed" (including an active-but-unnameable Focus, via `focus_name_unresolved`),
+        and "the macOS version is unsupported" from each other.
 
 ### Retrieval Logic
 
 - [ ] Determining the Focus state follows this logic: detect the macOS version;
         check it against the known-supported list;
         read the active-assertions data and determine whether an active Focus assertion exists;
-        if none exists, return `ok: true`, `focus_enabled: false`, `focus_name: null`
+        if none exists, return `determined` → `focus_off`
         (an empty active-assertions file is a valid "Focus is off" result, not an error);
         if one exists, extract the active Focus identifier, read the mode-configuration data,
-        and map the identifier to a human-readable Focus name.
+        and map the identifier to a human-readable Focus name (returned as `determined` → `focus_on`
+        with that `name`; if the identifier cannot be mapped, return `failed` with
+        `focus_name_unresolved`).
 - [ ] The helper accounts for the documented quirks of the Focus database (see the analysis referenced
         below): a Focus activated by schedule or automation is reflected differently than a manually
         toggled one, so both the active-assertions data and the mode-configuration data are consulted.
@@ -129,13 +139,13 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 
 - [ ] The helper tolerates missing files, permission-denied files, unreadable files, malformed JSON,
         schema changes, and partially-written files without crashing.
-- [ ] Any failure to determine the Focus state is reported explicitly:
-        `ok: false`, `focus_enabled: null`, `focus_name: null`, and a stable `error` code.
-- [ ] A parsing or schema failure is never reported as `ok: true`, `focus_enabled: false`.
+- [ ] Any failure to determine the Focus state is reported explicitly as `failed` with a stable `error`
+        code (never as a `determined` result).
+- [ ] A parsing or schema failure is never reported as `determined` → `focus_off`.
 - [ ] A missing Full Disk Access grant is detected (a permission denial on the existing Focus
-        database) and reported as a dedicated `focus_permission_denied` error code — never as
-        `ok: true, focus_enabled: false` — with an actionable `message`: the canonical resolved helper
-        binary path to add and a System Settings deep link to the Full Disk Access pane.
+        database) and reported as `failed` with a dedicated `focus_permission_denied` error code — never
+        as a `determined` result — with an actionable `message`: the canonical resolved helper binary
+        path to add and a System Settings deep link to the Full Disk Access pane.
 
 ### macOS Compatibility
 
@@ -206,9 +216,10 @@ As an agent system operator, I want a narrow macOS helper that reports the curre
 - [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md) —
     Where the Focus state lives, how the format has held up across macOS 12–15, and the basis for the
     compatibility-table seeding (specific versions vs. major-version wildcards).
-- [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md) —
-    Why `FocusState` is a flat object rather than a nested envelope, and why the CLI wrapper carries the
-    success/failure signal in its exit code as well as in `ok`.
+- [`FocusState` JSON Response Shape: Flat vs. Tagged Union](../analyses/2026-05-12-focus-state-json-shape.md) —
+    Why `FocusState` is an externally-tagged discriminated union mirroring the helper's internal sum
+    type (no transport status code, so the body carries the discriminant), and why the CLI wrapper also
+    carries the success/failure signal in its exit code.
 - [macOS Full Disk Access, Code Signing, and Distribution Channels](../analyses/2026-05-18-macos-fda-distribution-signing.md) —
     Why signing/notarization are deferred optional UX improvements, how each distribution channel
     interacts with the Full Disk Access grant, and why graceful missing-FDA handling is a first-class

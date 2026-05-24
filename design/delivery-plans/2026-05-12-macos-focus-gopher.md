@@ -44,7 +44,7 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
 - Define the `FocusState` model, publish its versioned **JSON Schema**, and define the line-delimited
     JSON request/response protocol over a per-user Unix domain socket.
 - Implement `get_focus()` as a stub that returns a well-formed `FocusState`
-    (e.g. `ok: false`, `error: "macos_unsupported"`) without touching any database file.
+    (e.g. a `failed` outcome with `error: "macos_unsupported"`) without touching any database file.
 - Unit tests for `FocusState` encoding/decoding, JSON-Schema validation, and the socket round-trip.
 - Initial `README.md` (clearly marked early-development / not yet usable), an OSS `LICENSE` (MIT), and a
     `CONTRIBUTING.md` stub that points at the repository-root `CONTRIBUTING.md` and these design docs.
@@ -61,7 +61,7 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
 **In scope:**
 
 - Implement the thin `focus-gopher` CLI: it connects to the socket, performs `get_focus()`, prints the
-    `FocusState` as JSON, and exits non-zero when `ok` is `false` (zero otherwise).
+    `FocusState` as JSON, and exits non-zero when the outcome is `failed` (zero otherwise).
 - `--help` output with worked examples.
 - Tests covering the CLI round-trip and exit-code behavior.
 - `README.md` updated with CLI usage (so the service is usable without `socat`/`nc` + `jq`).
@@ -85,8 +85,8 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
     analysis (the macOS 12–15 majors, verified against a current point release of each).
 - The full failure taxonomy with explicit `error` codes
     (`focus_permission_denied`, `focus_db_unreadable`, `focus_db_malformed`, `schema_unknown`,
-    `macos_unsupported`, `internal_error`), with a parse/schema/permission failure never reported as
-    `ok: true, focus_enabled: false`.
+    `focus_name_unresolved`, `macos_unsupported`, `internal_error`), with a parse/schema/permission/
+    name-resolution failure never reported as a `determined` result.
 - **Graceful missing-FDA handling:** an `EPERM` on the (existing) Focus database is mapped to the
     dedicated `focus_permission_denied` code with an actionable `message` — the *canonical resolved*
     helper binary path to add, plus the
@@ -94,7 +94,8 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
     [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 - Fixture-based unit/integration tests: captured `Assertions.json` / `ModeConfigurations.json` shapes
     for manual-Focus-on, scheduled-Focus-on, Focus-off (including the empty file), malformed,
-    unknown-schema, and permission-denied (`EPERM`) cases, per supported macOS major.
+    unknown-schema, permission-denied (`EPERM`), and unnameable-active-Focus (`focus_name_unresolved`)
+    cases, per supported macOS major.
 - `README.md` updated to reflect "works on macOS 12–15, run from source", **including a clear
     "grant Full Disk Access to the helper" section** (the exact System Settings steps, and that the
     grant must be re-applied after each upgrade on the build-from-source channels).
@@ -211,5 +212,5 @@ Everything in M1–M5 is fully usable without it; per the
 - **Product Requirements**: [macOS Focus Gopher](../product-requirements/2026-05-12-macos-focus-gopher.md).
 - **Engineering Design**: [macOS Focus Gopher Engineering Design](../engineering-designs/2026-05-12-macos-focus-gopher.md).
 - **Analyses**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md);
-    [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md);
+    [`FocusState` JSON Response Shape: Flat vs. Tagged Union](../analyses/2026-05-12-focus-state-json-shape.md);
     [macOS Full Disk Access, Code Signing, and Distribution Channels](../analyses/2026-05-18-macos-fda-distribution-signing.md).

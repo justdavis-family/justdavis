@@ -45,8 +45,9 @@ The Focus Gopher solves this by being a small, stable-identity broker:
     the current user only.
 - **Unix domain socket** for client IPC, created in a per-user, user-only-permissioned location,
     plus a **thin CLI wrapper** (`focus-gopher`) that connects to that socket, performs `get_focus()`,
-    and prints the resulting `FocusState` as JSON, exiting non-zero when `ok` is `false` — so callers
-    can use whichever they prefer, and shell scripts can branch on the exit code without parsing JSON.
+    and prints the resulting `FocusState` as JSON, exiting non-zero when the outcome is `failed` — so
+    callers can use whichever they prefer, and shell scripts can branch on the exit code without parsing
+    JSON.
     No network listener is opened.
 - **A small line-delimited JSON request/response protocol** over that socket:
     the client sends a fixed request, the helper replies with one `FocusState` JSON object.
@@ -85,46 +86,80 @@ The helper owns the macOS-specific access and is the only component that touches
 
 ### `FocusState` data model
 
-A single, flat, fixed-schema object, deliberately separating orthogonal facts so consumers never have
-  to guess (see
-  [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md)):
+A single fixed-schema object whose shape **mirrors the helper's internal strongly-typed model** rather
+  than flattening it onto the wire — so invalid combinations are unrepresentable rather than merely
+  discouraged, and there is no divergent hand-maintained projection between the Rust types and the JSON
+  (see [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md) and
+  [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md)).
 
-- `ok` (bool) — did the helper determine the Focus state?
-- `focus_enabled` (bool?) — is a Focus active? `null` only when `ok` is `false`.
-- `focus_name` (string?) — the human-readable Focus name; `null` when Focus is off,
-    when the name could not be resolved, or when `ok` is `false`.
+Shared fields, always present:
+
 - `macos_version` (string) — the detected macOS version (e.g. `"15.5"`).
 - `macos_compatibility` (enum) — `supported` | `unknown_but_working` | `unknown` | `unsupported`.
-- `message` (string?) — human-readable guidance only; never used for program logic.
-- `error` (string) — present on failures; a stable machine-readable code (see error taxonomy below).
+- `message` (string, optional) — human-readable guidance; omitted when there is none,
+    and never used for program logic.
 
-The wire form is flat: for a single small fixed-schema response, flat well-named fields parse most
-  easily, and well-regarded minimal JSON APIs lean flat at this size — the clarity comes from the
-  orthogonal fields, not from nesting. The helper's *internal* representation is a strongly-typed sum
-  type (roughly `Determined { focus: Option<FocusInfo>, … }` vs. `Failed { error, … }`) so invalid
-  combinations like "failed but Focus on" are unrepresentable in code; the flat JSON is a projection of
-  that, with the valid combinations enforced on the wire by the published JSON Schema rather than by
-  nesting (see [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md)). The four
-  response shapes:
+Plus exactly one **outcome**, an externally-tagged discriminated union — the `Result`/`Option` plumbing
+  is hidden behind domain-named keys rather than serialized as Rust's `Ok`/`Err`/`null`:
+
+- `determined` — the helper determined the state; its value is itself a tagged union:
+  - `focus_on` — a Focus is active; carries its human-readable `name` (always present: in normal
+      operation an active Focus is nameable, so an active-but-unnameable Focus is reported as `failed`
+      with `focus_name_unresolved`, not as a success — see the error taxonomy below).
+  - `focus_off` — no Focus is active (an empty object).
+- `failed` — the helper could not determine the state. Carries a stable machine-readable `error` code
+    (see the error taxonomy below).
+
+The internal Rust model the wire mirrors:
+
+```rust
+struct FocusState {
+    macos_version: String,
+    macos_compatibility: MacosCompat,
+    message: Option<String>,          // #[serde(skip_serializing_if = "Option::is_none")]
+    outcome: Outcome,                 // #[serde(flatten)]
+}
+
+#[serde(rename_all = "snake_case")]   // externally tagged: "determined" | "failed"
+enum Outcome {
+    Determined(Focus),
+    Failed { error: ErrorCode },
+}
+
+#[serde(rename_all = "snake_case")]   // externally tagged: "focus_on" | "focus_off"
+enum Focus {
+    FocusOn { name: String },
+    FocusOff {},
+}
+```
+
+Why this shape rather than a flat object of nullable siblings: the helper has no HTTP transport whose
+  status code could carry the success-vs-failure discriminant, so the body must — which puts us with
+  JSON-RPC / LSP, where the idiom is a structural discriminated union, not optional sibling fields. An
+  externally-tagged union is also serde's natural projection of the internal sum type, so the wire *is*
+  the serialized model (no divergent mapping layer to drift out of sync), and the published JSON Schema's
+  `oneOf` makes the illegal combinations unrepresentable on the wire as well. The CLI wrapper carries the
+  success/failure signal redundantly in its exit code (non-zero iff `failed`). See [the JSON-shape
+  analysis](../analyses/2026-05-12-focus-state-json-shape.md). The response shapes:
 
 ```jsonc
-// (a) success, Focus on
-{"ok": true, "focus_enabled": true, "focus_name": "Sleep",
- "macos_version": "15.5", "macos_compatibility": "supported", "message": null}
+// (a) determined, Focus on
+{ "macos_version": "15.5", "macos_compatibility": "supported",
+  "determined": { "focus_on": { "name": "Sleep" } } }
 
-// (b) success, no Focus on
-{"ok": true, "focus_enabled": false, "focus_name": null,
- "macos_version": "15.5", "macos_compatibility": "supported", "message": null}
+// (b) determined, Focus off
+{ "macos_version": "15.5", "macos_compatibility": "supported",
+  "determined": { "focus_off": {} } }
 
-// (c) success on an unknown-but-working macOS version
-{"ok": true, "focus_enabled": true, "focus_name": "Do Not Disturb",
- "macos_version": "26.0", "macos_compatibility": "unknown_but_working",
- "message": "This macOS version is not listed as known-supported, but Focus parsing appears to be working. Please submit an issue or PR marking macOS 26.0 as compatible if this result is correct."}
+// (c) determined on an unknown-but-working macOS version
+{ "macos_version": "26.0", "macos_compatibility": "unknown_but_working",
+  "message": "Focus parsing appears to work, but this macOS version is not on the known-supported list. Please submit an issue or PR marking macOS 26.0 as compatible if this looks right.",
+  "determined": { "focus_on": { "name": "Do Not Disturb" } } }
 
-// (d) failure
-{"ok": false, "focus_enabled": null, "focus_name": null,
- "macos_version": "26.0", "macos_compatibility": "unknown", "error": "focus_db_unreadable",
- "message": "Focus state could not be determined on this macOS version. Please file an issue or PR with your macOS version, helper version, and this error code."}
+// (d) failure (here: an active Focus whose name could not be resolved)
+{ "macos_version": "26.0", "macos_compatibility": "unknown",
+  "message": "A Focus appears active but its name could not be resolved. Please file an issue or PR with your macOS version, helper version, and this error code.",
+  "failed": { "error": "focus_name_unresolved" } }
 ```
 
 ### Retrieval pipeline
@@ -135,16 +170,17 @@ The wire form is flat: for a single small fixed-schema response, flat well-named
     An empty/near-empty file means no manually-activated Focus — a valid result, not an error.
 4. Consult `~/Library/DoNotDisturb/DB/ModeConfigurations.json` for a Focus activated by schedule or
     automation (reflected in the mode's trigger/enabled state rather than in `Assertions.json`).
-5. If no Focus is active by either path: return `ok: true`, `focus_enabled: false`, `focus_name: null`.
+5. If no Focus is active by either path: return `determined` → `focus_off`.
 6. If a Focus is active: extract the active Focus identifier.
 7. Map the identifier to a human-readable name via `ModeConfigurations.json` (and a fixed
     identifier→name table for built-in Foci).
-8. Return `ok: true`, `focus_enabled: true`, `focus_name: <name>`
-    (or `focus_name: null` if the identifier could not be mapped).
+8. Return `determined` → `focus_on` with `name: <name>`. If the active Focus's identifier cannot be
+    mapped to a name, return `failed` with `focus_name_unresolved` — in normal operation an active Focus
+    is always nameable, so this signals a schema/coverage gap, not a steady-state success.
 9. If parsing succeeded but the macOS version is not on the known-supported list:
     set `macos_compatibility: unknown_but_working` and the corresponding `message`.
 10. If any step fails (permission-denied, missing/unreadable/malformed/partially-written file, or
-    unrecognized schema): return `ok: false` with an explicit `error` code, never `focus_enabled: false`.
+    unrecognized schema): return `failed` with an explicit `error` code, never a `determined` result.
 
 The parser is **versioned and swappable**: the macOS Focus database format is undocumented and may
   change between releases, so the parsing logic is internal and may be reorganized per macOS version
@@ -163,6 +199,11 @@ A small, stable set of `error` codes, e.g.:
     reason other than a permission denial.
 - `focus_db_malformed` — a database file exists but is not parseable (truncated/partial write, invalid JSON).
 - `schema_unknown` — the file parsed as JSON but its structure does not match any known schema.
+- `focus_name_unresolved` — an active Focus was detected but its identifier could not be mapped to a
+    human-readable name. In normal operation an active Focus is always nameable, so this indicates a
+    schema/coverage gap (e.g. a new built-in identifier) worth reporting — not a steady-state result —
+    and the *name* is the primary thing consumers want, so a nameless "Focus is on" is treated as a
+    failure rather than a partial success.
 - `macos_unsupported` — the running macOS version is explicitly marked unsupported in the compatibility table.
 - `internal_error` — an unexpected helper-side failure.
 
@@ -174,7 +215,7 @@ New codes may be added; existing codes are not repurposed.
   *canonical resolved* helper binary path to add (cargo and Homebrew both symlink into `bin/`, and TCC
   matches the real binary), plus the
   `x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles` deep link. A missing FDA
-  grant is **never** collapsed into `ok: true, focus_enabled: false`. Detection is reactive: a denied
+  grant is **never** collapsed into a `determined` result. Detection is reactive: a denied
   `open()` on the protected, existing file returns `EPERM` (not `ENOENT`); because the protecting
   directory is itself TCC-gated, a would-be `ENOENT` can also surface as `EPERM` when unprivileged, so
   `EPERM` is treated as the dependable "denied" signal while `ENOENT` is only trusted as "absent" once
@@ -274,11 +315,18 @@ New codes may be added; existing codes are not repurposed.
     Chosen: `get_focus()` and nothing else. A general RPC surface (read arbitrary files, run shell,
     run shortcuts, run AppleScript) would re-create exactly the over-broad capability the design exists
     to avoid. See [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md).
-- **A flat `FocusState` vs. a nested `focus`/`meta` envelope.**
-    Chosen: flat. It is one small fixed-schema response; an envelope mainly buys extensibility we don't
-    plan for (a second operation would be its own schema) plus a level of indirection every consumer
-    must walk. The success/failure signal lives in `ok` *and* in the CLI wrapper's exit code, so we get
-    the "proper status channel plus details in the body" pattern without an envelope. See
+- **An externally-tagged discriminated union mirroring the internal model vs. a flat object of nullable
+    siblings.**
+    Chosen: the externally-tagged union (`determined`/`failed`, with `focus_on`/`focus_off` inside
+    `determined`). A flat object (`ok`/`focus_enabled`/`focus_name`/`error` as nullable siblings) would
+    be serde's fragile *untagged* shape — variants told apart only by which optional fields happen to be
+    present — and a hand-maintained flattening that can drift from the Rust sum type. We have no HTTP
+    status code to carry the success-vs-failure discriminant, so (like JSON-RPC / LSP) the body carries
+    it structurally; the tagged union *is* the serialized internal sum type (no divergent mapping), makes
+    illegal states unrepresentable on the wire as well as in code, and is obvious to a human without
+    consulting the schema. The earlier flat recommendation leaned on REST APIs whose flatness is enabled
+    by an HTTP status discriminant we do not have. The success/failure signal is *also* carried in the
+    CLI wrapper's exit code (non-zero iff `failed`). See
     [the JSON-shape analysis](../analyses/2026-05-12-focus-state-json-shape.md).
 
 ## Success Criteria
@@ -287,8 +335,8 @@ New codes may be added; existing codes are not repurposed.
 - The agent itself has no Full Disk Access (or any other broad macOS privacy permission).
 - The helper has a stable macOS identity: a fixed install path and bundle ID on every channel, plus a
     stable Developer ID signing identity on the optional signed channel (M6).
-- A missing Full Disk Access grant is surfaced as the dedicated `focus_permission_denied` error with an
-    actionable, deep-linked `message`, never as `ok: true, focus_enabled: false`, and the docs explain
+- A missing Full Disk Access grant is surfaced as `failed` with the dedicated `focus_permission_denied`
+    error and an actionable, deep-linked `message`, never as a `determined` result, and the docs explain
     exactly how to grant (and, on from-source channels, re-grant) Full Disk Access.
 - The helper exposes only a narrow read-only API (`get_focus()`), and no arbitrary filesystem,
     shell, Shortcut, or AppleScript access.
@@ -299,8 +347,8 @@ New codes may be added; existing codes are not repurposed.
 - The parser correctly handles fixture databases for each supported macOS major version
     (manual-Focus-on, scheduled-Focus-on, Focus-off including the empty-file case, malformed, and
     unknown-schema fixtures), verified against a current point release of each.
-- A schema change or parse failure is surfaced as an explicit `error`, never as
-    `ok: true, focus_enabled: false`.
+- A schema change or parse failure is surfaced as `failed` with an explicit `error`, never as a
+    `determined` result.
 - A versioned JSON Schema for `FocusState` is published and the helper's output validates against it.
 - The helper installs with a single command via `cargo install` or Homebrew (formula/tap; the optional
     M6 cask for the signed build).
@@ -310,7 +358,7 @@ New codes may be added; existing codes are not repurposed.
 - **Product Vision**: [macOS Focus Gopher](../product-vision/2026-05-12-macos-focus-gopher.md).
 - **Product Requirements**: [macOS Focus Gopher](../product-requirements/2026-05-12-macos-focus-gopher.md).
 - **Analyses**: [macOS Focus Database Format and Stability](../analyses/2026-05-12-macos-focus-db-format.md);
-    [`FocusState` JSON Response Shape: Flat vs. Nested](../analyses/2026-05-12-focus-state-json-shape.md);
+    [`FocusState` JSON Response Shape: Flat vs. Tagged Union](../analyses/2026-05-12-focus-state-json-shape.md);
     [macOS Full Disk Access, Code Signing, and Distribution Channels](../analyses/2026-05-18-macos-fda-distribution-signing.md).
 - **Delivery Plan**: [macOS Focus Gopher Delivery Plan](../delivery-plans/2026-05-12-macos-focus-gopher.md).
 - **Engineering Principles**:
