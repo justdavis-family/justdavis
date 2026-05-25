@@ -2,7 +2,6 @@
 name = "macos-focus-gopher"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.74"
 description = "Per-user macOS helper that reports the current Focus / Do Not Disturb state over a local socket."
 license = "MIT"
 repository = "https://github.com/justdavis-family/justdavis"
