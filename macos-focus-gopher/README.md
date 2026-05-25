@@ -9,7 +9,7 @@ A small, single-purpose macOS helper that reports your current **Focus / Do Not 
 > This project is being built milestone by milestone.
 > **Milestone 1 (this state)** ships only the project skeleton and the `get_focus()` *contract*:
 >   the `FocusState` wire model, its published JSON Schema, the socket protocol,
->   and a **stubbed** `get_focus()` that always returns a `failed` / `macos_unsupported` result
+>   and a **stubbed** `get_focus()` that always returns a `failed` result
 >   without reading any Focus database.
 > It builds, tests, and lints — but it does **not** read your real Focus state, ship a CLI,
 >   install itself, or distribute via Homebrew yet.
