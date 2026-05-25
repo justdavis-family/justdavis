@@ -1,38 +1,39 @@
 ---
 name: Product Vision
-about: Propose high-level product direction
+about: Propose or track a product vision
 title: ''
 labels: vision
 assignees: ''
 ---
 
-## Vision Statement
+<!--
+Product visions live as documents in `design/product-vision/`, authored and merged
+  through the design process (see `design/README.md`).
+That document is the source of truth: link it below and keep the detail there,
+  rather than restating it in this issue, so the two cannot drift.
+The document may already be merged, or this issue may drive its first draft —
+  both are fine.
+-->
 
-One paragraph of the long-term direction.
+## Vision Document
 
-## Problem / Opportunity
+Link the vision document in `design/product-vision/`
+  (or note that it does not exist yet — adopting this issue can drive its creation,
+  or its first draft can land in the same pull request):
 
-What user problems or needs are being addressed?
+- `design/product-vision/YYYY-MM-DD-short-name.md`
 
-## Success Metrics
+## Summary
 
-How to measure whether the vision is being realized.
+One or two sentences on the direction and the problem it addresses,
+  enough to triage this issue without opening the document.
 
-- Metric 1.
-- Metric 2.
+## Status / Next Steps
 
-## Initial Requirements
-
-Bullet list of capabilities that would implement this vision.
-
-- Capability 1.
-- Capability 2.
+What needs to happen next?
+For example: draft or revise the vision document,
+  derive product requirements from it, or start a delivery plan.
 
 ## Additional Context
 
-Any other context, research, or references.
-
----
-
-When adopted, this issue drives creation of a vision document
-in `design/product-vision/`.
+Any other context, research, or references not already in the document.
