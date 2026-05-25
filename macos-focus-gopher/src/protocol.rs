@@ -24,41 +24,43 @@ pub enum Request {
 }
 
 /// Write one request as a single compact JSON line (object + `\n`).
-pub fn write_request<W: Write>(writer: &mut W, request: &Request) -> io::Result<()> {
+pub fn write_request<W: Write>(writer: &mut W, request: &Request) -> crate::Result<()> {
     write_line(writer, request)
 }
 
 /// Read exactly one newline-terminated request object.
-pub fn read_request<R: BufRead>(reader: &mut R) -> io::Result<Request> {
+pub fn read_request<R: BufRead>(reader: &mut R) -> crate::Result<Request> {
     read_line(reader)
 }
 
 /// Write one `FocusState` as a single compact JSON line (object + `\n`).
-pub fn write_response<W: Write>(writer: &mut W, state: &FocusState) -> io::Result<()> {
+pub fn write_response<W: Write>(writer: &mut W, state: &FocusState) -> crate::Result<()> {
     write_line(writer, state)
 }
 
 /// Read exactly one newline-terminated `FocusState` object.
-pub fn read_response<R: BufRead>(reader: &mut R) -> io::Result<FocusState> {
+pub fn read_response<R: BufRead>(reader: &mut R) -> crate::Result<FocusState> {
     read_line(reader)
 }
 
-fn write_line<W: Write, T: Serialize>(writer: &mut W, value: &T) -> io::Result<()> {
+fn write_line<W: Write, T: Serialize>(writer: &mut W, value: &T) -> crate::Result<()> {
     let mut bytes = serde_json::to_vec(value)?;
     bytes.push(b'\n');
     writer.write_all(&bytes)?;
-    writer.flush()
+    writer.flush()?;
+    Ok(())
 }
 
-fn read_line<R: BufRead, T: for<'de> Deserialize<'de>>(reader: &mut R) -> io::Result<T> {
+fn read_line<R: BufRead, T: for<'de> Deserialize<'de>>(reader: &mut R) -> crate::Result<T> {
     let mut line = String::new();
     if reader.read_line(&mut line)? == 0 {
         return Err(io::Error::new(
             io::ErrorKind::UnexpectedEof,
             "expected one newline-terminated JSON object, got EOF",
-        ));
+        )
+        .into());
     }
-    serde_json::from_str(line.trim_end()).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+    Ok(serde_json::from_str(line.trim_end())?)
 }
 
 #[cfg(test)]

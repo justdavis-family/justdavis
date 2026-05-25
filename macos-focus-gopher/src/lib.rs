@@ -7,8 +7,12 @@
 //! design docs under `design/` for the full picture.
 
 pub mod client;
+pub mod error;
 pub mod focus;
+pub mod logging;
 pub mod model;
 pub mod protocol;
 pub mod server;
 pub mod socket;
+
+pub use error::{Error, Result};

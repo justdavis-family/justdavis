@@ -28,7 +28,7 @@ use std::path::{Path, PathBuf};
 
 /// The socket path: `$TMPDIR/focus-gopher.sock`, or the `FOCUS_GOPHER_SOCKET`
 /// override if set. Errors if neither is available.
-pub fn socket_path() -> io::Result<PathBuf> {
+pub fn socket_path() -> crate::Result<PathBuf> {
     resolve_socket_path(
         std::env::var_os("FOCUS_GOPHER_SOCKET"),
         std::env::var_os("TMPDIR"),
@@ -39,16 +39,13 @@ pub fn socket_path() -> io::Result<PathBuf> {
 fn resolve_socket_path(
     override_var: Option<OsString>,
     tmpdir: Option<OsString>,
-) -> io::Result<PathBuf> {
+) -> crate::Result<PathBuf> {
     if let Some(path) = override_var {
         return Ok(PathBuf::from(path));
     }
     match tmpdir {
         Some(dir) => Ok(PathBuf::from(dir).join("focus-gopher.sock")),
-        None => Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            "neither FOCUS_GOPHER_SOCKET nor TMPDIR is set; cannot locate the socket",
-        )),
+        None => Err(crate::Error::MissingSocketDir),
     }
 }
 
@@ -58,11 +55,11 @@ fn resolve_socket_path(
 /// The containing directory (`$TMPDIR`) is the caller's private, per-user
 /// directory, so we neither create nor re-permission it — its `0700` ownership is
 /// what keeps the socket reachable only by its owner.
-pub fn bind(path: &Path) -> io::Result<UnixListener> {
+pub fn bind(path: &Path) -> crate::Result<UnixListener> {
     match fs::remove_file(path) {
         Ok(()) => {}
         Err(e) if e.kind() == io::ErrorKind::NotFound => {}
-        Err(e) => return Err(e),
+        Err(e) => return Err(e.into()),
     }
     let listener = UnixListener::bind(path)?;
     fs::set_permissions(path, fs::Permissions::from_mode(0o600))?;
@@ -70,8 +67,8 @@ pub fn bind(path: &Path) -> io::Result<UnixListener> {
 }
 
 /// Connect to the socket at `path`.
-pub fn connect(path: &Path) -> io::Result<UnixStream> {
-    UnixStream::connect(path)
+pub fn connect(path: &Path) -> crate::Result<UnixStream> {
+    Ok(UnixStream::connect(path)?)
 }
 
 #[cfg(test)]
