@@ -86,7 +86,7 @@ mod tests {
 
     // The four canonical response shapes from the engineering design (examples a–d).
 
-    fn example_a() -> FocusState {
+    fn focus_on_state() -> FocusState {
         FocusState {
             macos_version: "15.5".into(),
             macos_compatibility: MacosCompatibility::Supported,
@@ -96,7 +96,7 @@ mod tests {
         }
     }
 
-    fn example_b() -> FocusState {
+    fn focus_off_state() -> FocusState {
         FocusState {
             macos_version: "15.5".into(),
             macos_compatibility: MacosCompatibility::Supported,
@@ -104,7 +104,7 @@ mod tests {
         }
     }
 
-    fn example_c() -> FocusState {
+    fn unknown_compatibility_state() -> FocusState {
         FocusState {
             macos_version: "26.0".into(),
             macos_compatibility: MacosCompatibility::Unknown {
@@ -116,7 +116,7 @@ mod tests {
         }
     }
 
-    fn example_d() -> FocusState {
+    fn failed_state() -> FocusState {
         FocusState {
             macos_version: "15.5".into(),
             macos_compatibility: MacosCompatibility::Supported,
@@ -128,9 +128,9 @@ mod tests {
     }
 
     #[test]
-    fn serialize_focus_on_matches_example_a() {
+    fn serialize_focus_on() {
         assert_eq!(
-            serde_json::to_value(example_a()).unwrap(),
+            serde_json::to_value(focus_on_state()).unwrap(),
             json!({
                 "macos_version": "15.5",
                 "macos_compatibility": "supported",
@@ -140,9 +140,9 @@ mod tests {
     }
 
     #[test]
-    fn serialize_focus_off_matches_example_b() {
+    fn serialize_focus_off() {
         assert_eq!(
-            serde_json::to_value(example_b()).unwrap(),
+            serde_json::to_value(focus_off_state()).unwrap(),
             json!({
                 "macos_version": "15.5",
                 "macos_compatibility": "supported",
@@ -152,9 +152,9 @@ mod tests {
     }
 
     #[test]
-    fn serialize_unknown_compatibility_matches_example_c() {
+    fn serialize_unknown_compatibility() {
         assert_eq!(
-            serde_json::to_value(example_c()).unwrap(),
+            serde_json::to_value(unknown_compatibility_state()).unwrap(),
             json!({
                 "macos_version": "26.0",
                 "macos_compatibility": {
@@ -166,9 +166,9 @@ mod tests {
     }
 
     #[test]
-    fn serialize_failed_matches_example_d() {
+    fn serialize_failed() {
         assert_eq!(
-            serde_json::to_value(example_d()).unwrap(),
+            serde_json::to_value(failed_state()).unwrap(),
             json!({
                 "macos_version": "15.5",
                 "macos_compatibility": "supported",
@@ -198,7 +198,12 @@ mod tests {
 
     #[test]
     fn all_examples_round_trip() {
-        for state in [example_a(), example_b(), example_c(), example_d()] {
+        for state in [
+            focus_on_state(),
+            focus_off_state(),
+            unknown_compatibility_state(),
+            failed_state(),
+        ] {
             let encoded = serde_json::to_string(&state).unwrap();
             let decoded: FocusState = serde_json::from_str(&encoded).unwrap();
             assert_eq!(decoded, state);
