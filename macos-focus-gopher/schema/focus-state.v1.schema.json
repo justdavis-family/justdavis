@@ -32,9 +32,15 @@
           "properties": {
             "unknown": {
               "type": "object",
+              "description": "The running macOS version is on neither the supported nor the unsupported list.",
               "required": ["message"],
               "additionalProperties": false,
-              "properties": { "message": { "type": "string" } }
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Guidance asking the user to report whether Focus parsing worked on this macOS version."
+                }
+              }
             }
           }
         }
@@ -50,9 +56,15 @@
           "properties": {
             "focus_on": {
               "type": "object",
+              "description": "A Focus is active.",
               "required": ["name"],
               "additionalProperties": false,
-              "properties": { "name": { "type": "string" } }
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The human-readable name of the active Focus, e.g. \"Sleep\"."
+                }
+              }
             }
           }
         },
@@ -60,7 +72,11 @@
           "required": ["focus_off"],
           "additionalProperties": false,
           "properties": {
-            "focus_off": { "type": "object", "additionalProperties": false }
+            "focus_off": {
+              "type": "object",
+              "description": "No Focus is active.",
+              "additionalProperties": false
+            }
           }
         }
       ]
