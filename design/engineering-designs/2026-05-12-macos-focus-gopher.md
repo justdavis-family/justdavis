@@ -252,19 +252,22 @@ New codes may be added; existing codes are not repurposed.
     for a single-user developer install (e.g. `cargo install`); either way it registers the helper to
     run in each user's session and is installed/removed by the install/uninstall flow.
 - **Socket path:** macOS has no `XDG_RUNTIME_DIR`-style blessed per-user socket directory (no
-    `/run/user/<uid>/`), and `sockaddr_un.sun_path` is capped (~104 bytes), so this is a deliberate,
-    deliberately-short choice. Preferred: a **`launchd`-managed socket** — declare a `Sockets` entry
-    (with `SockPathName`) in the LaunchAgent plist so `launchd` creates, owns, and tears down the
-    socket and hands the helper the descriptor via `launch_activate_socket()`, which also takes care of
-    socket lifecycle. Fallback if the helper manages it itself: **`$TMPDIR`** (i.e.
-    `confstr(_CS_DARWIN_USER_TEMP_DIR)`, e.g. `/var/folders/…/T/`) — the per-user, mode-`0700`,
-    user-owned directory that is the closest macOS analog to a per-user runtime dir — with a short
-    filename, since that path already eats most of the `sun_path` budget. (`~/Library/Application
-    Support/<bundle-id>/` is idiomatic for app *data* but is the deepest option and the most likely to
-    overflow the limit; a bare `/tmp/…` path is short but world-writable, so it needs unlink-then-bind
-    plus an owner check on both ends.) Whichever is chosen, the socket is user-only and the helper
-    verifies peer/owner identity on connect; the concrete path is pinned in M1. No network listener;
-    the CLI wrapper uses the same path.
+    `/run/user/<uid>/`), and `sockaddr_un.sun_path` is capped (~104 bytes), so the path is a
+    deliberate, short choice. The helper places the socket directly in **`$TMPDIR`**
+    (`confstr(_CS_DARWIN_USER_TEMP_DIR)`, e.g. `/var/folders/…/T/`): `$TMPDIR/focus-gopher.sock`.
+    On macOS `$TMPDIR` is a per-user, mode-`0700`, user-owned directory, and **that ownership is the
+    access control**: a socket inside it is reachable only by its owner, so no other user can connect
+    to it or pre-create it to impersonate the helper. Consequently the path needs no uid for
+    namespacing (there is no shared directory to disambiguate), and the helper needs no explicit
+    peer-uid check on connect — both would be redundant with the directory's semantics, and the
+    peer-uid check would also require `unsafe` FFI on macOS (no stable safe wrapper exists). If
+    `$TMPDIR` is unset the helper errors rather than falling back to a shared, world-writable location
+    like `/tmp`. (`~/Library/Application Support/<bundle-id>/` is idiomatic for app *data* but is the
+    deepest option and the most likely to overflow the `sun_path` limit.) The preferred long-term
+    mechanism is a **`launchd`-managed socket** — a `Sockets` / `SockPathName` entry in the LaunchAgent
+    plist so `launchd` creates, owns, and tears it down and hands the helper the descriptor via
+    `launch_activate_socket()` — which can later replace the self-managed bind without other changes.
+    No network listener; the CLI wrapper uses the same path.
 - **`FocusState` JSON Schema:** a versioned schema published in the repository and referenced by the
     README and `--help`/`man` docs.
 - **macOS compatibility table:** maintained in the project repository as the source of truth, seeded

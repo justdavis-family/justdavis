@@ -5,7 +5,13 @@ use macos_focus_gopher::{server, socket};
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    let path = socket::socket_path();
+    let path = match socket::socket_path() {
+        Ok(path) => path,
+        Err(e) => {
+            eprintln!("focus-gopherd: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
 
     let listener = match socket::bind(&path) {
         Ok(listener) => listener,

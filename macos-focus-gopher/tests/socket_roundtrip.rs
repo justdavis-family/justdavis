@@ -44,35 +44,3 @@ fn bind_restricts_socket_to_owner() {
     let socket_mode = std::fs::metadata(&path).unwrap().permissions().mode() & 0o777;
     assert_eq!(socket_mode, 0o600, "socket should be user-only");
 }
-
-#[test]
-fn bind_leaves_an_existing_parent_directorys_permissions_alone() {
-    // Regression guard: `bind` must not rewrite the permissions of a directory it
-    // did not create (e.g. an override pointing into a shared dir like /tmp).
-    let dir = tempfile::tempdir().unwrap();
-    std::fs::set_permissions(dir.path(), std::fs::Permissions::from_mode(0o755)).unwrap();
-    let path = dir.path().join("focus-gopher.sock");
-
-    let _listener = socket::bind(&path).unwrap();
-
-    let dir_mode = std::fs::metadata(dir.path()).unwrap().permissions().mode() & 0o777;
-    assert_eq!(
-        dir_mode, 0o755,
-        "bind must not alter a pre-existing directory"
-    );
-}
-
-#[test]
-fn bind_creates_a_missing_parent_directory_as_user_only() {
-    let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("nested").join("focus-gopher.sock");
-
-    let _listener = socket::bind(&path).unwrap();
-
-    let parent_mode = std::fs::metadata(path.parent().unwrap())
-        .unwrap()
-        .permissions()
-        .mode()
-        & 0o777;
-    assert_eq!(parent_mode, 0o700, "a created socket dir must be user-only");
-}

@@ -3,7 +3,7 @@
 //! `FocusState` reply. No async runtime — a one-shot request/response per
 //! connection needs none.
 
-use crate::{focus, protocol, socket};
+use crate::{focus, protocol};
 use std::io::{self, BufReader};
 use std::os::unix::net::{UnixListener, UnixStream};
 
@@ -36,14 +36,8 @@ pub fn serve_once(listener: &UnixListener) -> io::Result<()> {
 }
 
 fn handle_connection(stream: UnixStream) -> io::Result<()> {
-    let peer = socket::peer_uid(&stream)?;
-    if peer != socket::current_uid() {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "rejecting connection from a different user",
-        ));
-    }
-
+    // Access control is the socket's private per-user directory ($TMPDIR); see the
+    // `socket` module. No peer-uid check is needed (or possible without `unsafe`).
     let mut reader = BufReader::new(stream.try_clone()?);
     // There is exactly one request for now; reading it validates the protocol framing.
     let _request = protocol::read_request(&mut reader)?;
