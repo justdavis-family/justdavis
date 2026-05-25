@@ -51,8 +51,9 @@ Until the `focus-gopher` CLI is wired up,
 # Run the helper (it prints the socket path it binds, under $TMPDIR):
 MISE_EXPERIMENTAL=1 mise run ':build'
 ./target/debug/focus-gopherd &
+until [ -S "$TMPDIR/focus-gopher.sock" ]; do sleep 0.1; done  # wait for it to bind
 
-# In another shell, send the one request the protocol supports:
+# Then send the one request the protocol supports:
 printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
 ```
 

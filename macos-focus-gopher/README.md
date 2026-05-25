@@ -82,6 +82,7 @@ cd macos-focus-gopher
 MISE_EXPERIMENTAL=1 mise run ':build'
 # focus-gopherd prints the socket path it binds (under $TMPDIR):
 ./target/debug/focus-gopherd &
+until [ -S "$TMPDIR/focus-gopher.sock" ]; do sleep 0.1; done  # wait for it to bind
 printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
 ```
 
