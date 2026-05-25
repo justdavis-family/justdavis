@@ -3,6 +3,13 @@
 //! The client sends one fixed request object terminated by a newline; the helper
 //! replies with exactly one `FocusState` object terminated by a newline. There is
 //! no general "send an arbitrary command" path — the only request is `get_focus`.
+//!
+//! Separation of concerns: this module owns the *wire format* only — the request
+//! type and the symmetric read/write framing for both directions. It deliberately
+//! holds the encode and decode halves together so they cannot drift, and it knows
+//! nothing about transport roles. Those live elsewhere: [`crate::client`] connects
+//! and speaks this protocol, and [`crate::server`] accepts connections and answers
+//! it. Both depend on this module; it depends on neither.
 
 use crate::model::FocusState;
 use serde::{Deserialize, Serialize};
