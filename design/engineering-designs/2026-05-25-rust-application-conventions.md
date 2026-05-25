@@ -53,6 +53,17 @@ JSON output is machine-parseable for operators, and a TTY-aware default serves b
 Rationale: this is the community-standard split — typed errors where consumers need to branch,
   ergonomic any-error where they only need to propagate and report.
 
+### Serialization: `serde`
+
+When an application needs to serialize or deserialize data, use [`serde`](https://docs.rs/serde) with
+  its `derive` feature, plus the appropriate format crate (for example
+  [`serde_json`](https://docs.rs/serde_json) for JSON).
+
+Rationale: `serde` is the de-facto standard with no real competition, and deriving `Serialize` /
+  `Deserialize` keeps the serialized shape tied to the Rust types.
+This is a "use it when you serialize" choice rather than a facility every binary needs — but when
+  serialization is in play, there is no decision to make.
+
 ### Command-line parsing: `clap` (derive)
 
 Use [`clap`](https://docs.rs/clap) v4 with the derive API.
@@ -103,6 +114,9 @@ This keeps the policy decisions (how to log, how to exit, how to parse args) in 
     `anyhow` everywhere would lose the typed errors libraries should expose;
     hand-rolled enums are boilerplate.
   `thiserror` + `anyhow` is the lean, standard division of labor.
+- **Serialization:** `miniserde` and `nanoserde` trade features for faster compiles;
+    hand-written (de)serialization is error-prone boilerplate.
+  `serde` is the standard, and its derive keeps the data model and its serialized form in one place.
 - **CLI:** `argh`, `lexopt`, and `pico-args` are lighter and compile faster
     but offer fewer features and less consistent UX.
   `clap` is chosen for features and ubiquity;
@@ -120,6 +134,7 @@ This keeps the policy decisions (how to log, how to exit, how to parse args) in 
     `--log-format` forces either.
 - Library crates contain no subscriber initialization and no `anyhow` in their public APIs.
 - Long-running binaries exit cleanly on `SIGINT` / `SIGTERM`, releasing their resources.
+- Serialization, where present, goes through `serde` `derive` rather than hand-written encoding.
 
 ## References
 
@@ -130,6 +145,7 @@ This keeps the policy decisions (how to log, how to exit, how to parse args) in 
     [YAGNI](../engineering-principles/2026-01-06-yagni.md).
 - **Crates**: [`tracing`](https://docs.rs/tracing), [`tracing-subscriber`](https://docs.rs/tracing-subscriber),
     [`thiserror`](https://docs.rs/thiserror), [`anyhow`](https://docs.rs/anyhow),
+    [`serde`](https://docs.rs/serde), [`serde_json`](https://docs.rs/serde_json),
     [`clap`](https://docs.rs/clap), [`signal-hook`](https://docs.rs/signal-hook).
 - This is a cross-cutting design with no single product requirement; it applies to all Rust projects
     in this repository.

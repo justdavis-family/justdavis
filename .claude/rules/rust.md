@@ -18,6 +18,8 @@ Every Rust binary uses the same plumbing:
 - **Errors**: `thiserror` for library error types; `anyhow` at binary entry points.
   Keep these internal propagation errors distinct from serialized/wire error types,
     which are modeled explicitly as domain types.
+- **Serialization**: `serde` (with `derive`), plus a format crate such as `serde_json`,
+    whenever an app serializes or deserializes data.
 - **CLI**: `clap` v4 with the derive API.
 - **Signals**: long-running binaries handle `SIGINT` / `SIGTERM` via `signal-hook`
     for graceful shutdown (release sockets and other resources, then exit).
