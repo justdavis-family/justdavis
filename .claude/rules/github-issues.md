@@ -17,7 +17,12 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 - Add appropriate labels for categorization.
 
 **Available issue templates:** bug report, product requirement,
-  product vision, maintenance.
+  product vision, delivery plan milestone, maintenance.
+
+The product-vision, product-requirement, and delivery-plan-milestone templates
+  treat the corresponding `design/` document as the source of truth:
+  the issue links the document and tracks the work,
+  rather than restating the document's content (which would drift).
 
 ## Linking Issues to PRs
 
