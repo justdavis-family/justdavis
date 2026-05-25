@@ -1,6 +1,19 @@
-//! The helper's output must validate against the published, versioned JSON
-//! Schema, and the schema's `oneOf` must reject structurally-incoherent
-//! documents (the wire-level guard the design relies on).
+//! Conformance to the published, versioned JSON Schema.
+//!
+//! Unique assurance: every shape (and the real `get_focus()` output) validates
+//! against `schema/focus-state.v1.schema.json`, *and* the schema's `oneOf`
+//! rejects structurally-incoherent documents (both `determined` + `failed`,
+//! missing fields, an unknown error code). This guards both the published
+//! external contract and the schema file itself — neither the serde tests nor
+//! the byte-exact tests do that.
+//!
+//! Related but distinctly valuable suites (these three share only fixture data;
+//! each asserts something the others do not):
+//!   - `src/model.rs` unit tests — the serde mapping itself: structural
+//!     (`Value`) equality, round-trip, the `ErrorCode` snake_case strings, and
+//!     serde-layer rejection of malformed input.
+//!   - `tests/json_shape.rs` — the byte-exact compact wire encoding (field order
+//!     and whitespace) that a raw `nc`/`socat` consumer reads.
 
 use macos_focus_gopher::focus::get_focus;
 use macos_focus_gopher::model::{ErrorCode, Focus, FocusState, MacosCompatibility, Outcome};

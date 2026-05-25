@@ -1,9 +1,18 @@
 //! Byte-exact wire encoding of the four canonical `FocusState` shapes from the
 //! engineering design (examples a–d), exercised through the public crate API.
 //!
-//! The model unit tests compare parsed `Value`s (order-insensitive); this file
-//! pins the precise compact bytes a raw socket consumer (`nc`/`socat`) reads,
-//! including field order and the absence of whitespace.
+//! Unique assurance: this pins the *exact compact bytes* a raw socket consumer
+//! (`nc`/`socat` + `jq`) reads — field order and the absence of whitespace —
+//! which the `Value`-equality comparisons in the `model.rs` unit tests cannot
+//! catch (a reordering or reformatting would slip past them but fail here).
+//!
+//! Related but distinctly valuable suites (these three share only fixture data;
+//! each asserts something the others do not):
+//!   - `src/model.rs` unit tests — the serde mapping itself: structural
+//!     (`Value`) equality, round-trip, the `ErrorCode` snake_case strings, and
+//!     serde-layer rejection of malformed input.
+//!   - `tests/schema_validation.rs` — conformance to the published JSON Schema,
+//!     and that the schema rejects structurally-incoherent documents.
 
 use macos_focus_gopher::model::{ErrorCode, Focus, FocusState, MacosCompatibility, Outcome};
 

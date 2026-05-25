@@ -81,6 +81,19 @@ pub enum ErrorCode {
 
 #[cfg(test)]
 mod tests {
+    // These tests cover the serde mapping of the model types themselves: that our
+    // derives and attributes (`flatten`, `rename_all`, the empty-struct
+    // `FocusOff {}`) produce the intended structure and round-trip faithfully, that
+    // every `ErrorCode` renders to the right snake_case string, and that malformed
+    // input is rejected at the serde layer. Comparisons are by `serde_json::Value`,
+    // so they are order-insensitive.
+    //
+    // Related but distinctly valuable suites (these three share only fixture data;
+    // each asserts something the others do not):
+    //   - `tests/json_shape.rs` — the byte-exact compact wire encoding (field order
+    //     and whitespace), which the `Value`-equality comparisons here cannot catch.
+    //   - `tests/schema_validation.rs` — conformance to the published JSON Schema,
+    //     and that the schema rejects structurally-incoherent documents.
     use super::*;
     use serde_json::json;
 
