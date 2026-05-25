@@ -2,8 +2,10 @@
 # `profile = "default"` pulls in rustfmt and clippy (the minimal profile, which
 # mise/rustup would otherwise install in CI, omits them and breaks `lint`).
 rust = { version = "1.91", profile = "default" }
-"cargo:cargo-audit" = "latest"
-"cargo:cargo-outdated" = "latest"
+# Note: cargo-audit / cargo-outdated are NOT declared here. They are slow to
+# compile from source and are only used by `dependencies:check`, so they are
+# scoped to that task (below) — otherwise mise would install them for every
+# `build`/`test`/`lint`/`ci` run (including CI, which never uses them).
 
 [tasks.build]
 description = "Compile the helper and CLI, plus tests (debug profile)"
@@ -29,6 +31,9 @@ depends = ["lint", "test"]
 [tasks."dependencies:check"]
 description = "Audit for security advisories and report outdated dependencies"
 depends = ["build"]
+# Scoped here so they are only installed when this task runs, not for build/test/
+# lint/ci (which keeps CI from compiling these heavy tools it never uses).
+tools = { "cargo:cargo-audit" = "latest", "cargo:cargo-outdated" = "latest" }
 run = [
   "cargo audit",
   "cargo outdated --root-deps-only --exit-code 0",

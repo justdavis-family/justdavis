@@ -24,7 +24,7 @@ jobs:
     env:
       MISE_EXPERIMENTAL: '1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Installs the mise-managed toolchain and tools, and caches the mise data
       # dir (the Rust toolchain plus the compiled cargo-audit / cargo-outdated
       # backend tools) so they are reused across runs instead of recompiled.
