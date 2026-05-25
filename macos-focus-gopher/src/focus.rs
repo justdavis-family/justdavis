@@ -8,9 +8,9 @@ use crate::model::{ErrorCode, FocusState, MacosCompatibility, Outcome};
 
 /// Determine the current Focus state.
 ///
-/// Currently a stub: returns a well-formed `failed` / `macos_unsupported`
-/// `FocusState` without reading any file or calling any macOS API. Replaced by
-/// real detection and parsing later.
+/// Currently a stub: returns a well-formed `failed` `FocusState` without reading
+/// any file or calling any macOS API. Replaced by real detection and parsing
+/// later.
 pub fn get_focus() -> FocusState {
     FocusState {
         macos_version: "0.0".to_string(),
@@ -21,7 +21,12 @@ pub fn get_focus() -> FocusState {
                 .to_string(),
         },
         outcome: Outcome::Failed {
-            error: ErrorCode::MacosUnsupported,
+            // The helper simply cannot produce a result yet (parsing is
+            // unimplemented) — a generic helper-side failure, not a verdict that
+            // the version is unsupported. That pairs with `Unknown` above;
+            // `MacosUnsupported` would imply a compatibility-table lookup that
+            // never happened.
+            error: ErrorCode::InternalError,
             message: "Focus parsing is not yet implemented (early development; \
                       see the project README)."
                 .to_string(),
@@ -42,7 +47,7 @@ mod tests {
             MacosCompatibility::Unknown { .. }
         ));
         match state.outcome {
-            Outcome::Failed { error, .. } => assert_eq!(error, ErrorCode::MacosUnsupported),
+            Outcome::Failed { error, .. } => assert_eq!(error, ErrorCode::InternalError),
             other => panic!("expected a failed outcome, got {other:?}"),
         }
     }

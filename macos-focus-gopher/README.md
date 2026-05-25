@@ -85,7 +85,7 @@ MISE_EXPERIMENTAL=1 mise run ':build'
 printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
 ```
 
-For now, the reply is always the stubbed `failed` / `macos_unsupported` result.
+For now, the reply is always a stubbed `failed` result (no Focus database is read yet).
 
 ## Roadmap
 
