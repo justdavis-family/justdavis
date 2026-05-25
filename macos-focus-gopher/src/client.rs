@@ -1,5 +1,5 @@
 //! A minimal in-process client of the socket protocol. The `focus-gopher` CLI
-//! (M2) builds on this; for now it backs the round-trip integration test.
+//! will build on this later; for now it backs the round-trip integration test.
 
 use crate::model::FocusState;
 use crate::protocol::{self, Request};

@@ -1,6 +1,6 @@
 //! End-to-end: a client connects to a running helper over a real Unix domain
 //! socket and receives the (stubbed) `FocusState`, which validates against the
-//! published JSON Schema. This is the literal M1 deliverable.
+//! published JSON Schema. This is the project's headline deliverable right now.
 
 use macos_focus_gopher::focus::get_focus;
 use macos_focus_gopher::{client, server, socket};

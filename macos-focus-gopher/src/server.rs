@@ -45,7 +45,7 @@ fn handle_connection(stream: UnixStream) -> io::Result<()> {
     }
 
     let mut reader = BufReader::new(stream.try_clone()?);
-    // M1 has exactly one request; reading it validates the protocol framing.
+    // There is exactly one request for now; reading it validates the protocol framing.
     let _request = protocol::read_request(&mut reader)?;
 
     let state = focus::get_focus();

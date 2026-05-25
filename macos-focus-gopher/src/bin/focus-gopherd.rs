@@ -1,5 +1,5 @@
 //! The Focus Gopher helper daemon: binds the per-user socket and serves
-//! `get_focus()` requests. In M1 the answer is stubbed (no database is read).
+//! `get_focus()` requests. For now the answer is stubbed (no database is read).
 
 use macos_focus_gopher::{server, socket};
 use std::process::ExitCode;

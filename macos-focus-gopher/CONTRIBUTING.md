@@ -7,7 +7,7 @@ This file covers setup specific to Focus Gopher.
 
 > **Early development.**
 > Focus Gopher is being built milestone by milestone.
-> M1 ships only the project skeleton and the `get_focus()` *contract*
+> Right now it ships only the project skeleton and the `get_focus()` *contract*
 >   (the wire model, its JSON Schema, the socket protocol, and a stubbed `get_focus()`);
 >   real Focus parsing, the CLI, install, and distribution come later.
 
@@ -44,7 +44,7 @@ This builds the helper and CLI, runs the unit and integration tests
 
 ### 3. Poke the Helper Over the Socket
 
-Until the `focus-gopher` CLI is wired up (M2),
+Until the `focus-gopher` CLI is wired up,
   you can exercise the running helper directly over its socket:
 
 ```bash
@@ -56,5 +56,5 @@ FOCUS_GOPHER_SOCKET=/tmp/focus-gopher-dev/focus-gopher.sock ./target/debug/focus
 printf '{"op":"get_focus"}\n' | nc -U /tmp/focus-gopher-dev/focus-gopher.sock
 ```
 
-In M1 the reply is always a stubbed `failed` / `macos_unsupported` `FocusState`
+For now, the reply is always a stubbed `failed` / `macos_unsupported` `FocusState`
   (no Focus database is read yet).

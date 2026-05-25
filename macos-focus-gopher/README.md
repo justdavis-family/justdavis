@@ -28,7 +28,7 @@ Focus Gopher solves this by being a small, **stable-identity broker**:
 
 - It is the only component that holds the macOS permission and reads the database.
 - It exposes exactly **one read-only operation** — `get_focus()` — over a local Unix domain socket,
-    plus a thin `focus-gopher` CLI wrapper (coming in M2).
+    plus a thin `focus-gopher` CLI wrapper (coming later).
 - It never exposes arbitrary file, shell, Shortcut, or AppleScript access.
 
 So an unprivileged client asks one narrow question and gets one fixed-schema answer;
@@ -40,7 +40,7 @@ So an unprivileged client asks one narrow question and gets one fixed-schema ans
 client / agent ──get_focus──▶ Unix domain socket ──▶ focus-gopherd (per-user helper)
                                                           │
                                                           ▼
-                                          ~/Library/DoNotDisturb/DB/*.json  (read-only; M3+)
+                                          ~/Library/DoNotDisturb/DB/*.json  (read-only; added later)
 ```
 
 For the full design — technology choices, the retrieval pipeline, the error taxonomy, and the
@@ -84,20 +84,20 @@ FOCUS_GOPHER_SOCKET=/tmp/focus-gopher-dev/focus-gopher.sock ./target/debug/focus
 printf '{"op":"get_focus"}\n' | nc -U /tmp/focus-gopher-dev/focus-gopher.sock
 ```
 
-In M1 the reply is always the stubbed `failed` / `macos_unsupported` result.
+For now, the reply is always the stubbed `failed` / `macos_unsupported` result.
 
 ## Roadmap
 
-The work is sequenced in the
-  [delivery plan](../design/delivery-plans/2026-05-12-macos-focus-gopher.md):
+Today the project ships the **contract** only (the wire model, JSON Schema, socket protocol, and a
+  stubbed `get_focus()`) — see the banner at the top.
+What broadly follows: the `focus-gopher` CLI, then real Focus parsing, then build-from-source
+  packaging and distribution, then compatibility breadth and the agent ecosystem, and finally an
+  optional signed-distribution channel.
 
-- **M1 — project skeleton and the `get_focus()` contract.** ✅ _(this state)_.
-- **M2 — the `focus-gopher` CLI wrapper.**
-- **M3 — read-only Focus parsing on the verified macOS versions** (the real `get_focus()`).
-- **M4 — build-from-source packaging, install, and distribution** (the `.app` bundle, LaunchAgent,
-    Homebrew formula/tap, and `cargo install`).
-- **M5 — compatibility breadth, the agent ecosystem, and docs polish.**
-- **M6 — code signing, notarization, and signed-update distribution** (optional; may not be reached).
+The authoritative, evolving breakdown — sequence, scope, and status — lives in the
+  [delivery plan](../design/delivery-plans/2026-05-12-macos-focus-gopher.md) and the
+  [milestone tracking issues](https://github.com/justdavis-family/justdavis/issues?q=is%3Aissue+label%3Amilestone),
+  not here, so this README doesn't drift.
 
 ## Contributing
 

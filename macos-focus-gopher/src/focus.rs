@@ -1,16 +1,16 @@
 //! `get_focus()` — the single read-only operation the helper exposes.
 //!
-//! M1 ships a stub: it returns a well-formed `FocusState` without touching any
-//! database file or calling any macOS API. Real macOS-version detection and
-//! Focus-database parsing land in M3 (see the delivery plan).
+//! This currently ships a stub: it returns a well-formed `FocusState` without
+//! touching any database file or calling any macOS API. Real macOS-version
+//! detection and Focus-database parsing come later (see the delivery plan).
 
 use crate::model::{ErrorCode, FocusState, MacosCompatibility, Outcome};
 
 /// Determine the current Focus state.
 ///
-/// M1 stub: returns a well-formed `failed` / `macos_unsupported` `FocusState`
-/// without reading any file or calling any macOS API. Replaced by real detection
-/// and parsing in M3.
+/// Currently a stub: returns a well-formed `failed` / `macos_unsupported`
+/// `FocusState` without reading any file or calling any macOS API. Replaced by
+/// real detection and parsing later.
 pub fn get_focus() -> FocusState {
     FocusState {
         macos_version: "0.0".to_string(),

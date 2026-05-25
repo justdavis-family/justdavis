@@ -1,7 +1,7 @@
 //! Socket path derivation and secure bind/connect helpers.
 //!
 //! macOS has no `XDG_RUNTIME_DIR`-style blessed per-user socket directory, and
-//! `sockaddr_un.sun_path` is capped (~104 bytes), so M1 pins a deliberately-short
+//! `sockaddr_un.sun_path` is capped (~104 bytes), so we pin a deliberately-short
 //! path: `<$TMPDIR or /tmp>/focus-gopher-<uid>/focus-gopher.sock`. The per-user
 //! `0700` subdir plus the `0600` socket keep it reachable only by its owner; the
 //! server additionally checks the peer's uid on accept.
@@ -10,7 +10,7 @@
 //! `confstr(_CS_DARWIN_USER_TEMP_DIR)` directory; reading that via `confstr`
 //! directly (rather than the env var) is a possible future hardening. The
 //! preferred long-term design hands the listener off from `launchd` via
-//! `launch_activate_socket()`; that swap lands in M4 and only needs to replace
+//! `launch_activate_socket()`; that swap can come later and only needs to replace
 //! [`bind`] — nothing else in the server changes.
 
 use std::ffi::OsString;
