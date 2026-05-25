@@ -48,12 +48,12 @@ Until the `focus-gopher` CLI is wired up,
   you can exercise the running helper directly over its socket:
 
 ```bash
-# Run the helper (it prints the socket path it is listening on):
+# Run the helper (it prints the socket path it binds, under $TMPDIR):
 MISE_EXPERIMENTAL=1 mise run ':build'
-FOCUS_GOPHER_SOCKET=/tmp/focus-gopher-dev/focus-gopher.sock ./target/debug/focus-gopherd &
+./target/debug/focus-gopherd &
 
 # In another shell, send the one request the protocol supports:
-printf '{"op":"get_focus"}\n' | nc -U /tmp/focus-gopher-dev/focus-gopher.sock
+printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
 ```
 
 For now, the reply is always a stubbed `failed` / `macos_unsupported` `FocusState`

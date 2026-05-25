@@ -80,8 +80,9 @@ You can build the helper and poke it over its socket:
 ```bash
 cd macos-focus-gopher
 MISE_EXPERIMENTAL=1 mise run ':build'
-FOCUS_GOPHER_SOCKET=/tmp/focus-gopher-dev/focus-gopher.sock ./target/debug/focus-gopherd &
-printf '{"op":"get_focus"}\n' | nc -U /tmp/focus-gopher-dev/focus-gopher.sock
+# focus-gopherd prints the socket path it binds (under $TMPDIR):
+./target/debug/focus-gopherd &
+printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
 ```
 
 For now, the reply is always the stubbed `failed` / `macos_unsupported` result.
