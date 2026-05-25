@@ -86,13 +86,15 @@ mod tests {
 
     #[test]
     fn read_request_parses_get_focus() {
-        let mut input = Cursor::new(b"{\"op\":\"get_focus\"}\n".to_vec());
+        let line = format!("{}\n", json!({ "op": "get_focus" }));
+        let mut input = Cursor::new(line.into_bytes());
         assert_eq!(read_request(&mut input).unwrap(), Request::GetFocus);
     }
 
     #[test]
     fn read_request_rejects_unknown_op() {
-        let mut input = Cursor::new(b"{\"op\":\"run_shell\"}\n".to_vec());
+        let line = format!("{}\n", json!({ "op": "run_shell" }));
+        let mut input = Cursor::new(line.into_bytes());
         assert!(read_request(&mut input).is_err());
     }
 
