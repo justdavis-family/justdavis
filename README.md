@@ -14,7 +14,7 @@ If you _do_ find something here particularly enlightening or useful,
 | Project | Description |
 |---|---|
 | [github-analytics](github-analytics/README.md) | Collects and stores GitHub repository analytics data that the API exposes but the web UI doesn't retain historically. |
-| [macos-focus-gopher](macos-focus-gopher/README.md) | A per-user macOS helper that reports the current Focus / Do Not Disturb state to local clients, so unprivileged agents don't need Full Disk Access (early development). |
+| [macos-focus-gopher](macos-focus-gopher/README.md) | A per-user macOS helper that reports the current Focus / Do Not Disturb state — including the active Focus's name — to local clients, so unprivileged agents don't need Full Disk Access (early development). |
 
 ## How is this Repository Organized?
 

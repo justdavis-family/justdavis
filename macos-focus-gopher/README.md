@@ -1,7 +1,8 @@
 # Focus Gopher
 
 A small, single-purpose macOS helper that reports your current **Focus / Do Not Disturb** state
-  to local clients — without those clients needing any macOS privacy permissions of their own.
+  — including the name of the active Focus — to local clients,
+  without those clients needing any macOS privacy permissions of their own.
 
 > ## ⚠️ Early development — not yet usable
 >
