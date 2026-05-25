@@ -95,17 +95,21 @@ This keeps the policy decisions (how to log, how to exit, how to parse args) in 
 
 ## Trade-offs
 
-- **Logging:** `log` + `env_logger` is simpler but unstructured and span-less; `slog` has waning
-    momentum. `tracing` is chosen for structure, spans, and ecosystem support, at the cost of a
-    slightly larger dependency footprint.
-- **Errors:** `snafu` offers more features but more ceremony; `anyhow` everywhere would lose the typed
-    errors libraries should expose; hand-rolled enums are boilerplate. `thiserror` + `anyhow` is the
-    lean, standard division of labor.
-- **CLI:** `argh`, `lexopt`, and `pico-args` are lighter and compile faster but offer fewer features
-    and less consistent UX. `clap` is chosen for features and ubiquity; the compile cost is mitigated
-    by caching.
-- **Signals:** raw `sigaction` requires `unsafe`; `ctrlc` is narrower; tokio's signal handling needs
-    an async runtime. `signal-hook` fits synchronous binaries.
+- **Logging:** `log` + `env_logger` is simpler but unstructured and span-less;
+    `slog` has waning momentum.
+  `tracing` is chosen for structure, spans, and ecosystem support,
+    at the cost of a slightly larger dependency footprint.
+- **Errors:** `snafu` offers more features but more ceremony;
+    `anyhow` everywhere would lose the typed errors libraries should expose;
+    hand-rolled enums are boilerplate.
+  `thiserror` + `anyhow` is the lean, standard division of labor.
+- **CLI:** `argh`, `lexopt`, and `pico-args` are lighter and compile faster
+    but offer fewer features and less consistent UX.
+  `clap` is chosen for features and ubiquity;
+    the compile cost is mitigated by caching.
+- **Signals:** raw `sigaction` requires `unsafe`; `ctrlc` is narrower;
+    tokio's signal handling needs an async runtime.
+  `signal-hook` fits synchronous binaries.
 
 ## Success Criteria
 
