@@ -27,7 +27,10 @@ serde_json = "1.0"
 libc = "0.2"
 
 [dev-dependencies]
-jsonschema = "0.26"
+# default-features = false drops the remote-`$ref` resolver (reqwest/hyper/tokio/
+# tower/...); the schema uses only internal `#/$defs` refs, so core validation is
+# unaffected — and the dependency graph (and compile time) shrinks substantially.
+jsonschema = { version = "0.26", default-features = false }
 tempfile = "3"
 
 [profile.release]
