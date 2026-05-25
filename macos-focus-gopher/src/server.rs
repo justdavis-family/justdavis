@@ -23,8 +23,13 @@ pub fn serve(listener: &UnixListener) -> io::Result<()> {
     Ok(())
 }
 
-/// Accept and handle exactly one connection, then return. Used by tests and any
-/// caller that wants a single deterministic round-trip.
+/// Accept and handle exactly one connection, then return.
+///
+/// This is test support, not part of the helper's intended API — the daemon uses
+/// [`serve`]. It must be `pub` because the integration tests live in a separate
+/// crate and can only drive a public entry point, so it is `#[doc(hidden)]` to
+/// keep it out of the documented surface.
+#[doc(hidden)]
 pub fn serve_once(listener: &UnixListener) -> io::Result<()> {
     let (stream, _addr) = listener.accept()?;
     handle_connection(stream)
