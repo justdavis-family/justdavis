@@ -14,7 +14,12 @@ use crate::model::{ErrorCode, FocusState, MacosCompatibility, Outcome};
 pub fn get_focus() -> FocusState {
     FocusState {
         macos_version: "0.0".to_string(),
-        macos_compatibility: MacosCompatibility::Unsupported,
+        // The version was never detected, so report Unknown ("didn't check")
+        // rather than Unsupported ("checked and not on the supported list").
+        macos_compatibility: MacosCompatibility::Unknown {
+            message: "Focus Gopher does not detect the macOS version yet (early development)."
+                .to_string(),
+        },
         outcome: Outcome::Failed {
             error: ErrorCode::MacosUnsupported,
             message: "Focus parsing is not yet implemented (early development; \
@@ -27,11 +32,15 @@ pub fn get_focus() -> FocusState {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::{ErrorCode, Outcome};
+    use crate::model::{ErrorCode, MacosCompatibility, Outcome};
 
     #[test]
-    fn stub_returns_failed_macos_unsupported() {
+    fn stub_reports_unknown_compatibility_and_a_failed_outcome() {
         let state = get_focus();
+        assert!(matches!(
+            state.macos_compatibility,
+            MacosCompatibility::Unknown { .. }
+        ));
         match state.outcome {
             Outcome::Failed { error, .. } => assert_eq!(error, ErrorCode::MacosUnsupported),
             other => panic!("expected a failed outcome, got {other:?}"),
