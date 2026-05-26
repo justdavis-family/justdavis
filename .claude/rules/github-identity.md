@@ -29,6 +29,8 @@ Everything else is @karlmdavis's identity: interactive, supervised work, and act
 The dividing line is supervision, not comment type:
   the same kind of comment goes to the bot when autonomous,
   and to @karlmdavis when made in a supervised session.
+Acting on webhook-driven PR events without per-step approval is autonomous output,
+  even when @karlmdavis is reachable in the same session.
 
 ## Graceful Fallback
 
