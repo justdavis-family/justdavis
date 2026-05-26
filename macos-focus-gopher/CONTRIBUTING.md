@@ -7,9 +7,10 @@ This file covers setup specific to Focus Gopher.
 
 > **Early development.**
 > Focus Gopher is being built milestone by milestone.
-> Right now it ships only the project skeleton and the `get_focus()` *contract*
->   (the wire model, its JSON Schema, the socket protocol, and a stubbed `get_focus()`);
->   real Focus parsing, the CLI, install, and distribution come later.
+> Right now it ships the `get_focus()` *contract*
+>   (the wire model, its JSON Schema, the socket protocol, and a stubbed `get_focus()`)
+>   plus the thin `focus-gopher` CLI that speaks it;
+>   real Focus parsing, install, and distribution come later.
 
 ## Design Docs (the source of truth)
 
@@ -42,20 +43,26 @@ This builds the helper and CLI, runs the unit and integration tests
   (including JSON-Schema validation and the socket round-trip), checks formatting,
   and runs Clippy with warnings treated as errors.
 
-### 3. Poke the Helper Over the Socket
+### 3. Exercise the Helper
 
-Until the `focus-gopher` CLI is wired up,
-  you can exercise the running helper directly over its socket:
+The everyday way to query the helper is the `focus-gopher` CLI
+  (see the project [README.md](README.md#using-focus-gopher) for exit-code conventions):
 
 ```bash
-# Run the helper (it prints the socket path it binds, under $TMPDIR):
 MISE_EXPERIMENTAL=1 mise run ':build'
 ./target/debug/focus-gopherd &
 until [ -S "$TMPDIR/focus-gopher.sock" ]; do sleep 0.1; done  # wait for it to bind
-
-# Then send the one request the protocol supports:
-printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
+./target/debug/focus-gopher
 ```
 
-For now, the reply is always a stubbed `failed` `FocusState`
-  (no Focus database is read yet).
+For now the reply is always a stubbed `failed` `FocusState`
+  (no Focus database is read yet),
+  so the CLI prints that JSON and exits **1**.
+
+If you are working on the wire protocol itself
+  (changing what the helper sends or accepts),
+  you can also speak the socket directly with `nc -U`:
+
+```bash
+printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
+```
