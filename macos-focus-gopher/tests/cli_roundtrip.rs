@@ -8,6 +8,7 @@ use assert_cmd::Command;
 use macos_focus_gopher::focus;
 use macos_focus_gopher::model::{FocusState, Outcome};
 use macos_focus_gopher::{server, socket};
+use std::io::{BufRead, BufReader, Write};
 use std::thread;
 
 #[test]
@@ -78,6 +79,54 @@ fn cli_exits_with_transport_error_when_helper_unreachable() {
     assert!(
         output.stdout.is_empty(),
         "stdout should be empty on transport error; got: {}",
+        String::from_utf8_lossy(&output.stdout),
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("focus-gopher failed"),
+        "stderr should describe the failure; got: {stderr}",
+    );
+}
+
+#[test]
+fn cli_exits_with_protocol_error_when_helper_replies_garbage() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("focus-gopher.sock");
+
+    // Stand up an ad-hoc peer that accepts one connection, discards the
+    // request line, and writes back well-formed JSON that doesn't deserialize
+    // into a `FocusState`. The real helper would never do this; this guards
+    // the CLI's behavior when the wire contract is violated — exit 2 (no
+    // FocusState was obtained), nothing on stdout, diagnostic on stderr.
+    let listener = socket::bind(&path).unwrap();
+    let server_thread = thread::spawn(move || {
+        let (stream, _) = listener.accept().unwrap();
+        let mut reader = BufReader::new(stream.try_clone().unwrap());
+        let mut request = String::new();
+        reader.read_line(&mut request).unwrap();
+        let mut writer = stream;
+        writer.write_all(b"{\"not\":\"a focus state\"}\n").unwrap();
+        writer.flush().unwrap();
+    });
+
+    let output = Command::cargo_bin("focus-gopher")
+        .unwrap()
+        .arg("--socket-path")
+        .arg(&path)
+        .output()
+        .unwrap();
+    server_thread.join().unwrap();
+
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "expected exit 2 (protocol error); stdout={} stderr={}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(
+        output.stdout.is_empty(),
+        "stdout should be empty on protocol error; got: {}",
         String::from_utf8_lossy(&output.stdout),
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
