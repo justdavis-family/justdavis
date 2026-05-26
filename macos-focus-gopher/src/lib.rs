@@ -3,13 +3,16 @@
 //! operation (`get_focus()`), brokering the macOS privacy permission so that
 //! unprivileged clients never need Full Disk Access themselves.
 //!
-//! This crate is in early development. See the project `README.md` and the
-//! design docs under `design/` for the full picture.
+//! See the project `README.md` and the design docs under `design/` for the
+//! full picture.
 
 pub mod client;
+pub mod compatibility;
 pub mod error;
 pub mod focus;
+pub mod focus_db;
 pub mod logging;
+pub mod macos_version;
 pub mod model;
 pub mod protocol;
 pub mod server;

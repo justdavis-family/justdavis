@@ -1,6 +1,9 @@
 //! End-to-end: a client connects to a running helper over a real Unix domain
-//! socket and receives the (stubbed) `FocusState`, which validates against the
-//! published JSON Schema. This is the project's headline deliverable right now.
+//! socket and receives a `FocusState` that validates against the published
+//! JSON Schema. The *value* depends on the host environment (which Focus is
+//! on, whether the helper has FDA); we assert the **contract** here. See
+//! `tests/parsing.rs` for deterministic value assertions against captured
+//! fixtures.
 
 use macos_focus_gopher::focus::get_focus;
 use macos_focus_gopher::{client, server, socket};

@@ -4,16 +4,18 @@ A small, single-purpose macOS helper that reports your current **Focus / Do Not 
   — including the name of the active Focus — to local clients,
   without those clients needing any macOS privacy permissions of their own.
 
-> ## ⚠️ Early development — not yet usable
+> ## Status — read-only Focus parsing on macOS 26
 >
 > This project is being built milestone by milestone.
-> **The current state** ships the `get_focus()` *contract* — the `FocusState` wire model, its
->   published JSON Schema, the socket protocol — plus the thin `focus-gopher` CLI that speaks it.
-> The helper's `get_focus()` is still **stubbed**: it always returns a `failed` result
->   without reading any Focus database, so the CLI faithfully prints (and exits non-zero on) that
->   stubbed reply.
-> It builds, tests, and lints — but it does **not** read your real Focus state, install itself, or
->   distribute via Homebrew yet.
+> Today's milestone ships **real Focus parsing**: the helper reads
+>   `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json`,
+>   maps the active Focus identifier to a human-readable name, and returns
+>   a `FocusState` over its local socket (or via the `focus-gopher` CLI).
+> Tested on macOS 26 (Tahoe); other macOS versions report
+>   `macos_compatibility: unknown` and we ask you to file an issue.
+> The helper still has to be **built from source** and the **Full Disk Access** grant
+>   is a manual System Settings step that has to be re-applied after every rebuild;
+>   one-command install via Homebrew and a signed/notarized distribution channel come later.
 > See the [roadmap](#roadmap) below.
 
 ## What This Will Be
@@ -41,7 +43,7 @@ So an unprivileged client asks one narrow question and gets one fixed-schema ans
 client / agent ──get_focus──▶ Unix domain socket ──▶ focus-gopherd (per-user helper)
                                                           │
                                                           ▼
-                                          ~/Library/DoNotDisturb/DB/*.json  (read-only; added later)
+                                          ~/Library/DoNotDisturb/DB/*.json  (read-only)
 ```
 
 For the full design — technology choices, the retrieval pipeline, the error taxonomy, and the
@@ -87,8 +89,55 @@ until [ -S "$TMPDIR/focus-gopher.sock" ]; do sleep 0.1; done  # wait for it to b
 ./target/debug/focus-gopher                                   # pretty FocusState JSON on stdout
 ```
 
-For now, the reply is always a stubbed `failed` result (no Focus database is read yet), so the CLI
-  prints that `FocusState` and exits **1**.
+Without Full Disk Access granted to the helper, the reply is a `failed` `FocusState`
+  with `error: focus_permission_denied` and a `message` containing the helper's resolved
+  binary path and a deep link to the System Settings pane.
+The CLI prints that JSON and exits **1**.
+With FDA granted (see the next section), the reply is a `determined` `FocusState`
+  reflecting the host's current Focus state (`focus_on` with the active Focus's name,
+  or `focus_off` if nothing is active);
+  the CLI prints that JSON and exits **0**.
+
+## Compatibility
+
+Focus Gopher's parser is verified against **macOS 26 (Tahoe)**.
+The format-stability analysis identifies macOS 12 (Monterey) through 15 (Sequoia) as
+  format-stable candidates for support; they are not yet verified in this codebase and
+  currently report `macos_compatibility: unknown`.
+Any macOS version not yet on the verified list returns the `unknown` compatibility
+  variant with a message inviting an issue; whether parsing actually worked is conveyed by
+  the outcome (`determined` or `failed`), independent of the compatibility field.
+
+> ### Known macOS 26 limitation: schedule-triggered Foci
+>
+> When a Focus is activated by a user-defined schedule trigger on macOS 26, no file under
+>   `~/Library/DoNotDisturb/DB/` reflects the active state — `donotdisturbd` keeps that
+>   information in memory. Focus Gopher will currently report `focus_off` in that case.
+> Manually-toggled Foci (built-in or user-created) are detected correctly.
+> Tracking the gap and an investigation plan: see the
+>   [project issue tracker](https://github.com/justdavis-family/justdavis/issues?q=is%3Aissue+focus+gopher+schedule).
+
+## Granting Full Disk Access
+
+The helper needs **Full Disk Access** to read the macOS Focus database. The grant is
+  always a manual System Settings step (there is no programmatic prompt on any channel),
+  and **on build-from-source installs the grant is keyed to the binary's cdhash, so it
+  must be re-applied after every rebuild.**
+
+To grant access:
+
+1. Open System Settings → **Privacy & Security** → **Full Disk Access**.
+   (Or paste this deep link into Safari / your launcher:
+   `x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles`.)
+2. Add the **resolved path to the `focus-gopherd` binary** (the one the
+    `focus_permission_denied` message will print). The resolved path matters because
+    cargo and Homebrew both symlink into `bin/`, and TCC matches the real binary.
+3. Re-run `focus-gopher` to verify: exit code **0** with a `determined` outcome means the
+    grant is live.
+
+For contributors developing against the live Focus database, an alternative dev workflow
+  using a self-signed code-signing certificate (so the cdhash stays stable across rebuilds)
+  is described in [CONTRIBUTING.md](CONTRIBUTING.md#developing-against-the-live-focus-database).
 
 ### Using `focus-gopher`
 
@@ -118,12 +167,12 @@ For talking to the helper over its raw socket protocol
 
 ## Roadmap
 
-Today the project ships the **contract** (the wire model, JSON Schema, socket protocol) and the
-  thin `focus-gopher` CLI that speaks it, but the helper's `get_focus()` is still stubbed — see
-  the banner at the top.
-What broadly follows: real Focus parsing, then build-from-source packaging and distribution, then
-  compatibility breadth and the agent ecosystem, and finally an optional signed-distribution
-  channel.
+Today the project ships the **contract** (the wire model, JSON Schema, socket protocol),
+  the thin `focus-gopher` CLI that speaks it, and **real read-only Focus parsing** verified
+  against macOS 26.
+What broadly follows: build-from-source packaging and distribution (Homebrew formula + cargo
+  install + a per-user LaunchAgent), then compatibility breadth (the rest of macOS 12–15) and
+  the agent ecosystem, and finally an optional signed-distribution channel.
 
 The authoritative, evolving breakdown — sequence, scope, and status — lives in the
   [delivery plan](../design/delivery-plans/2026-05-12-macos-focus-gopher.md) and the

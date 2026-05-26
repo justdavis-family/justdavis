@@ -64,8 +64,37 @@ Caveats the same sources surface, which a robust parser must handle:
 - The format is still **undocumented and unsupported by Apple**; nothing prevents a future macOS
     release from changing it.
 
-We did not find authoritative confirmation of the format on the current **macOS 26 Tahoe** release;
-  it is presumed similar but should be treated as unverified until we test it.
+**macOS 26 Tahoe has now been verified against real captured fixtures** in the Focus Gopher
+  codebase (see
+  [`macos-focus-gopher/tests/fixtures/26/`](../../macos-focus-gopher/tests/fixtures/) and
+  [`FIXTURES.md`](../../macos-focus-gopher/tests/fixtures/FIXTURES.md)).
+The `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json` layout matches
+  the macOS 12–15 community reports for manual Focus activation: a manually-toggled Focus
+  appears as a `storeAssertionRecords[0].assertionDetails.assertionDetailsModeIdentifier`
+  entry in `Assertions.json`, and `ModeConfigurations.json` is a `data[0].modeConfigurations`
+  map keyed by **mode identifier** (e.g. `com.apple.focus.work`, *not* a UUID — the analysis
+  previously described it as UUID-keyed; that was incorrect for at least macOS 26, and likely
+  for the earlier majors too).
+
+> ### Schedule-triggered Foci on macOS 26 — a new finding
+>
+> While capturing M3 fixtures we observed that on macOS 26, a Focus activated by a *user-defined
+>   schedule trigger* does **not** appear in any file under `~/Library/DoNotDisturb/DB/`.
+> `Assertions.json`'s `storeAssertionRecords` stays empty, `Settings.sqlite`'s Focus tables stay
+>   empty, and no preference plist or cache surfaces the active state.
+> The most likely explanation is that `donotdisturbd` keeps schedule-triggered state in memory
+>   and exposes it only via XPC.
+>
+> This contradicts the section above's expectation
+>   ("manually-toggled Focus vs. schedule/automation-activated Focus appear in different files
+>   (`Assertions.json` vs. a trigger state in `ModeConfigurations.json`)") in the macOS 26 case:
+>   `ModeConfigurations.json`'s `triggers[].enabledSetting` is a configuration value, not a
+>   runtime state.
+> Whether earlier majors (12–15) still write schedule-activated assertions to
+>   `Assertions.json` (per the historical community reports) needs separate verification.
+>
+> File-based detection of schedule-triggered Foci on macOS 26 is therefore a known gap; the
+>   manual-activation path works correctly. The gap is tracked in the project issue tracker.
 
 ### 3. Specific point releases vs. major-version wildcards
 
@@ -83,7 +112,10 @@ Recommendation:
     least one *current* point release of that major. On that basis, `12.*`–`15.*` are reasonable
     `supported` entries once verified.
 - macOS **11 and earlier** are out of scope (different mechanism).
-- macOS **26** (and any future major) starts as `unknown until tested`; it is reported with the
+- macOS **26 Tahoe** has been verified for the manual-activation path (see above) and is on the
+    supported list. The schedule-triggered case is a known gap (see the inset above); detection
+    when it lands will not change the compatibility status.
+- macOS **27 and later** start as `unknown until tested`; they are reported with the
     `unknown` compatibility variant (carrying a "please report whether this version works" message)
     until added to the table — whether parsing actually worked is conveyed by the result's outcome, not
     the compatibility field.

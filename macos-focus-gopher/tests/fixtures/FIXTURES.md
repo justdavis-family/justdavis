@@ -1,0 +1,77 @@
+# Focus database fixtures
+
+Real captures and synthesized variants of `Assertions.json` and `ModeConfigurations.json`
+  driving the fixture-based parser tests
+  in [`tests/parsing.rs`](../parsing.rs).
+
+## Layout
+
+```
+fixtures/
+  <macos_major>/
+    <case>/
+      Assertions.json
+      ModeConfigurations.json
+```
+
+`<macos_major>` is the macOS major version the fixtures were captured from.
+M3 ships fixtures for `26/` only (the host that captured them, macOS 26 Tahoe).
+Future milestones will add `12/`, `13/`, `14/`, `15/` as those majors are verified;
+  see the
+  [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md).
+
+## Cases
+
+| Case                     | Source       | Expected parser result                              |
+| ------------------------ | ------------ | --------------------------------------------------- |
+| `focus_off`              | Real         | `Focus::FocusOff`                                   |
+| `manual_focus_on_builtin`| Real         | `Focus::FocusOn { name: "Do Not Disturb" }`         |
+| `manual_focus_on_user`   | Real         | `Focus::FocusOn { name: "Custom Focus C" }`         |
+| `malformed`              | Synthesized  | `ParseFailure::Malformed`                           |
+| `schema_unknown`         | Synthesized  | `ParseFailure::SchemaUnknown`                       |
+| `name_unresolved`        | Synthesized  | `ParseFailure::NameUnresolved(_)`                   |
+
+Real captures are taken directly from `~/Library/DoNotDisturb/DB/`
+  with the host's Focus state set to match the case.
+Synthesized fixtures are derived from a real capture by editing it
+  (truncating, replacing the body with an unrecognized shape, or
+  removing a matching mode entry).
+
+## PII scrubbing
+
+The real captures were scrubbed before commit:
+
+- All UUIDs (device identifiers, per-assertion identifiers, mode identifiers) were replaced
+    with deterministic placeholders of the form
+    `00000000-0000-0000-0000-000000000NNN`, numbered in order of first appearance.
+- User-customized mode names were replaced with generic labels:
+  - `"Vroom Vroom"` → `"Custom Focus A"`
+    (mode identifier `com.apple.donotdisturb.mode.bicycle`).
+  - `"Meeting"` → `"Custom Focus B"`
+    (mode identifier `com.apple.donotdisturb.mode.bubbleleftfill`).
+  - `"Relaxing"` → `"Custom Focus C"`
+    (mode identifier `com.apple.donotdisturb.mode.emojifacegrinning`).
+- Apple built-in mode names (`Sleep`, `Do Not Disturb`, `Work`, etc.) and mode identifiers
+    (the `com.apple.…` strings, including the SF Symbol fragments) are left as-is —
+    they are stable Apple identifiers, not personal data.
+- Timestamps are left as-is — they are not identifying on their own.
+
+## Known limitation on macOS 26 (Tahoe)
+
+When a Focus is activated by a user-defined schedule trigger,
+  no file under `~/Library/DoNotDisturb/DB/` reflects the active state:
+  `Assertions.json`'s `storeAssertionRecords` array remains empty,
+    `Settings.sqlite`'s Focus tables stay empty,
+    and neither `Metrics.json` nor any preference plist surfaces it.
+
+The most likely explanation is that `donotdisturbd` keeps schedule-triggered
+  state in memory and exposes it only via XPC.
+
+For this reason, M3 ships **without** a `scheduled_focus_on` fixture:
+  the parser path that handles a `storeAssertionRecord`
+  (used by `manual_focus_on_builtin` and `manual_focus_on_user`) is the same one a
+  schedule trigger would exercise on older macOS versions
+  where the format-stability analysis says scheduled assertions DO appear in
+  `Assertions.json`.
+The macOS-26 schedule gap is tracked in the project issue tracker
+  and will be revisited after current milestones land.

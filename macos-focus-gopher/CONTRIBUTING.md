@@ -5,12 +5,9 @@ See the [repository-level CONTRIBUTING.md](../CONTRIBUTING.md)
   that apply to all projects in this monorepo.
 This file covers setup specific to Focus Gopher.
 
-> **Early development.**
-> Focus Gopher is being built milestone by milestone.
-> Right now it ships the `get_focus()` *contract*
->   (the wire model, its JSON Schema, the socket protocol, and a stubbed `get_focus()`)
->   plus the thin `focus-gopher` CLI that speaks it;
->   real Focus parsing, install, and distribution come later.
+Focus Gopher is being built milestone by milestone;
+  see the [delivery plan](../design/delivery-plans/2026-05-12-macos-focus-gopher.md)
+  for what's in scope today and what's coming next.
 
 ## Design Docs (the source of truth)
 
@@ -55,9 +52,11 @@ until [ -S "$TMPDIR/focus-gopher.sock" ]; do sleep 0.1; done  # wait for it to b
 ./target/debug/focus-gopher
 ```
 
-For now the reply is always a stubbed `failed` `FocusState`
-  (no Focus database is read yet),
-  so the CLI prints that JSON and exits **1**.
+Without Full Disk Access granted to the *helper binary* (the resolved
+  `target/debug/focus-gopherd` path),
+  the CLI prints a `focus_permission_denied` `FocusState` and exits **1**.
+With it granted, the CLI prints the live `FocusState` and exits **0**
+  (`determined` outcome).
 
 If you are working on the wire protocol itself
   (changing what the helper sends or accepts),
@@ -66,3 +65,38 @@ If you are working on the wire protocol itself
 ```bash
 printf '{"op":"get_focus"}\n' | nc -U "$TMPDIR/focus-gopher.sock"
 ```
+
+## Developing Against the Live Focus Database
+
+The bulk of the test suite — including the fixture-driven parser tests in
+  [`tests/parsing.rs`](tests/parsing.rs) and the unit tests inside each module —
+  does **not** need Full Disk Access.
+Real captures live under [`tests/fixtures/`](tests/fixtures/)
+  (see [`tests/fixtures/FIXTURES.md`](tests/fixtures/FIXTURES.md)
+  for the inventory and the PII-scrubbing process).
+
+For live smoke testing — running the actual helper against your real
+  `~/Library/DoNotDisturb/DB/` — you need Full Disk Access. Two options:
+
+1. **Grant FDA to your terminal / IDE.**
+   On macOS, TCC attributes file access to the *responsible process*: when you
+   `cargo run` the helper from your terminal, the terminal is the responsible
+   process. Adding your terminal app to System Settings → Privacy & Security →
+   Full Disk Access lets the helper (and anything else you launch from that
+   terminal) read protected files without per-rebuild re-granting.
+   This is the simplest path, but it gives full disk access to *everything*
+   you run from that terminal — use it deliberately.
+
+2. **Use a self-signed local code-signing certificate.**
+   Without a stable signature the helper's TCC identity is its `cdhash`, which
+   changes on every rebuild and invalidates the FDA grant. A one-time Keychain
+   step lets you create a self-signed code-signing certificate and sign dev
+   builds with it (`codesign -s "<local cert>"`), giving the binary a stable
+   Designated Requirement and surviving rebuilds. This is the better long-term
+   workflow for LaunchAgent-attributed access (the next milestone) and is
+   described in the
+   [FDA / signing / distribution analysis](../design/analyses/2026-05-18-macos-fda-distribution-signing.md).
+
+The fixture-driven tests are the workflow you should reach for first — they
+  run on every PR (Linux and macOS CI), produce deterministic results, and
+  catch parser regressions without depending on host state.
