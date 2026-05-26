@@ -38,13 +38,13 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
 **In scope:**
 
 - Scaffold `macos-focus-gopher/` at the repo root: a Rust crate (the helper binary; the CLI binary is
-    stubbed in but not yet wired up) and the `.app` bundle packaging, a `mise.toml` exposing
+    stubbed in but not yet wired up), a `mise.toml` exposing
     `build` / `test` / `lint` / `dependencies:check` / `dependencies:update` / `ci`, wired into the
     root `mise.toml`, and CI invoking those Mise tasks.
 - Define the `FocusState` model, publish its versioned **JSON Schema**, and define the line-delimited
     JSON request/response protocol over a per-user Unix domain socket.
 - Implement `get_focus()` as a stub that returns a well-formed `FocusState`
-    (e.g. a `failed` outcome with `error: "macos_unsupported"`) without touching any database file.
+    (a `failed` outcome) without touching any database file.
 - Unit tests for `FocusState` encoding/decoding, JSON-Schema validation, and the socket round-trip.
 - Initial `README.md` (clearly marked early-development / not yet usable), an OSS `LICENSE` (MIT), and a
     `CONTRIBUTING.md` stub that points at the repository-root `CONTRIBUTING.md` and these design docs.

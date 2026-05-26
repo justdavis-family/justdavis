@@ -15,12 +15,30 @@ concurrency:
 
 jobs:
   ci:
-    name: CI
-    runs-on: ubuntu-latest
+    name: CI (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     env:
       MISE_EXPERIMENTAL: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v5
+      # Installs the mise-managed toolchain and tools, and caches the mise data
+      # dir (the Rust toolchain plus the compiled cargo-audit / cargo-outdated
+      # backend tools) so they are reused across runs instead of recompiled.
+      - uses: jdx/mise-action@v4
+      # rust-cache (below) keys on the `rustc` version, so the toolchain must be
+      # on PATH for it; surface the mise shims to subsequent steps explicitly.
+      - name: Expose mise tool shims to PATH
+        run: echo "${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims" >> "$GITHUB_PATH"
+      # Caches ~/.cargo (registry + git) and the workspace target/ dir. This is
+      # purely an external CI concern — mise tasks and local builds are untouched.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: macos-focus-gopher
+          cache-bin: 'false'
+          cache-on-failure: 'true'
       - name: Run CI
         run: mise run '//:ci'

@@ -43,6 +43,14 @@ Simple, clearly-scoped requirements that fit comfortably in one PR do not need a
 - **Human decisions recorded**: the plan captures choices about sequencing and scope
     that aren't obvious from the requirements themselves.
 
+## Referencing Milestones in Code and Docs
+
+Don't hard-code specific milestone identifiers (M2, M3, …) in code, comments, or project docs:
+  plans shift, so those references rot.
+See [`.claude/rules/delivery-milestones.md`](/.claude/rules/delivery-milestones.md) for the rule.
+The delivery plan and its milestone tracking issues are the single source of truth for the
+  milestone breakdown; link to them rather than restating it.
+
 ## Naming Convention
 
 See [../README.md](../README.md) for file naming conventions
