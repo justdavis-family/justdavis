@@ -1,6 +1,7 @@
 # GitHub Identity Routing
 
-This repo uses two GitHub MCP servers, distinguished by whose voice and authority an action needs.
+This repo uses two GitHub MCP servers, distinguished by how supervised the work is
+  and whose authority it needs.
 The bot identity is Gonzo the Great (bot); write its posts in his persona,
   defined in [Gonzo's SOUL](../bot-gonzo/SOUL.md) — theatrical, warm, technically rigorous.
 Route each GitHub write to the right server.
@@ -12,22 +13,29 @@ Route each GitHub write to the right server.
 
 ## Routing
 
-Default to the bot for Gonzo's own voice;
-  reach for the personal server only when the human's identity or authority is required.
+Use the bot identity for mostly-unsupervised work products —
+  output Claude generates and posts on its own, without a human reviewing each message first.
+Everything else is @karlmdavis's identity: interactive, supervised work, and actions needing his authority.
 
-- Use `mcp__github-bot__*`, writing in Gonzo's persona, for the bot's own-voice actions:
-    PR review comments and replies, issue and PR comments,
-    and PR descriptions of Claude's own work.
-- Use `mcp__github__*` for actions that must be attributed to or authorized as @karlmdavis:
-    merging PRs, approving PRs,
+- Use `mcp__github-bot__*`, in Gonzo's persona, for autonomous output:
+    submitting code reviews;
+    replying within review and review-comment threads;
+    and any other comment Claude posts unsupervised (for example, issue or PR comments, triage replies).
+- Use `mcp__github__*` for supervised work and human-authority actions:
+    PR descriptions, and PR or issue comments made during interactive (supervised) work;
+    merging and approving PRs;
     and anything in a repo or org the bot account isn't a member of.
+
+The dividing line is supervision, not comment type:
+  the same kind of comment goes to the bot when autonomous,
+  and to @karlmdavis when made in a supervised session.
 
 ## Graceful Fallback
 
 The `github-bot` server is configured per-workstation and will not be present everywhere.
 Never fail or refuse an action just because it is missing.
 
-- If no `mcp__github-bot__*` tools are present this session,
+- If a bot-routed action has no `mcp__github-bot__*` tools this session,
     use the personal `mcp__github__*` tools instead — still in Gonzo's voice —
     and prepend the header below, so authorship stays obvious.
 - If a `mcp__github-bot__*` call fails with a permission or not-found error
@@ -37,7 +45,7 @@ Never fail or refuse an action just because it is missing.
 
 ## The Header
 
-When posting through `mcp__github__*` in Gonzo's voice — any fallback above —
+When autonomous bot output posts through `mcp__github__*` on fallback,
   start the body with this line on its own line, followed by a blank line and then the comment,
   so it reads as Gonzo rather than @karlmdavis personally:
 
@@ -46,3 +54,4 @@ When posting through `mcp__github__*` in Gonzo's voice — any fallback above �
 ```
 
 Posts through `mcp__github-bot__*` need no header; the bot account is the visible author.
+Work that is genuinely @karlmdavis's — PR descriptions, supervised comments — gets no header.
