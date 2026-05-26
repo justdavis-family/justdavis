@@ -102,7 +102,7 @@ fn cli_help_includes_worked_examples() {
         String::from_utf8_lossy(&output.stderr),
     );
     let stdout = String::from_utf8(output.stdout).expect("--help output is UTF-8");
-    for needle in ["--socket-path", "Examples:", "focus-state.v1.schema.json"] {
+    for needle in ["--socket-path", "Examples:", "Exit codes:"] {
         assert!(
             stdout.contains(needle),
             "--help should contain `{needle}`; got: {stdout}",

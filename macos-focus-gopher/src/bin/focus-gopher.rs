@@ -57,10 +57,10 @@ Examples:
     echo \"exit $?: see stderr for details\" >&2
   fi
 
-The printed FocusState conforms to the published JSON Schema at
-`macos-focus-gopher/schema/focus-state.v1.schema.json`. This CLI is a thin
-client for the `focus-gopherd` helper daemon; see the project README for the
-socket protocol and helper installation.";
+The printed FocusState conforms to the project's published JSON Schema. See
+the project README for the schema, the socket protocol, and helper
+installation. This CLI is a thin client for the `focus-gopherd` helper
+daemon.";
 
 fn main() -> ExitCode {
     let args = Args::parse();
