@@ -99,6 +99,11 @@ fn incoherent_documents_are_rejected() {
         }),
         // missing the shared `macos_version`
         json!({ "macos_compatibility": "supported", "determined": { "focus_off": {} } }),
+        // a `macos_compatibility` value outside its `oneOf`
+        json!({
+            "macos_version": "15.5", "macos_compatibility": "invalid",
+            "determined": { "focus_off": {} }
+        }),
     ];
     for v in invalid {
         assert!(!validator.is_valid(&v), "expected rejected by schema: {v}");
