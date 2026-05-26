@@ -3,7 +3,7 @@
 //! macOS has no `XDG_RUNTIME_DIR`-style blessed per-user socket directory, and
 //! `sockaddr_un.sun_path` is capped (~104 bytes), so the helper places the socket
 //! directly in `$TMPDIR`: `$TMPDIR/focus-gopher.sock` (overridable with the
-//! `FOCUS_GOPHER_SOCKET` env var, which the tests use).
+//! `FOCUS_GOPHER_SOCKET` env var, whose precedence the path-resolution unit tests cover).
 //!
 //! Access control rests entirely on `$TMPDIR`'s semantics. On macOS it is the
 //! per-user, mode-`0700`, user-owned `confstr(_CS_DARWIN_USER_TEMP_DIR)` directory
