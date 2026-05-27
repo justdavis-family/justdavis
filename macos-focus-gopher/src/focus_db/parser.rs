@@ -22,9 +22,9 @@ use crate::model::Focus;
 #[derive(Debug, Error)]
 pub enum ParseFailure {
     /// A file's body is not valid JSON.
-    #[error("Focus database file {file:?} is not valid JSON: {source}")]
+    #[error("Focus database file {file} is not valid JSON: {source}")]
     Malformed {
-        /// Which file failed (`"Assertions.json"` or `"ModeConfigurations.json"`).
+        /// Which file failed (`Assertions.json` or `ModeConfigurations.json`).
         file: &'static str,
         /// Underlying serde error.
         #[source]

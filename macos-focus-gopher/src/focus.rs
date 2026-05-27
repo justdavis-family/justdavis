@@ -115,7 +115,7 @@ fn read_and_parse(canonical_exe: Option<&std::path::Path>) -> Outcome {
         Ok(focus) => Outcome::Determined(focus),
         Err(ParseFailure::Malformed { file, source }) => Outcome::Failed {
             error: ErrorCode::FocusDbMalformed,
-            message: format!("Focus database file {file:?} is not valid JSON: {source}"),
+            message: format!("Focus database file {file} is not valid JSON: {source}"),
         },
         Err(ParseFailure::SchemaUnknown { where_at }) => Outcome::Failed {
             error: ErrorCode::SchemaUnknown,
