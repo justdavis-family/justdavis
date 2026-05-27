@@ -33,9 +33,10 @@ Future milestones will add `12/`, `13/`, `14/`, `15/` as those majors are verifi
 
 Real captures are taken directly from `~/Library/DoNotDisturb/DB/`
   with the host's Focus state set to match the case.
-Synthesized fixtures are derived from a real capture by editing it
-  (truncating, replacing the body with an unrecognized shape, or
-  removing a matching mode entry).
+Synthesized fixtures are derived from a real capture (or hand-written as the
+  smallest possible body that exercises the target path):
+  truncating, swapping in a non-object JSON root, or removing a matching mode
+  entry from `ModeConfigurations.json`.
 
 ## PII scrubbing
 

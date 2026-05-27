@@ -80,6 +80,13 @@ fn parse_active_identifier(assertions: &str) -> Result<Option<String>, ParseFail
     //   - data[0], if present, must be an object.
     // A *missing* `data` (or empty `data` array, or `data[0]` lacking
     // `storeAssertionRecords`) is the "Focus off" state, not a schema error.
+    // A *non-object* root (array, string, number, null) is a schema error: the
+    // helper has lost its bearings and must say so explicitly rather than
+    // silently report "Focus off" — see "Fail Fast and Loud" and "Clear,
+    // Unambiguous Data Models" in `design/engineering-principles/`.
+    let root = root.as_object().ok_or(ParseFailure::SchemaUnknown {
+        where_at: "Assertions.json: root is not an object",
+    })?;
     let Some(data) = root.get("data") else {
         return Ok(None);
     };
@@ -228,12 +235,21 @@ mod tests {
 
     #[test]
     fn unrecognized_shape_returns_schema_unknown() {
+        // An object with no `data` key → focus_off (a missing key is the "off"
+        // state, not a schema error). This documents the rule.
         let result = parse_focus(r#"{"unexpected": "shape"}"#, EMPTY_CONFIGS);
-        // `data` is missing → focus_off (a missing key is the "off" state, not a
-        // schema error). This documents the rule.
         assert!(matches!(result, Ok(Focus::FocusOff {})));
 
-        // But a structurally-wrong `data` is a schema error.
+        // A non-object root is a schema error: the helper has lost its bearings.
+        for body in [r#"null"#, r#"[1,2,3]"#, r#""hello""#, r#"42"#] {
+            let result = parse_focus(body, EMPTY_CONFIGS);
+            assert!(
+                matches!(result, Err(ParseFailure::SchemaUnknown { .. })),
+                "expected SchemaUnknown for non-object root {body:?}, got {result:?}",
+            );
+        }
+
+        // A structurally-wrong `data` is a schema error.
         let result = parse_focus(r#"{"data": "not an array"}"#, EMPTY_CONFIGS);
         assert!(matches!(result, Err(ParseFailure::SchemaUnknown { .. })));
 

@@ -91,19 +91,20 @@ const SCHEMA_UNKNOWN_MODE_CONFIGURATIONS: &str =
     include_str!("fixtures/26/schema_unknown/ModeConfigurations.json");
 
 #[test]
-fn macos_26_schema_unknown_assertions_is_focus_off_when_data_missing() {
-    // The synthesized schema_unknown fixture has body `{"unexpected":"shape"}`,
-    // which has no `data` key. Per the parser's rules (documented in
-    // parser.rs), a missing `data` is the "off" state, not a schema error —
-    // schema errors are reserved for structurally-broken values (a non-array
-    // `data`, an assertion record without an identifier, etc.). This pins the
-    // rule against regression.
-    let focus = parse_focus(
+fn macos_26_schema_unknown_returns_schema_unknown() {
+    // The synthesized schema_unknown fixture is a non-object JSON root
+    // (`[1,2,3]`) — structurally legal JSON but not the shape `Assertions.json`
+    // is ever supposed to take. The parser must refuse to interpret it rather
+    // than silently report "Focus off"; see the "Fail Fast and Loud" and
+    // "Clear, Unambiguous Data Models" engineering principles.
+    let result = parse_focus(
         SCHEMA_UNKNOWN_ASSERTIONS,
         SCHEMA_UNKNOWN_MODE_CONFIGURATIONS,
-    )
-    .expect("schema_unknown should parse cleanly per the missing-data rule");
-    assert!(matches!(focus, Focus::FocusOff {}), "got {focus:?}");
+    );
+    assert!(
+        matches!(result, Err(ParseFailure::SchemaUnknown { .. })),
+        "expected SchemaUnknown, got {result:?}",
+    );
 }
 
 // --- name_unresolved ------------------------------------------------------
