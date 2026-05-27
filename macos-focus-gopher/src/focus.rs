@@ -106,7 +106,7 @@ fn read_and_parse(canonical_exe: Option<&std::path::Path>) -> Outcome {
         Err(ReadFailure::Unreadable { path, source }) => {
             return Outcome::Failed {
                 error: ErrorCode::FocusDbUnreadable,
-                message: format!("Focus database file {path:?} could not be read: {source}"),
+                message: format!("Focus database file {path} could not be read: {source}"),
             };
         }
     };
@@ -161,7 +161,7 @@ fn fda_message(canonical_exe: Option<&std::path::Path>) -> String {
     match canonical_exe {
         Some(path) => format!(
             "Full Disk Access is required to read the Focus database. \
-             Grant it to the Focus Gopher helper binary at {path:?} via \
+             Grant it to the Focus Gopher helper binary at {path} via \
              System Settings → Privacy & Security → Full Disk Access (deep link: {DEEP_LINK}). \
              On unsigned / build-from-source installs the grant is keyed to the binary's \
              cdhash and must be re-applied after every rebuild.",
@@ -216,6 +216,12 @@ mod tests {
         let with_path = fda_message(Some(std::path::Path::new(
             "/Applications/Focus.app/Contents/MacOS/focus-gopherd",
         )));
-        assert!(with_path.contains("/Applications/Focus.app"));
+        assert!(with_path.contains("/Applications/Focus.app/Contents/MacOS/focus-gopherd"));
+        // The path is meant for a user to copy-paste into System Settings, so
+        // it must not be wrapped in Debug-style double quotes.
+        assert!(
+            !with_path.contains("\"/Applications/Focus.app"),
+            "path must not be Debug-quoted in the message: {with_path}",
+        );
     }
 }
