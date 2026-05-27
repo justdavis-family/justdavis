@@ -78,8 +78,9 @@ The `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json` la
 
 > ### Schedule-triggered Foci on macOS 26 — a new finding
 >
-> While capturing M3 fixtures we observed that on macOS 26, a Focus activated by a *user-defined
->   schedule trigger* does **not** appear in any file under `~/Library/DoNotDisturb/DB/`.
+> While capturing fixtures for Focus Gopher's first parsing milestone we observed that on macOS 26,
+>   a Focus activated by a *user-defined schedule trigger* does **not** appear in any file under
+>   `~/Library/DoNotDisturb/DB/`.
 > `Assertions.json`'s `storeAssertionRecords` stays empty, `Settings.sqlite`'s Focus tables stay
 >   empty, and no preference plist or cache surfaces the active state.
 > The most likely explanation is that `donotdisturbd` keeps schedule-triggered state in memory

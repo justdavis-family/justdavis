@@ -15,8 +15,9 @@ fixtures/
 ```
 
 `<macos_major>` is the macOS major version the fixtures were captured from.
-M3 ships fixtures for `26/` only (the host that captured them, macOS 26 Tahoe).
-Future milestones will add `12/`, `13/`, `14/`, `15/` as those majors are verified;
+This milestone ships fixtures for `26/` only (the host that captured them,
+  macOS 26 Tahoe).
+Later milestones will add `12/`, `13/`, `14/`, `15/` as those majors are verified;
   see the
   [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md).
 
@@ -68,11 +69,11 @@ When a Focus is activated by a user-defined schedule trigger,
 The most likely explanation is that `donotdisturbd` keeps schedule-triggered
   state in memory and exposes it only via XPC.
 
-For this reason, M3 ships **without** a `scheduled_focus_on` fixture:
-  the parser path that handles a `storeAssertionRecord`
-  (used by `manual_focus_on_builtin` and `manual_focus_on_user`) is the same one a
-  schedule trigger would exercise on older macOS versions
-  where the format-stability analysis says scheduled assertions DO appear in
-  `Assertions.json`.
+For this reason, the current milestone ships **without** a
+  `scheduled_focus_on` fixture: the parser path that handles a
+  `storeAssertionRecord` (used by `manual_focus_on_builtin` and
+  `manual_focus_on_user`) is the same one a schedule trigger would exercise
+  on older macOS versions where the format-stability analysis says scheduled
+  assertions DO appear in `Assertions.json`.
 The macOS-26 schedule gap is tracked in the project issue tracker
-  and will be revisited after current milestones land.
+  and will be revisited later.

@@ -61,8 +61,8 @@ pub fn get_focus() -> FocusState {
     let compatibility = look_up_compatibility(&version);
 
     // Short-circuit when the version is explicitly marked unsupported.
-    // (Unreachable today — the M3 compatibility table contains no `Unsupported`
-    // entries — but it keeps the contract honest as the table grows.)
+    // (Unreachable today — the compatibility table contains no `Unsupported`
+    // entries yet — but it keeps the contract honest as the table grows.)
     if matches!(compatibility, MacosCompatibility::Unsupported) {
         return FocusState {
             macos_version: version,
