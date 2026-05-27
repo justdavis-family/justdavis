@@ -111,6 +111,11 @@ fn parse_active_identifier(assertions: &str) -> Result<Option<String>, ParseFail
     let records = records.as_array().ok_or(ParseFailure::SchemaUnknown {
         where_at: "Assertions.json: `storeAssertionRecords` is not an array",
     })?;
+    // Take the first record. macOS reports at most one active Focus and the
+    // engineering design treats the state as singular; if a future macOS were
+    // to emit multiple records (overlapping schedule + manual assertions),
+    // additional records are silently ignored here — that surfaces as the
+    // first record's name on the wire, never as a wrong result type.
     let Some(first) = records.first() else {
         return Ok(None);
     };
