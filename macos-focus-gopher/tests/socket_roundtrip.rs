@@ -24,7 +24,8 @@ fn client_receives_well_formed_focus_state_over_socket() {
     let state = client::get_focus(&path).unwrap();
     server.join().unwrap();
 
-    // The helper handed back the stubbed state...
+    // The CLI's reply matches a fresh `get_focus()` call (they both touch the
+    // same host state)...
     assert_eq!(state, get_focus());
 
     // ...and it validates against the published schema.
