@@ -139,6 +139,14 @@ fn parse_active_identifier(assertions: &str) -> Result<Option<String>, ParseFail
 ///
 /// Tries the built-in table first; falls back to `ModeConfigurations.json`'s
 /// `data[0].modeConfigurations[<id>].mode.name`.
+///
+/// The distinction between `SchemaUnknown` and `NameUnresolved` here mirrors
+/// the one in [`parse_active_identifier`]: a structurally broken file (wrong
+/// root type, `data` not an array, etc.) means we've lost our bearings →
+/// `SchemaUnknown`; a structurally fine file in which we successfully navigate
+/// the known path but the identifier or its nested `mode.name` is absent →
+/// `NameUnresolved`. Conflating them would hide "Apple changed the format"
+/// behind "we hit an unfamiliar identifier".
 fn resolve_name(identifier: &str, mode_configurations: &str) -> Result<String, ParseFailure> {
     if let Some(name) = builtin_name(identifier) {
         return Ok(name.to_string());
@@ -154,21 +162,47 @@ fn resolve_name(identifier: &str, mode_configurations: &str) -> Result<String, P
         source,
     })?;
 
-    // Navigate root.data[0].modeConfigurations[<id>].mode.name.
-    let name = root
-        .get("data")
-        .and_then(|v| v.as_array())
-        .and_then(|a| a.first())
-        .and_then(|v| v.get("modeConfigurations"))
-        .and_then(|v| v.get(identifier))
-        .and_then(|v| v.get("mode"))
+    // Walk root.data[0].modeConfigurations.<id>.mode.name, distinguishing
+    // structural failures (SchemaUnknown) from "identifier just isn't there"
+    // (NameUnresolved).
+    let root = root.as_object().ok_or(ParseFailure::SchemaUnknown {
+        where_at: "ModeConfigurations.json: root is not an object",
+    })?;
+    let Some(data) = root.get("data") else {
+        return Err(ParseFailure::NameUnresolved(identifier.to_string()));
+    };
+    let data = data.as_array().ok_or(ParseFailure::SchemaUnknown {
+        where_at: "ModeConfigurations.json: `data` is not an array",
+    })?;
+    let Some(first) = data.first() else {
+        return Err(ParseFailure::NameUnresolved(identifier.to_string()));
+    };
+    let first = first.as_object().ok_or(ParseFailure::SchemaUnknown {
+        where_at: "ModeConfigurations.json: `data[0]` is not an object",
+    })?;
+    let Some(mode_configs) = first.get("modeConfigurations") else {
+        return Err(ParseFailure::NameUnresolved(identifier.to_string()));
+    };
+    let mode_configs = mode_configs
+        .as_object()
+        .ok_or(ParseFailure::SchemaUnknown {
+            where_at: "ModeConfigurations.json: `data[0].modeConfigurations` is not an object",
+        })?;
+    let Some(entry) = mode_configs.get(identifier) else {
+        return Err(ParseFailure::NameUnresolved(identifier.to_string()));
+    };
+    // The entry for an identifier is present; from here every missing piece is
+    // a schema failure, not name-unresolution — we've already found the
+    // identifier we were looking for.
+    let name = entry
+        .get("mode")
         .and_then(|v| v.get("name"))
-        .and_then(|v| v.as_str());
-
-    match name {
-        Some(name) => Ok(name.to_string()),
-        None => Err(ParseFailure::NameUnresolved(identifier.to_string())),
-    }
+        .and_then(|v| v.as_str())
+        .ok_or(ParseFailure::SchemaUnknown {
+            where_at: "ModeConfigurations.json: \
+                       `data[0].modeConfigurations[id].mode.name` missing or not a string",
+        })?;
+    Ok(name.to_string())
 }
 
 #[cfg(test)]
@@ -295,5 +329,46 @@ mod tests {
             }
             other => panic!("expected NameUnresolved, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn mode_configurations_with_broken_root_is_schema_unknown() {
+        // Active identifier is set so the parser actually consults
+        // `ModeConfigurations.json` (built-in lookup would short-circuit).
+        let assertions = r#"{"data":[{"storeAssertionRecords":[{"assertionDetails":{"assertionDetailsModeIdentifier":"com.example.user-focus"}}]}]}"#;
+
+        // Non-object roots — same fail-loud rule as Assertions.json.
+        for body in [r#"null"#, r#"[1,2,3]"#, r#""hello""#, r#"42"#] {
+            let result = parse_focus(assertions, body);
+            assert!(
+                matches!(result, Err(ParseFailure::SchemaUnknown { .. })),
+                "expected SchemaUnknown for non-object ModeConfigurations root {body:?}, got {result:?}",
+            );
+        }
+
+        // Structurally-broken `data` / `data[0]` / `modeConfigurations`.
+        for body in [
+            r#"{"data": "not an array"}"#,
+            r#"{"data": ["not an object"]}"#,
+            r#"{"data": [{"modeConfigurations": "not an object"}]}"#,
+        ] {
+            let result = parse_focus(assertions, body);
+            assert!(
+                matches!(result, Err(ParseFailure::SchemaUnknown { .. })),
+                "expected SchemaUnknown for body {body:?}, got {result:?}",
+            );
+        }
+
+        // Identifier *is* present but the nested `mode.name` is missing —
+        // schema error, not name-unresolution (we already found the
+        // identifier in the modeConfigurations map).
+        let result = parse_focus(
+            assertions,
+            r#"{"data":[{"modeConfigurations":{"com.example.user-focus":{"mode":{}}}}]}"#,
+        );
+        assert!(
+            matches!(result, Err(ParseFailure::SchemaUnknown { .. })),
+            "expected SchemaUnknown for mode.name missing, got {result:?}",
+        );
     }
 }
