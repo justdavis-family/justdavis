@@ -36,7 +36,7 @@ pub fn get_focus() -> FocusState {
         Ok(v) => v,
         Err(VersionDetectError::NotMacos) => {
             return FocusState {
-                macos_version: "0.0".to_string(),
+                macos_version: "unknown".to_string(),
                 macos_compatibility: MacosCompatibility::Unsupported,
                 outcome: Outcome::Failed {
                     error: ErrorCode::MacosUnsupported,
@@ -46,7 +46,7 @@ pub fn get_focus() -> FocusState {
         }
         Err(e) => {
             return FocusState {
-                macos_version: "0.0".to_string(),
+                macos_version: "unknown".to_string(),
                 macos_compatibility: MacosCompatibility::Unknown {
                     message: "Focus Gopher could not detect the running macOS version.".to_string(),
                 },

@@ -14,7 +14,12 @@ use serde::{Deserialize, Serialize};
 /// `failed`) appears at the top level alongside the shared metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FocusState {
-    /// The detected macOS version, e.g. `"15.5"`.
+    /// The detected macOS version, e.g. `"15.5"`. The literal string
+    /// `"unknown"` is returned when detection itself failed (e.g. running on a
+    /// non-macOS target); consumers should treat the value as a free-form
+    /// label, not parse it as a version number — the
+    /// [`macos_compatibility`](Self::macos_compatibility) field is the
+    /// authoritative signal for whether the version is on the supported list.
     pub macos_version: String,
     pub macos_compatibility: MacosCompatibility,
     #[serde(flatten)]
