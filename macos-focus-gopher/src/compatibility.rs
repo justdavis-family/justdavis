@@ -10,7 +10,8 @@
 //! Today the table is keyed by **major** version.
 //! A `Supported` verdict for, say, `"26.4.1"` and `"26.5"` reflects
 //! that the parser has been empirically verified against *at least one* point release
-//! within macOS 26 (specifically 26.4.1 in the test fixtures, plus live e2e against 26.5),
+//! within macOS 26 — specifically 26.4.1 (the version of the committed test fixtures)
+//! and 26.5 (live e2e on the development host) —
 //! and that the project is choosing to optimistically extend the same verdict
 //! to other 26.x point releases.
 //! It is **not** a promise that every 26.x release will work.
@@ -70,7 +71,7 @@ mod tests {
 
     #[test]
     fn macos_26_point_releases_are_supported() {
-        for v in ["26.0", "26.1", "26.4.1", "26"] {
+        for v in ["26.0", "26.1", "26.4.1", "26.5", "26"] {
             assert!(
                 matches!(look_up_compatibility(v), MacosCompatibility::Supported),
                 "expected Supported for {v}"

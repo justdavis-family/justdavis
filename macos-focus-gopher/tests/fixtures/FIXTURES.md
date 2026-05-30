@@ -15,8 +15,10 @@ fixtures/
 ```
 
 `<macos_major>` is the macOS major version the fixtures were captured from.
-This milestone ships fixtures for `26/` only (the host that captured them,
-  macOS 26 Tahoe).
+The current set ships fixtures for `26/` only:
+  the `26/` captures were taken on macOS 26.4.1.
+The parser has also been live-verified on macOS 26.5 without recapturing
+  — the committed 26.4.1 captures continue to exercise the same format and code paths.
 Later milestones will add `12/`, `13/`, `14/`, `15/` as those majors are verified;
   see the
   [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md).

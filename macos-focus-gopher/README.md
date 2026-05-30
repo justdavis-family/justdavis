@@ -100,8 +100,8 @@ With FDA granted (see the next section), the reply is a `determined` `FocusState
 
 ## Compatibility
 
-Focus Gopher's parser has been verified against **macOS 26.4.1** (committed test fixtures),
-  with additional live exercise against macOS 26.5 during development.
+Focus Gopher's parser has been verified against **macOS 26.4.1** (committed test fixtures)
+  and **macOS 26.5** (live e2e on the development host).
 The wildcard `26.*` is granted as an *optimistic hint*:
   it means at least one point release within macOS 26 has been verified,
   not that every 26.x release is guaranteed to work —

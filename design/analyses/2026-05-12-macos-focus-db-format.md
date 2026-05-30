@@ -64,11 +64,16 @@ Caveats the same sources surface, which a robust parser must handle:
 - The format is still **undocumented and unsupported by Apple**; nothing prevents a future macOS
     release from changing it.
 
-**macOS 26.4.1 has been verified against real captured fixtures** committed to the Focus Gopher
-  codebase
+**macOS 26.4.1 and macOS 26.5 have both been verified** against the Focus Gopher parser.
+The committed test fixtures
   (see [`macos-focus-gopher/tests/fixtures/26/`](../../macos-focus-gopher/tests/fixtures/) and
-  [`FIXTURES.md`](../../macos-focus-gopher/tests/fixtures/FIXTURES.md));
-  the same parser has additionally been exercised live against macOS 26.5 during development.
+  [`FIXTURES.md`](../../macos-focus-gopher/tests/fixtures/FIXTURES.md))
+  were captured on macOS 26.4.1, which is the version `tests/parsing.rs` exercises.
+On macOS 26.5, the parser has additionally been verified via live e2e
+  of four manual-Focus scenarios:
+  no Focus active (`focus_off`), a built-in Focus active (Do Not Disturb, Work),
+  a user-created Focus active (resolved via `ModeConfigurations.json` name lookup),
+  and the back-to-no-Focus transition.
 No other macOS 26 point release has been independently verified in this codebase,
   and — per the bullet above —
   Apple may change the private format in any point release within a major,
@@ -145,7 +150,8 @@ The compromise this project takes:
       in this codebase.
 - macOS **11 and earlier** are out of scope (different mechanism).
 - macOS **26 Tahoe** has been verified for the manual-activation path at 26.4.1
-    (see the paragraph at the end of section 2);
+    (committed fixtures) and at 26.5 (live e2e on the development host;
+    see the paragraph at the end of section 2);
     the `26.*` wildcard is granted on the above optimistic-compromise basis.
     The schedule-triggered case is a known gap (see the inset above);
     detection when it lands will not change the compatibility status.
