@@ -64,17 +64,26 @@ Caveats the same sources surface, which a robust parser must handle:
 - The format is still **undocumented and unsupported by Apple**; nothing prevents a future macOS
     release from changing it.
 
-**macOS 26 Tahoe has now been verified against real captured fixtures** in the Focus Gopher
-  codebase (see
-  [`macos-focus-gopher/tests/fixtures/26/`](../../macos-focus-gopher/tests/fixtures/) and
-  [`FIXTURES.md`](../../macos-focus-gopher/tests/fixtures/FIXTURES.md)).
-The `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json` layout matches
-  the macOS 12–15 community reports for manual Focus activation: a manually-toggled Focus
-  appears as a `storeAssertionRecords[0].assertionDetails.assertionDetailsModeIdentifier`
-  entry in `Assertions.json`, and `ModeConfigurations.json` is a `data[0].modeConfigurations`
-  map keyed by **mode identifier** (e.g. `com.apple.focus.work`, *not* a UUID — the analysis
-  previously described it as UUID-keyed; that was incorrect for at least macOS 26, and likely
-  for the earlier majors too).
+**macOS 26.4.1 has been verified against real captured fixtures** committed to the Focus Gopher
+  codebase
+  (see [`macos-focus-gopher/tests/fixtures/26/`](../../macos-focus-gopher/tests/fixtures/) and
+  [`FIXTURES.md`](../../macos-focus-gopher/tests/fixtures/FIXTURES.md));
+  the same parser has additionally been exercised live against macOS 26.5 during development.
+No other macOS 26 point release has been independently verified in this codebase,
+  and — per the bullet above —
+  Apple may change the private format in any point release within a major,
+  so claims about "macOS 26 as a series" should not be inferred from these verifications.
+The layout observed on 26.4.1 matches the structure reported by community tools
+  running on individual point releases of macOS 12 Monterey, 13 Ventura, 14 Sonoma,
+  and 15 Sequoia (see the citations in section 2):
+  a manually-toggled Focus appears as a
+  `storeAssertionRecords[0].assertionDetails.assertionDetailsModeIdentifier`
+  entry in `Assertions.json`,
+  and `ModeConfigurations.json` is a `data[0].modeConfigurations` map keyed by **mode identifier**
+  (e.g. `com.apple.focus.work`, *not* a UUID
+  — the analysis previously described it as UUID-keyed;
+  that was incorrect for at least macOS 26.4.1,
+  and likely for the earlier majors too based on the community-report wording).
 
 > ### Schedule-triggered Foci on macOS 26 — a new finding
 >
@@ -99,30 +108,57 @@ The `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json` la
 
 ### 3. Specific point releases vs. major-version wildcards
 
-Because the format is undocumented, the conservative default is to claim support only for versions we
-  have actually exercised. However, the evidence above is strong enough that the *major-version*
-  granularity is a reasonable unit for macOS 12–15: the layout has survived four major releases of
-  active community use without a breaking change, and Apple has shown no sign of reworking it.
+Because the format is private and undocumented,
+  Apple can change it in any point release within a major version.
+The conservative position is therefore to claim support only for the exact point releases
+  we have empirically exercised — never broader.
 
-Recommendation:
+That position has real costs at the scale of macOS's release cadence.
+A modern macOS major ships roughly 10–15 distinct point versions over its active-support window
+  (e.g. `14.0` through `14.7.x`,
+    where each `.x` may also get one or more patch releases such as `14.4.1`),
+  plus several more during extended security support after the next major takes over.
+Requiring exact-version match means every contributor must reverify on their own version,
+  and most users see `unknown` until the table catches up.
 
-- The compatibility table is **keyed by macOS version string**, and an entry may be either a specific
-    point release (e.g. `15.5`) or a major-version wildcard (e.g. `15.*`).
-- A **major-version wildcard entry is allowed only when** (a) this analysis (or a future update to it)
-    finds the format stable for that major, and (b) the helper's parser has been verified against at
-    least one *current* point release of that major. On that basis, `12.*`–`15.*` are reasonable
-    `supported` entries once verified.
+The compromise this project takes:
+
+- The compatibility table is **keyed by macOS version string**,
+    and an entry may be either a specific point release (e.g. `15.5`)
+    or a major-version wildcard (e.g. `15.*`).
+- A **major-version wildcard entry** is an *optimistic hint*, not a guarantee.
+  Interpreted explicitly:
+    "the parser has been empirically verified against at least one point release within this major,
+      and we have no specific reason to suspect Apple changed the format mid-major,
+      so we extend the `supported` verdict to other point releases in the same major."
+  If Apple has changed the format in a point release we have not verified,
+    the parser will fail loudly at runtime
+    and the wire outcome
+    (`failed: focus_db_malformed`, `failed: schema_unknown`, etc.)
+    is the actual ground truth about whether parsing succeeded.
+  The `macos_compatibility` field is advisory and intended for host-telemetry callers,
+    not for gating behavior.
+- A wildcard entry is only granted when both
+    (a) this analysis (or a future update to it) finds the format stable in community use
+      for that major,
+    and (b) the helper's parser has been verified against at least one point release of that major
+      in this codebase.
 - macOS **11 and earlier** are out of scope (different mechanism).
-- macOS **26 Tahoe** has been verified for the manual-activation path (see above) and is on the
-    supported list. The schedule-triggered case is a known gap (see the inset above); detection
-    when it lands will not change the compatibility status.
-- macOS **27 and later** start as `unknown until tested`; they are reported with the
-    `unknown` compatibility variant (carrying a "please report whether this version works" message)
-    until added to the table — whether parsing actually worked is conveyed by the result's outcome, not
-    the compatibility field.
+- macOS **26 Tahoe** has been verified for the manual-activation path at 26.4.1
+    (see the paragraph at the end of section 2);
+    the `26.*` wildcard is granted on the above optimistic-compromise basis.
+    The schedule-triggered case is a known gap (see the inset above);
+    detection when it lands will not change the compatibility status.
+- macOS **12 Monterey** through **15 Sequoia** are not yet verified in this codebase
+    and currently report `unknown`;
+    they would be reasonable `supported` entries once at least one contributor verifies each.
+- macOS **27 and later** start as `unknown until tested`;
+    they are reported with the `unknown` compatibility variant
+    (carrying a "please report whether this version works" message)
+    until added to the table.
 
-This analysis should be revisited whenever a new major macOS release ships, or whenever the parser
-  encounters a `schema_unknown` failure in the field.
+This analysis should be revisited whenever a new major macOS release ships,
+  or whenever the parser encounters a `schema_unknown` or `focus_db_malformed` failure in the field.
 
 ## References
 

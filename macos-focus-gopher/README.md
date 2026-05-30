@@ -100,13 +100,23 @@ With FDA granted (see the next section), the reply is a `determined` `FocusState
 
 ## Compatibility
 
-Focus Gopher's parser is verified against **macOS 26 (Tahoe)**.
-The format-stability analysis identifies macOS 12 (Monterey) through 15 (Sequoia) as
-  format-stable candidates for support; they are not yet verified in this codebase and
-  currently report `macos_compatibility: unknown`.
-Any macOS version not yet on the verified list returns the `unknown` compatibility
-  variant with a message inviting an issue; whether parsing actually worked is conveyed by
-  the outcome (`determined` or `failed`), independent of the compatibility field.
+Focus Gopher's parser has been verified against **macOS 26.4.1** (committed test fixtures),
+  with additional live exercise against macOS 26.5 during development.
+The wildcard `26.*` is granted as an *optimistic hint*:
+  it means at least one point release within macOS 26 has been verified,
+  not that every 26.x release is guaranteed to work —
+  Apple can change the private Focus-DB format in any point release.
+The [format-stability analysis](../design/analyses/2026-05-12-macos-focus-db-format.md)
+  (section 3) details the rationale and scope of the major-wildcard compromise.
+
+The same analysis identifies macOS 12 (Monterey) through 15 (Sequoia) as candidates for similar
+  in-codebase verification;
+  they are not yet on the wildcard list and currently report `macos_compatibility: unknown`.
+Any macOS version not on the list returns the `unknown` compatibility variant
+  with a message inviting an issue.
+Whether parsing actually worked is conveyed by the outcome (`determined` or `failed`),
+  independent of the compatibility field — that is the actual ground truth;
+  `macos_compatibility` is advisory.
 
 > ### Known macOS 26 limitation: schedule-triggered Foci
 >

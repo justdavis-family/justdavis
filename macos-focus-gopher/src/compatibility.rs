@@ -1,20 +1,44 @@
 //! Look up a macOS version in the helper's compatibility table.
 //!
-//! The table is keyed by major version. Today it ships with macOS 26 (Tahoe)
-//! verified against real captured fixtures; the format-stability analysis
-//! identifies macOS 12–15 as candidates for inclusion once they have been
-//! verified in this codebase. Any version not in the table is reported as
-//! `Unknown` with a "please file an issue" message — the outcome's
-//! `Determined`/`Failed` field still conveys whether parsing actually worked.
+//! # What `Supported` actually means here
 //!
-//! See `design/analyses/2026-05-12-macos-focus-db-format.md` for the rationale.
+//! The compatibility verdict (`Supported` / `Unknown` / `Unsupported`)
+//! is an **advisory hint**, not a guarantee that parsing will succeed.
+//! macOS's Focus database is private, undocumented plumbing,
+//! and Apple can change its format in any point release within a major version.
+//!
+//! Today the table is keyed by **major** version.
+//! A `Supported` verdict for, say, `"26.4.1"` and `"26.5"` reflects
+//! that the parser has been empirically verified against *at least one* point release
+//! within macOS 26 (specifically 26.4.1 in the test fixtures, plus live e2e against 26.5),
+//! and that the project is choosing to optimistically extend the same verdict
+//! to other 26.x point releases.
+//! It is **not** a promise that every 26.x release will work.
+//! If Apple has changed the format in a point release we have not verified,
+//! the parser fails loudly at runtime and the call returns one of the `Failed` outcomes
+//! (`focus_db_malformed`, `schema_unknown`, etc.).
+//! Those `Determined` / `Failed` outcomes from `get_focus()` are the actual ground truth
+//! about whether parsing succeeded;
+//! `macos_compatibility` is just a hint for callers reading host telemetry,
+//! not a gate they should branch on.
+//!
+//! Any version not in the table is reported as `Unknown`
+//! with a "please file an issue" message,
+//! so contributors can grow the table as new versions are verified.
+//!
+//! See `design/analyses/2026-05-12-macos-focus-db-format.md` (section 3)
+//! for the rationale behind the major-version-wildcard compromise,
+//! including the explicit acknowledgement that it is a calculated optimism.
 
 use crate::model::MacosCompatibility;
 
 /// Look up a version string (e.g. `"26.4.1"`) in the compatibility table.
 ///
-/// The lookup is by **major** component only — point releases within a verified
-/// major share the same verdict.
+/// The lookup is by **major** component only.
+/// This is an optimization: returning `Supported` for `"26.4.1"`, `"26.5"`, `"26.0.1"`, etc.
+/// from a single table entry avoids requiring every contributor to reverify every point release.
+/// It is **not** a guarantee that the format is stable across point releases within a major
+/// — see the module-level documentation for what `Supported` actually conveys.
 pub fn look_up_compatibility(version: &str) -> MacosCompatibility {
     match major(version) {
         Some("26") => MacosCompatibility::Supported,
