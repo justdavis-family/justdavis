@@ -63,9 +63,9 @@ The real captures were scrubbed before commit:
     they are stable Apple identifiers, not personal data.
 - Timestamps are left as-is — they are not identifying on their own.
 
-## Known limitation on macOS 26 (Tahoe)
+## Known limitation observed on macOS 26.4.1
 
-When a Focus is activated by a user-defined schedule trigger,
+When a Focus is activated by a user-defined schedule trigger on macOS 26.4.1,
   no file under `~/Library/DoNotDisturb/DB/` reflects the active state:
   `Assertions.json`'s `storeAssertionRecords` array remains empty,
     `Settings.sqlite`'s Focus tables stay empty,
@@ -74,11 +74,15 @@ When a Focus is activated by a user-defined schedule trigger,
 The most likely explanation is that `donotdisturbd` keeps schedule-triggered
   state in memory and exposes it only via XPC.
 
-For this reason, the current milestone ships **without** a
+This gap has not been separately re-tested on other macOS 26 point releases;
+  it is plausible the behavior is the same on (e.g.) 26.5,
+  but we do not currently have positive or negative evidence either way.
+
+For this reason, the current fixture set ships **without** a
   `scheduled_focus_on` fixture: the parser path that handles a
   `storeAssertionRecord` (used by `manual_focus_on_builtin` and
   `manual_focus_on_user`) is the same one a schedule trigger would exercise
   on older macOS versions where the format-stability analysis says scheduled
   assertions DO appear in `Assertions.json`.
-The macOS-26 schedule gap is tracked in the project issue tracker
-  and will be revisited later.
+The schedule-trigger gap observed on 26.4.1 is tracked in the project issue
+  tracker and will be revisited later.

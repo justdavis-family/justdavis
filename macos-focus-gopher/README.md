@@ -126,13 +126,17 @@ See the [format-stability analysis](../design/analyses/2026-05-12-macos-focus-db
   (section 3) for the policy rationale and the work item of growing the verified list
   as contributors verify additional versions.
 
-> ### Known macOS 26 limitation: schedule-triggered Foci
+> ### Known limitation observed on macOS 26.4.1: schedule-triggered Foci
 >
-> When a Focus is activated by a user-defined schedule trigger on macOS 26, no file under
->   `~/Library/DoNotDisturb/DB/` reflects the active state — `donotdisturbd` keeps that
->   information in memory. Focus Gopher will currently report `focus_off` in that case.
+> When a Focus is activated by a user-defined schedule trigger on macOS 26.4.1,
+>   no file under `~/Library/DoNotDisturb/DB/` reflects the active state —
+>   `donotdisturbd` keeps that information in memory.
+> Focus Gopher reports `focus_off` in that case.
 > Manually-toggled Foci (built-in or user-created) are detected correctly.
-> Tracking the gap and an investigation plan: see the
+> This gap has not been separately re-tested on other macOS 26 point releases;
+>   if you see a schedule-triggered Focus correctly detected on a different version,
+>   please file an issue with the macOS version so we can update the analysis.
+> Tracking and investigation plan: see the
 >   [project issue tracker](https://github.com/justdavis-family/justdavis/issues?q=is%3Aissue+focus+gopher+schedule).
 
 ## Granting Full Disk Access
@@ -189,7 +193,7 @@ Today the project ships the **contract** (the wire model, JSON Schema, socket pr
   the thin `focus-gopher` CLI that speaks it, and **real read-only Focus parsing** verified
   against macOS 26.4.1 and 26.5.
 What broadly follows: build-from-source packaging and distribution (Homebrew formula + cargo
-  install + a per-user LaunchAgent), then compatibility breadth (the rest of macOS 12–15) and
+  install + a per-user LaunchAgent), then compatibility breadth (macOS 12–15) and
   the agent ecosystem, and finally an optional signed-distribution channel.
 
 The authoritative, evolving breakdown — sequence, scope, and status — lives in the

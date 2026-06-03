@@ -90,11 +90,11 @@ The layout observed on 26.4.1 matches the structure reported by community tools
   that was incorrect for at least macOS 26.4.1,
   and likely for the earlier majors too based on the community-report wording).
 
-> ### Schedule-triggered Foci on macOS 26 — a new finding
+> ### Schedule-triggered Foci on macOS 26.4.1 — a new finding
 >
-> While capturing fixtures for Focus Gopher's first parsing milestone we observed that on macOS 26,
->   a Focus activated by a *user-defined schedule trigger* does **not** appear in any file under
->   `~/Library/DoNotDisturb/DB/`.
+> While capturing fixtures for Focus Gopher's first parsing milestone we observed that on
+>   macOS 26.4.1, a Focus activated by a *user-defined schedule trigger* does **not** appear
+>   in any file under `~/Library/DoNotDisturb/DB/`.
 > `Assertions.json`'s `storeAssertionRecords` stays empty, `Settings.sqlite`'s Focus tables stay
 >   empty, and no preference plist or cache surfaces the active state.
 > The most likely explanation is that `donotdisturbd` keeps schedule-triggered state in memory
@@ -102,14 +102,20 @@ The layout observed on 26.4.1 matches the structure reported by community tools
 >
 > This contradicts the section above's expectation
 >   ("manually-toggled Focus vs. schedule/automation-activated Focus appear in different files
->   (`Assertions.json` vs. a trigger state in `ModeConfigurations.json`)") in the macOS 26 case:
+>   (`Assertions.json` vs. a trigger state in `ModeConfigurations.json`)") in the macOS 26.4.1 case:
 >   `ModeConfigurations.json`'s `triggers[].enabledSetting` is a configuration value, not a
 >   runtime state.
-> Whether earlier majors (12–15) still write schedule-activated assertions to
->   `Assertions.json` (per the historical community reports) needs separate verification.
 >
-> File-based detection of schedule-triggered Foci on macOS 26 is therefore a known gap; the
->   manual-activation path works correctly. The gap is tracked in the project issue tracker.
+> Other macOS 26 point releases have not been separately re-tested for this gap.
+> Per the per-version policy in section 3,
+>   the finding should not be generalized to "macOS 26 as a series" without re-verification
+>   on the additional point releases.
+> Whether earlier majors (12–15) still write schedule-activated assertions to
+>   `Assertions.json` (per the historical community reports) also needs separate verification.
+>
+> File-based detection of schedule-triggered Foci on the macOS 26.4.1 host we observed is
+>   therefore a known gap; the manual-activation path works correctly.
+> The gap is tracked in the project issue tracker.
 
 ### 3. Compatibility table policy: per-verified-version, not major-wildcard
 
