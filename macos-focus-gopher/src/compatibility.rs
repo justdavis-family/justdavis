@@ -57,10 +57,11 @@ pub fn look_up_compatibility(version: &str) -> MacosCompatibility {
 /// Build the `Unknown` message for `version`, enriching it with sibling-major context
 /// when at least one verified version shares the same major component.
 fn unknown_message(version: &str) -> String {
-    let siblings: Vec<&&str> = match major(version) {
+    let siblings: Vec<&str> = match major(version) {
         Some(m) => VERIFIED_VERSIONS
             .iter()
             .filter(|v| major(v) == Some(m))
+            .copied()
             .collect(),
         None => Vec::new(),
     };
