@@ -209,16 +209,16 @@ fn resolve_name(identifier: &str, mode_configurations: &str) -> Result<String, P
 mod tests {
     use super::*;
 
-    const EMPTY_CONFIGS: &str = "{}";
+    const NO_MODE_CONFIGS: &str = "{}";
 
     #[test]
     fn empty_body_is_focus_off() {
         assert!(matches!(
-            parse_focus("", EMPTY_CONFIGS),
+            parse_focus("", NO_MODE_CONFIGS),
             Ok(Focus::FocusOff {})
         ));
         assert!(matches!(
-            parse_focus("   \n\t", EMPTY_CONFIGS),
+            parse_focus("   \n\t", NO_MODE_CONFIGS),
             Ok(Focus::FocusOff {})
         ));
     }
@@ -226,7 +226,7 @@ mod tests {
     #[test]
     fn empty_object_is_focus_off() {
         assert!(matches!(
-            parse_focus("{}", EMPTY_CONFIGS),
+            parse_focus("{}", NO_MODE_CONFIGS),
             Ok(Focus::FocusOff {})
         ));
     }
@@ -234,7 +234,7 @@ mod tests {
     #[test]
     fn empty_data_array_is_focus_off() {
         assert!(matches!(
-            parse_focus(r#"{"data": []}"#, EMPTY_CONFIGS),
+            parse_focus(r#"{"data": []}"#, NO_MODE_CONFIGS),
             Ok(Focus::FocusOff {})
         ));
     }
@@ -244,7 +244,7 @@ mod tests {
         assert!(matches!(
             parse_focus(
                 r#"{"data": [{"storeInvalidationRecords": []}]}"#,
-                EMPTY_CONFIGS
+                NO_MODE_CONFIGS
             ),
             Ok(Focus::FocusOff {})
         ));
@@ -255,7 +255,7 @@ mod tests {
         assert!(matches!(
             parse_focus(
                 r#"{"data": [{"storeAssertionRecords": []}]}"#,
-                EMPTY_CONFIGS
+                NO_MODE_CONFIGS
             ),
             Ok(Focus::FocusOff {})
         ));
@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn malformed_assertions_returns_malformed() {
-        let result = parse_focus(r#"{"not json"#, EMPTY_CONFIGS);
+        let result = parse_focus(r#"{"not json"#, NO_MODE_CONFIGS);
         match result {
             Err(ParseFailure::Malformed { file, .. }) => {
                 assert_eq!(file, "Assertions.json");
@@ -276,12 +276,12 @@ mod tests {
     fn unrecognized_shape_returns_schema_unknown() {
         // An object with no `data` key → focus_off (a missing key is the "off"
         // state, not a schema error). This documents the rule.
-        let result = parse_focus(r#"{"unexpected": "shape"}"#, EMPTY_CONFIGS);
+        let result = parse_focus(r#"{"unexpected": "shape"}"#, NO_MODE_CONFIGS);
         assert!(matches!(result, Ok(Focus::FocusOff {})));
 
         // A non-object root is a schema error: the helper has lost its bearings.
         for body in [r#"null"#, r#"[1,2,3]"#, r#""hello""#, r#"42"#] {
-            let result = parse_focus(body, EMPTY_CONFIGS);
+            let result = parse_focus(body, NO_MODE_CONFIGS);
             assert!(
                 matches!(result, Err(ParseFailure::SchemaUnknown { .. })),
                 "expected SchemaUnknown for non-object root {body:?}, got {result:?}",
@@ -289,13 +289,13 @@ mod tests {
         }
 
         // A structurally-wrong `data` is a schema error.
-        let result = parse_focus(r#"{"data": "not an array"}"#, EMPTY_CONFIGS);
+        let result = parse_focus(r#"{"data": "not an array"}"#, NO_MODE_CONFIGS);
         assert!(matches!(result, Err(ParseFailure::SchemaUnknown { .. })));
 
         // …and so is an assertion record without an identifier.
         let result = parse_focus(
             r#"{"data": [{"storeAssertionRecords": [{"assertionDetails": {}}]}]}"#,
-            EMPTY_CONFIGS,
+            NO_MODE_CONFIGS,
         );
         assert!(matches!(result, Err(ParseFailure::SchemaUnknown { .. })));
     }
@@ -304,7 +304,7 @@ mod tests {
     fn builtin_identifier_resolves_without_mode_configurations() {
         // `ModeConfigurations.json` is empty, but the built-in table covers DND.
         let assertions = r#"{"data":[{"storeAssertionRecords":[{"assertionDetails":{"assertionDetailsModeIdentifier":"com.apple.donotdisturb.mode.default"}}]}]}"#;
-        match parse_focus(assertions, EMPTY_CONFIGS) {
+        match parse_focus(assertions, NO_MODE_CONFIGS) {
             Ok(Focus::FocusOn { name }) => assert_eq!(name, "Do Not Disturb"),
             other => panic!("expected FocusOn(Do Not Disturb), got {other:?}"),
         }
@@ -323,7 +323,7 @@ mod tests {
     #[test]
     fn unknown_identifier_returns_name_unresolved() {
         let assertions = r#"{"data":[{"storeAssertionRecords":[{"assertionDetails":{"assertionDetailsModeIdentifier":"com.example.unknown-mode"}}]}]}"#;
-        match parse_focus(assertions, EMPTY_CONFIGS) {
+        match parse_focus(assertions, NO_MODE_CONFIGS) {
             Err(ParseFailure::NameUnresolved(id)) => {
                 assert_eq!(id, "com.example.unknown-mode");
             }
