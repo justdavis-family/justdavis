@@ -17,9 +17,9 @@ use macos_focus_gopher::model::Focus;
 
 // --- focus_off ------------------------------------------------------------
 
-const FOCUS_OFF_ASSERTIONS: &str = include_str!("fixtures/26/focus_off/Assertions.json");
+const FOCUS_OFF_ASSERTIONS: &str = include_str!("fixtures/26.4.1/focus_off/Assertions.json");
 const FOCUS_OFF_MODE_CONFIGURATIONS: &str =
-    include_str!("fixtures/26/focus_off/ModeConfigurations.json");
+    include_str!("fixtures/26.4.1/focus_off/ModeConfigurations.json");
 
 #[test]
 fn macos_26_focus_off_is_parsed_as_focus_off() {
@@ -31,9 +31,9 @@ fn macos_26_focus_off_is_parsed_as_focus_off() {
 // --- manual_focus_on_builtin (Do Not Disturb) -----------------------------
 
 const MANUAL_BUILTIN_ASSERTIONS: &str =
-    include_str!("fixtures/26/manual_focus_on_builtin/Assertions.json");
+    include_str!("fixtures/26.4.1/manual_focus_on_builtin/Assertions.json");
 const MANUAL_BUILTIN_MODE_CONFIGURATIONS: &str =
-    include_str!("fixtures/26/manual_focus_on_builtin/ModeConfigurations.json");
+    include_str!("fixtures/26.4.1/manual_focus_on_builtin/ModeConfigurations.json");
 
 #[test]
 fn macos_26_manual_focus_on_builtin_resolves_via_builtin_table() {
@@ -51,9 +51,9 @@ fn macos_26_manual_focus_on_builtin_resolves_via_builtin_table() {
 // --- manual_focus_on_user (custom Focus, resolved via ModeConfigurations) -
 
 const MANUAL_USER_ASSERTIONS: &str =
-    include_str!("fixtures/26/manual_focus_on_user/Assertions.json");
+    include_str!("fixtures/26.4.1/manual_focus_on_user/Assertions.json");
 const MANUAL_USER_MODE_CONFIGURATIONS: &str =
-    include_str!("fixtures/26/manual_focus_on_user/ModeConfigurations.json");
+    include_str!("fixtures/26.4.1/manual_focus_on_user/ModeConfigurations.json");
 
 #[test]
 fn macos_26_manual_focus_on_user_resolves_via_mode_configurations() {
@@ -71,9 +71,9 @@ fn macos_26_manual_focus_on_user_resolves_via_mode_configurations() {
 
 // --- malformed (truncated JSON) -------------------------------------------
 
-const MALFORMED_ASSERTIONS: &str = include_str!("fixtures/26/malformed/Assertions.json");
+const MALFORMED_ASSERTIONS: &str = include_str!("fixtures/26.4.1/malformed/Assertions.json");
 const MALFORMED_MODE_CONFIGURATIONS: &str =
-    include_str!("fixtures/26/malformed/ModeConfigurations.json");
+    include_str!("fixtures/26.4.1/malformed/ModeConfigurations.json");
 
 #[test]
 fn macos_26_malformed_assertions_is_malformed() {
@@ -86,9 +86,10 @@ fn macos_26_malformed_assertions_is_malformed() {
 
 // --- schema_unknown -------------------------------------------------------
 
-const SCHEMA_UNKNOWN_ASSERTIONS: &str = include_str!("fixtures/26/schema_unknown/Assertions.json");
+const SCHEMA_UNKNOWN_ASSERTIONS: &str =
+    include_str!("fixtures/26.4.1/schema_unknown/Assertions.json");
 const SCHEMA_UNKNOWN_MODE_CONFIGURATIONS: &str =
-    include_str!("fixtures/26/schema_unknown/ModeConfigurations.json");
+    include_str!("fixtures/26.4.1/schema_unknown/ModeConfigurations.json");
 
 #[test]
 fn macos_26_schema_unknown_returns_schema_unknown() {
@@ -110,9 +111,9 @@ fn macos_26_schema_unknown_returns_schema_unknown() {
 // --- name_unresolved ------------------------------------------------------
 
 const NAME_UNRESOLVED_ASSERTIONS: &str =
-    include_str!("fixtures/26/name_unresolved/Assertions.json");
+    include_str!("fixtures/26.4.1/name_unresolved/Assertions.json");
 const NAME_UNRESOLVED_MODE_CONFIGURATIONS: &str =
-    include_str!("fixtures/26/name_unresolved/ModeConfigurations.json");
+    include_str!("fixtures/26.4.1/name_unresolved/ModeConfigurations.json");
 
 #[test]
 fn macos_26_name_unresolved_returns_name_unresolved() {

@@ -8,20 +8,23 @@ Real captures and synthesized variants of `Assertions.json` and `ModeConfigurati
 
 ```
 fixtures/
-  <macos_major>/
+  <macos_version>/
     <case>/
       Assertions.json
       ModeConfigurations.json
 ```
 
-`<macos_major>` is the macOS major version the fixtures were captured from.
-The current set ships fixtures for `26/` only:
-  the `26/` captures were taken on macOS 26.4.1.
+`<macos_version>` is the specific macOS version the fixtures were captured from
+  (e.g. `26.4.1`),
+  matching the per-version policy in the
+  [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md)
+  (section 3).
+The current set ships fixtures for `26.4.1/` only.
 The parser has also been live-verified on macOS 26.5 without recapturing
-  — the committed 26.4.1 captures continue to exercise the same format and code paths.
-Later milestones will add `12/`, `13/`, `14/`, `15/` as those majors are verified;
-  see the
-  [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md).
+  — the committed 26.4.1 captures continue to exercise the same format and code paths,
+    and a future PR can add a `26.5/` directory with its own captures
+    if a fixture-pinned 26.5 path is wanted.
+Later work will add additional version directories as contributors verify them.
 
 ## Cases
 

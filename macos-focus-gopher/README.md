@@ -102,21 +102,27 @@ With FDA granted (see the next section), the reply is a `determined` `FocusState
 
 Focus Gopher's parser has been verified against **macOS 26.4.1** (committed test fixtures)
   and **macOS 26.5** (live e2e on the development host).
-The wildcard `26.*` is granted as an *optimistic hint*:
-  it means at least one point release within macOS 26 has been verified,
-  not that every 26.x release is guaranteed to work —
-  Apple can change the private Focus-DB format in any point release.
-The [format-stability analysis](../design/analyses/2026-05-12-macos-focus-db-format.md)
-  (section 3) details the rationale and scope of the major-wildcard compromise.
+Matching is **by exact version string**:
+  these two specific versions report `macos_compatibility: supported`;
+  other 26.x point releases — and any other macOS version — report
+  `macos_compatibility: unknown` until they too are verified.
+Apple can change the private Focus-DB format in any point release,
+  so we report only what we have actually exercised.
 
-The same analysis identifies macOS 12 (Monterey) through 15 (Sequoia) as candidates for similar
-  in-codebase verification;
-  they are not yet on the wildcard list and currently report `macos_compatibility: unknown`.
-Any macOS version not on the list returns the `unknown` compatibility variant
-  with a message inviting an issue.
+When a queried version isn't in the verified list but its major has at least one verified
+  sibling (e.g. on a hypothetical macOS 26.6),
+  the `unknown` message names those siblings so users can gauge confidence and report back.
+For majors with no verified entries (currently macOS 12 Monterey through 15 Sequoia,
+  and macOS 27 and later), the message is a generic "please file an issue" invitation.
+
 Whether parsing actually worked is conveyed by the outcome (`determined` or `failed`),
   independent of the compatibility field — that is the actual ground truth;
-  `macos_compatibility` is advisory.
+  `macos_compatibility` reports **whether we've checked the running version**,
+  not whether parsing will succeed.
+
+See the [format-stability analysis](../design/analyses/2026-05-12-macos-focus-db-format.md)
+  (section 3) for the policy rationale and the work item of growing the verified list
+  as contributors verify additional versions.
 
 > ### Known macOS 26 limitation: schedule-triggered Foci
 >
