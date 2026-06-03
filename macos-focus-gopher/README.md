@@ -4,15 +4,17 @@ A small, single-purpose macOS helper that reports your current **Focus / Do Not 
   — including the name of the active Focus — to local clients,
   without those clients needing any macOS privacy permissions of their own.
 
-> ## Status — read-only Focus parsing on macOS 26
+> ## Status — read-only Focus parsing
 >
 > This project is being built milestone by milestone.
 > Today's milestone ships **real Focus parsing**: the helper reads
 >   `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json`,
 >   maps the active Focus identifier to a human-readable name, and returns
 >   a `FocusState` over its local socket (or via the `focus-gopher` CLI).
-> Tested on macOS 26 (Tahoe); other macOS versions report
->   `macos_compatibility: unknown` and we ask you to file an issue.
+> Tested on macOS 26.4.1 and 26.5;
+>   other macOS versions — including other 26.x point releases —
+>   report `macos_compatibility: unknown`,
+>   and we ask you to file an issue with whether the parser worked.
 > The helper still has to be **built from source** and the **Full Disk Access** grant
 >   is a manual System Settings step that has to be re-applied after every rebuild;
 >   one-command install via Homebrew and a signed/notarized distribution channel come later.
@@ -185,7 +187,7 @@ For talking to the helper over its raw socket protocol
 
 Today the project ships the **contract** (the wire model, JSON Schema, socket protocol),
   the thin `focus-gopher` CLI that speaks it, and **real read-only Focus parsing** verified
-  against macOS 26.
+  against macOS 26.4.1 and 26.5.
 What broadly follows: build-from-source packaging and distribution (Homebrew formula + cargo
   install + a per-user LaunchAgent), then compatibility breadth (the rest of macOS 12–15) and
   the agent ecosystem, and finally an optional signed-distribution channel.
