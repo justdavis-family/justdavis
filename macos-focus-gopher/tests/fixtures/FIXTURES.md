@@ -19,12 +19,15 @@ fixtures/
   matching the per-version policy in the
   [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md)
   (section 3).
-The current set ships fixtures for `26.4.1/` only.
-The parser has also been live-verified on macOS 26.5 without recapturing
-  — the committed 26.4.1 captures continue to exercise the same format and code paths,
-    and a future PR can add a `26.5/` directory with its own captures
-    if a fixture-pinned 26.5 path is wanted.
-Later work will add additional version directories as contributors verify them.
+Whichever `<macos_version>/` directories are present in this tree are the current set;
+  more are added as contributors verify additional macOS versions
+  by capturing fixtures and adding the corresponding `tests/parsing.rs` cases.
+
+A version that has been live-verified without recapturing
+  (because it shares the format of an existing captured version)
+  does not need its own fixture directory.
+The format-stability analysis records each live-verification individually
+  and is the source of truth for which versions have been verified at all.
 
 ## Cases
 
