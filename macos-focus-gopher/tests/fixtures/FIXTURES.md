@@ -18,15 +18,15 @@ fixtures/
   (e.g. `26.4.1`),
   matching the per-version compatibility policy in the
   [engineering design](../../../design/engineering-designs/2026-05-12-macos-focus-gopher.md).
-Whichever `<macos_version>/` directories are present in this tree are the current set;
-  more are added as contributors verify additional macOS versions
-  by capturing fixtures and adding the corresponding `tests/parsing.rs` cases.
+Whichever `<macos_version>/` directories are present in this tree are the current set.
+In practice, point releases within a major often produce functionally identical fixtures,
+  so a new `<macos_version>/` directory is only added
+  when a verified macOS version shows meaningful differences from existing captures.
 
-A version that has been live-verified without recapturing
-  (because it shares the format of an existing captured version)
-  does not need its own fixture directory.
-The format-stability analysis records each live-verification individually
-  and is the source of truth for which versions have been verified at all.
+For versions that have been live-verified without recapturing
+  (because they share the format of an existing captured version),
+  the format-stability analysis records each live-verification individually
+  and is the source of truth for which macOS versions have been verified at all.
 
 ## Cases
 
