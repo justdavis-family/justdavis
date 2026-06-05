@@ -22,8 +22,8 @@
 //! outcomes (`focus_db_malformed`, `schema_unknown`, etc.), regardless of what
 //! `macos_compatibility` says.
 //!
-//! See `design/analyses/2026-05-12-macos-focus-db-format.md` (section 3) for the policy
-//! rationale and the work item of growing the table as contributors verify new versions.
+//! See `design/engineering-designs/2026-05-12-macos-focus-gopher.md` for the policy
+//! and `design/analyses/2026-05-12-macos-focus-db-format.md` for the evidence supporting it.
 
 use crate::model::MacosCompatibility;
 

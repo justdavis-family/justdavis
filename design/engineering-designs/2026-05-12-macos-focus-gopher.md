@@ -270,11 +270,29 @@ New codes may be added; existing codes are not repurposed.
     No network listener; the CLI wrapper uses the same path.
 - **`FocusState` JSON Schema:** a versioned schema published in the repository and referenced by the
     README and `--help`/`man` docs.
-- **macOS compatibility table:** maintained in the project repository as the source of truth, seeded
-    per [the format-stability analysis](../analyses/2026-05-12-macos-focus-db-format.md) — keyed by
-    macOS version string, with specific point releases or major-version wildcards (the latter only
-    where the analysis supports it and the parser is verified against a current point release);
-    the helper's `macos_compatibility` output is derived from it.
+- **macOS compatibility table:** an explicit list of macOS versions the parser has been empirically
+    verified against in this codebase, maintained in
+    [`macos-focus-gopher/src/compatibility.rs`](../../macos-focus-gopher/src/compatibility.rs)
+    (the `VERIFIED_VERSIONS` constant) as the source of truth.
+    The helper's `macos_compatibility` output is derived from it:
+    a query whose version string is in the list returns `supported`;
+    any other version returns `unknown` — even when it shares a major with a verified version
+    — with a message that names the sibling-major verified versions when there are any
+    (so the user knows the parser is likely to work and what to report back),
+    falling back to a generic "please file an issue" invitation when no version in the major
+    has been verified at all.
+    Matching is by **exact version string**: verification is per-point-release,
+    not per-major.
+    The list grows as contributors verify additional versions — either by adding fixtures under
+    `tests/fixtures/<version>/` plus a corresponding `tests/parsing.rs` case,
+    or via a live e2e walkthrough recorded in the format-stability analysis and `FIXTURES.md`,
+    or both.
+    The policy faithfully reports what we have actually checked rather than extrapolating
+    from a single verified point release to a whole major:
+    Apple can change the private Focus-DB format in any point release within a major,
+    so major-wildcard claims would overclaim coverage.
+    See the [format-stability analysis](../analyses/2026-05-12-macos-focus-db-format.md)
+    for the evidence and reasoning that support this policy.
 - **Data sources (read-only):** `~/Library/DoNotDisturb/DB/Assertions.json` and
     `~/Library/DoNotDisturb/DB/ModeConfigurations.json` — undocumented macOS internals,
     subject to change across releases.

@@ -107,7 +107,9 @@ The layout observed on 26.4.1 matches the structure reported by community tools
 >   runtime state.
 >
 > Other macOS 26 point releases have not been separately re-tested for this gap.
-> Per the per-version policy in section 3,
+> Per the per-version policy recommended in section 3
+>   and specified in the
+>   [engineering design](../engineering-designs/2026-05-12-macos-focus-gopher.md),
 >   the finding should not be generalized to "macOS 26 as a series" without re-verification
 >   on the additional point releases.
 > Whether earlier majors (12–15) still write schedule-activated assertions to
@@ -117,60 +119,43 @@ The layout observed on 26.4.1 matches the structure reported by community tools
 >   therefore a known gap; the manual-activation path works correctly.
 > The gap is tracked in the project issue tracker.
 
-### 3. Compatibility table policy: per-verified-version, not major-wildcard
+### 3. Recommended policy for the compatibility table
 
-Because the format is private and undocumented,
-  Apple can change it in any point release within a major version.
-The honest position is therefore to claim support only for the exact point releases
-  we have empirically exercised.
-We choose this position even though it has real costs at the scale of macOS's release cadence:
+The Focus database format is private and undocumented,
+  and Apple can change it in any point release within a major version.
+
+A *major-version wildcard* policy would extrapolate from one verified point release
+  to a whole major
+  — asserting coverage of point releases we have not exercised,
+    in a context where exercising each release is the only way to be sure
+    the format hasn't shifted.
+That overclaims.
+
+An *exact-version* policy reports only what we have actually checked,
+  at the cost of more `unknown` results on unverified point releases.
+The cost is real:
   a modern macOS major ships roughly 10–15 distinct point versions over its active-support window
   (e.g. `14.0` through `14.7.x`,
     where each `.x` may also get one or more patch releases such as `14.4.1`),
   plus several more during extended security support after the next major takes over.
-That cadence is the **work item for compatibility coverage** —
-  growing the verified list as contributors verify additional versions —
+That cadence is the **work item for compatibility coverage**
+  — growing the verified list as contributors verify additional versions —
   not a cost to be avoided by claiming wider coverage than we actually have.
 
-The policy:
+The format-stability evidence in section 2 — community tools running on individual point releases
+  of macOS 12 Monterey, 13 Ventura, 14 Sonoma, and 15 Sequoia without a major reshape,
+  plus this codebase's own verification on the macOS 26 versions we have checked —
+  suggests that Apple's *typical* behavior preserves the format across point releases within a major.
+That is a probabilistic observation, not a guarantee,
+  and so the recommended policy still treats each point release as needing its own verification.
 
-- The compatibility table is **an explicit list of macOS version strings**
-    the parser has been empirically verified against in this codebase.
-- A version is added to the list only after the parser has been exercised against it,
-    either via fixtures committed under `tests/fixtures/<version>/`
-    and a corresponding `tests/parsing.rs` case,
-    or via a live e2e walkthrough of the manual-Focus scenarios
-    recorded in this analysis and in `FIXTURES.md`,
-    or both.
-- Matching is by **exact version string**.
-  A version not on the list reports `unknown` even when it shares a major
-    with a verified version
-    — we report what we actually checked, not what we assume to be probable.
-  When at least one verified version shares the same major as the queried one,
-    the `unknown` message names those siblings so the user knows
-    the parser will probably work and what to report back;
-    when the queried major has no verified versions at all,
-    the message is a generic "please file an issue" invitation.
-- The `macos_compatibility` field signals **whether we have checked the running version**;
-    it is not a substitute for ground truth about whether parsing succeeded.
-  The wire outcome (`determined` or `failed`, with one of the `failed: …` error codes
-    when applicable) is the actual signal about whether `get_focus()` produced a result.
-- macOS **11 and earlier** are out of scope (different mechanism).
-- macOS **26 Tahoe** is represented by two verified entries: `26.4.1`
-    (committed fixtures) and `26.5` (live e2e;
-    see the paragraph at the end of section 2).
-    Other 26.x point releases report `unknown` with the sibling-enriched message
-    until verified.
-    The schedule-triggered case is a known gap (see the inset above);
-    detection when it lands will not change the compatibility status.
-- macOS **12 Monterey** through **15 Sequoia** have **no verified entries** in this codebase
-    and currently report `unknown` with the generic "please file an issue" message;
-    they would be added as specific point-release entries
-    as contributors verify each version.
-- macOS **27 and later** start as `unknown until tested`;
-    they are reported with the `unknown` compatibility variant
-    (carrying the generic "please report whether this version works" message)
-    until added to the table.
+**Recommendation:** an exact-version policy.
+The detailed semantics (match rules, unknown-message content,
+    the workflow for adding entries, the implementation)
+  and the source-of-truth list of currently-verified versions live in the
+  [engineering design](../engineering-designs/2026-05-12-macos-focus-gopher.md)
+  and `compatibility.rs`;
+  this section provides the evidence and reasoning that support that recommendation.
 
 This analysis should be revisited whenever a new major macOS release ships,
   or whenever the parser encounters a `schema_unknown` or `focus_db_malformed` failure in the field.

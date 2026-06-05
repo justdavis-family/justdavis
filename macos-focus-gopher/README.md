@@ -11,10 +11,11 @@ A small, single-purpose macOS helper that reports your current **Focus / Do Not 
 >   `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json`,
 >   maps the active Focus identifier to a human-readable name, and returns
 >   a `FocusState` over its local socket (or via the `focus-gopher` CLI).
-> Tested on macOS 26.4.1 and 26.5;
->   other macOS versions — including other 26.x point releases —
->   report `macos_compatibility: unknown`,
+> Verified on selected macOS 26 (Tahoe) point releases;
+>   any other macOS version — including unverified 26.x point releases —
+>   reports `macos_compatibility: unknown`,
 >   and we ask you to file an issue with whether the parser worked.
+> See the [Compatibility](#compatibility) section below for the policy.
 > The helper still has to be **built from source** and the **Full Disk Access** grant
 >   is a manual System Settings step that has to be re-applied after every rebuild;
 >   one-command install via Homebrew and a signed/notarized distribution channel come later.
@@ -102,29 +103,28 @@ With FDA granted (see the next section), the reply is a `determined` `FocusState
 
 ## Compatibility
 
-Focus Gopher's parser has been verified against **macOS 26.4.1** (committed test fixtures)
-  and **macOS 26.5** (live e2e on the development host).
-Matching is **by exact version string**:
-  these two specific versions report `macos_compatibility: supported`;
-  other 26.x point releases — and any other macOS version — report
-  `macos_compatibility: unknown` until they too are verified.
+Focus Gopher reports `macos_compatibility: supported` for the macOS versions
+  that have been explicitly verified against this codebase,
+  and `macos_compatibility: unknown` for everything else —
+  including sibling point releases of a verified version.
 Apple can change the private Focus-DB format in any point release,
-  so we report only what we have actually exercised.
+  so the helper reports only what has actually been exercised.
 
 When a queried version isn't in the verified list but its major has at least one verified
-  sibling (e.g. on a hypothetical macOS 26.6),
-  the `unknown` message names those siblings so users can gauge confidence and report back.
-For majors with no verified entries (currently macOS 12 Monterey through 15 Sequoia,
-  and macOS 27 and later), the message is a generic "please file an issue" invitation.
+  sibling, the `unknown` message names those siblings
+  so you can gauge confidence and report back.
+When no version in that major has been verified at all,
+  the message is a generic "please file an issue" invitation.
 
 Whether parsing actually worked is conveyed by the outcome (`determined` or `failed`),
   independent of the compatibility field — that is the actual ground truth;
   `macos_compatibility` reports **whether we've checked the running version**,
   not whether parsing will succeed.
 
-See the [format-stability analysis](../design/analyses/2026-05-12-macos-focus-db-format.md)
-  (section 3) for the policy rationale and the work item of growing the verified list
-  as contributors verify additional versions.
+See the [engineering design](../design/engineering-designs/2026-05-12-macos-focus-gopher.md)
+  for the policy and the implementation it points to,
+  and the [format-stability analysis](../design/analyses/2026-05-12-macos-focus-db-format.md)
+  for the evidence supporting the policy.
 
 > ### Known limitation observed on macOS 26.4.1: schedule-triggered Foci
 >
@@ -190,8 +190,8 @@ For talking to the helper over its raw socket protocol
 ## Roadmap
 
 Today the project ships the **contract** (the wire model, JSON Schema, socket protocol),
-  the thin `focus-gopher` CLI that speaks it, and **real read-only Focus parsing** verified
-  against macOS 26.4.1 and 26.5.
+  the thin `focus-gopher` CLI that speaks it, and **real read-only Focus parsing**
+  verified against selected macOS 26 point releases.
 What broadly follows: build-from-source packaging and distribution (Homebrew formula + cargo
   install + a per-user LaunchAgent), then compatibility breadth (macOS 12–15) and
   the agent ecosystem, and finally an optional signed-distribution channel.

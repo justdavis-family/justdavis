@@ -16,9 +16,8 @@ fixtures/
 
 `<macos_version>` is the specific macOS version the fixtures were captured from
   (e.g. `26.4.1`),
-  matching the per-version policy in the
-  [format-stability analysis](../../../design/analyses/2026-05-12-macos-focus-db-format.md)
-  (section 3).
+  matching the per-version compatibility policy in the
+  [engineering design](../../../design/engineering-designs/2026-05-12-macos-focus-gopher.md).
 Whichever `<macos_version>/` directories are present in this tree are the current set;
   more are added as contributors verify additional macOS versions
   by capturing fixtures and adding the corresponding `tests/parsing.rs` cases.
