@@ -7,7 +7,7 @@ A small, single-purpose macOS helper that reports your current **Focus / Do Not 
 > ## Status — read-only Focus parsing
 >
 > This project is being built milestone by milestone.
-> Today's milestone ships **real Focus parsing**: the helper reads
+> The latest completed milestone ships **real Focus parsing**: the helper reads
 >   `~/Library/DoNotDisturb/DB/Assertions.json` and `ModeConfigurations.json`,
 >   maps the active Focus identifier to a human-readable name, and returns
 >   a `FocusState` over its local socket (or via the `focus-gopher` CLI).
