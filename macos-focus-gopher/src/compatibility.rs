@@ -74,7 +74,7 @@ fn unknown_message(version: &str) -> String {
     } else {
         let sibling_list = match siblings.as_slice() {
             [a] => format!("macOS {a}"),
-            [a, b] => format!("macOS {a} and {b}"),
+            [a, b] => format!("macOS {a} and macOS {b}"),
             rest => {
                 let (last, init) = rest.split_last().expect("siblings is non-empty");
                 let init_list = init
@@ -139,8 +139,8 @@ mod tests {
         );
         for sibling in VERIFIED_VERSIONS {
             assert!(
-                message.contains(sibling),
-                "message should name sibling {sibling}: {message}"
+                message.contains(&format!("macOS {sibling}")),
+                "message should name sibling with 'macOS' prefix {sibling}: {message}"
             );
         }
         assert!(
