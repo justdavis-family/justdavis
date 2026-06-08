@@ -1,5 +1,5 @@
 //! The Focus Gopher helper daemon: binds the per-user socket and serves
-//! `get_focus()` requests. For now the answer is stubbed (no database is read).
+//! `get_focus()` requests against the live macOS Focus database.
 
 use anyhow::Context;
 use clap::Parser;
@@ -44,7 +44,6 @@ fn run(args: Args) -> anyhow::Result<()> {
     install_signal_cleanup(path.clone()).context("installing signal handlers")?;
 
     tracing::info!(socket = %path.display(), "listening");
-    tracing::warn!("early development: get_focus() is stubbed (no Focus database is read yet)");
 
     server::serve(&listener).context("serving connections")?;
     Ok(())

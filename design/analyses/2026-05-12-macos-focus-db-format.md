@@ -64,32 +64,101 @@ Caveats the same sources surface, which a robust parser must handle:
 - The format is still **undocumented and unsupported by Apple**; nothing prevents a future macOS
     release from changing it.
 
-We did not find authoritative confirmation of the format on the current **macOS 26 Tahoe** release;
-  it is presumed similar but should be treated as unverified until we test it.
+**macOS 26.4.1 and macOS 26.5 have both been verified** against the Focus Gopher parser.
+The committed test fixtures
+  (see [`macos-focus-gopher/tests/fixtures/26.4.1/`](../../macos-focus-gopher/tests/fixtures/) and
+  [`FIXTURES.md`](../../macos-focus-gopher/tests/fixtures/FIXTURES.md))
+  were captured on macOS 26.4.1, which is the version `tests/parsing.rs` exercises.
+On macOS 26.5, the parser has additionally been verified via live e2e
+  of four manual-Focus scenarios:
+  no Focus active (`focus_off`), a built-in Focus active (Do Not Disturb, Work),
+  a user-created Focus active (resolved via `ModeConfigurations.json` name lookup),
+  and the back-to-no-Focus transition.
+No other macOS 26 point release has been independently verified in this codebase,
+  and — per the bullet above —
+  Apple may change the private format in any point release within a major,
+  so claims about "macOS 26 as a series" should not be inferred from these verifications.
+The layout observed on 26.4.1 matches the structure reported by community tools
+  running on individual point releases of macOS 12 Monterey, 13 Ventura, 14 Sonoma,
+  and 15 Sequoia (see the citations in section 2):
+  a manually-toggled Focus appears as a
+  `storeAssertionRecords[0].assertionDetails.assertionDetailsModeIdentifier`
+  entry in `Assertions.json`,
+  and `ModeConfigurations.json` is a `data[0].modeConfigurations` map keyed by **mode identifier**
+  (e.g. `com.apple.focus.work`, *not* a UUID
+  — the analysis previously described it as UUID-keyed;
+  that was incorrect for at least macOS 26.4.1,
+  and likely for the earlier majors too based on the community-report wording).
 
-### 3. Specific point releases vs. major-version wildcards
+> ### Schedule-triggered Foci on macOS 26.4.1 — a new finding
+>
+> While capturing fixtures for Focus Gopher's first parsing milestone we observed that on
+>   macOS 26.4.1, a Focus activated by a *user-defined schedule trigger* does **not** appear
+>   in any file under `~/Library/DoNotDisturb/DB/`.
+> `Assertions.json`'s `storeAssertionRecords` stays empty, `Settings.sqlite`'s Focus tables stay
+>   empty, and no preference plist or cache surfaces the active state.
+> The most likely explanation is that `donotdisturbd` keeps schedule-triggered state in memory
+>   and exposes it only via XPC.
+>
+> This contradicts the section above's expectation
+>   ("manually-toggled Focus vs. schedule/automation-activated Focus appear in different files
+>   (`Assertions.json` vs. a trigger state in `ModeConfigurations.json`)") in the macOS 26.4.1 case:
+>   `ModeConfigurations.json`'s `triggers[].enabledSetting` is a configuration value, not a
+>   runtime state.
+>
+> Other macOS 26 point releases have not been separately re-tested for this gap.
+> Per the per-version policy recommended in section 3
+>   and specified in the
+>   [engineering design](../engineering-designs/2026-05-12-macos-focus-gopher.md),
+>   the finding should not be generalized to "macOS 26 as a series" without re-verification
+>   on the additional point releases.
+> Whether earlier majors (12–15) still write schedule-activated assertions to
+>   `Assertions.json` (per the historical community reports) also needs separate verification.
+>
+> File-based detection of schedule-triggered Foci on the macOS 26.4.1 host we observed is
+>   therefore a known gap; the manual-activation path works correctly.
+> The gap is tracked in the project issue tracker.
 
-Because the format is undocumented, the conservative default is to claim support only for versions we
-  have actually exercised. However, the evidence above is strong enough that the *major-version*
-  granularity is a reasonable unit for macOS 12–15: the layout has survived four major releases of
-  active community use without a breaking change, and Apple has shown no sign of reworking it.
+### 3. Recommended policy for the compatibility table
 
-Recommendation:
+The Focus database format is private and undocumented,
+  and Apple can change it in any point release within a major version.
 
-- The compatibility table is **keyed by macOS version string**, and an entry may be either a specific
-    point release (e.g. `15.5`) or a major-version wildcard (e.g. `15.*`).
-- A **major-version wildcard entry is allowed only when** (a) this analysis (or a future update to it)
-    finds the format stable for that major, and (b) the helper's parser has been verified against at
-    least one *current* point release of that major. On that basis, `12.*`–`15.*` are reasonable
-    `supported` entries once verified.
-- macOS **11 and earlier** are out of scope (different mechanism).
-- macOS **26** (and any future major) starts as `unknown until tested`; it is reported with the
-    `unknown` compatibility variant (carrying a "please report whether this version works" message)
-    until added to the table — whether parsing actually worked is conveyed by the result's outcome, not
-    the compatibility field.
+A *major-version wildcard* policy would extrapolate from one verified point release
+  to a whole major
+  — asserting coverage of point releases we have not exercised,
+    in a context where exercising each release is the only way to be sure
+    the format hasn't shifted.
+That overclaims.
 
-This analysis should be revisited whenever a new major macOS release ships, or whenever the parser
-  encounters a `schema_unknown` failure in the field.
+An *exact-version* policy reports only what we have actually checked,
+  at the cost of more `unknown` results on unverified point releases.
+The cost is real:
+  a modern macOS major ships roughly 10–15 distinct point versions over its active-support window
+  (e.g. `14.0` through `14.7.x`,
+    where each `.x` may also get one or more patch releases such as `14.4.1`),
+  plus several more during extended security support after the next major takes over.
+That cadence is the **work item for compatibility coverage**
+  — growing the verified list as contributors verify additional versions —
+  not a cost to be avoided by claiming wider coverage than we actually have.
+
+The format-stability evidence in section 2 — community tools running on individual point releases
+  of macOS 12 Monterey, 13 Ventura, 14 Sonoma, and 15 Sequoia without a major reshape,
+  plus this codebase's own verification on the macOS 26 versions we have checked —
+  suggests that Apple's *typical* behavior preserves the format across point releases within a major.
+That is a probabilistic observation, not a guarantee,
+  and so the recommended policy still treats each point release as needing its own verification.
+
+**Recommendation:** an exact-version policy.
+The detailed semantics (match rules, unknown-message content,
+    the workflow for adding entries, the implementation)
+  and the source-of-truth list of currently-verified versions live in the
+  [engineering design](../engineering-designs/2026-05-12-macos-focus-gopher.md)
+  and `compatibility.rs`;
+  this section provides the evidence and reasoning that support that recommendation.
+
+This analysis should be revisited whenever a new major macOS release ships,
+  or whenever the parser encounters a `schema_unknown` or `focus_db_malformed` failure in the field.
 
 ## References
 

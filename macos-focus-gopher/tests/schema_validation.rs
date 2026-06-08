@@ -67,7 +67,7 @@ fn well_formed_focus_states_validate() {
                 message: "Full Disk Access is required.".into(),
             },
         }),
-        // the stub output itself
+        // the actual `get_focus()` output (whatever the host happens to return).
         serde_json::to_value(get_focus()).unwrap(),
     ];
     for v in valid {

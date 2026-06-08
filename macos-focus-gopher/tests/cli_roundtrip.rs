@@ -1,8 +1,15 @@
 //! End-to-end: the real `focus-gopher` CLI binary connects to a running helper
-//! over a Unix domain socket, prints the (stubbed) `FocusState` as pretty JSON
-//! on stdout, and exits with the documented outcome-driven exit code. Mirrors
-//! the in-process `tests/socket_roundtrip.rs` but drives the binary as a
-//! subprocess via `assert_cmd`.
+//! over a Unix domain socket, prints the `FocusState` as pretty JSON on stdout,
+//! and exits with the documented outcome-driven exit code. Mirrors the
+//! in-process `tests/socket_roundtrip.rs` but drives the binary as a subprocess
+//! via `assert_cmd`.
+//!
+//! The pipeline-touching `get_focus()` reads the host's real Focus database,
+//! so the *value* it returns depends on the host environment (which Focus is
+//! on, whether the helper has FDA, etc.). These tests assert the **contract**:
+//! the CLI faithfully relays whatever `FocusState` the helper returns, with the
+//! matching exit code. Deterministic value assertions live in `tests/parsing.rs`
+//! which drives the pure parser against captured fixtures.
 
 use assert_cmd::Command;
 use macos_focus_gopher::focus;
@@ -27,25 +34,28 @@ fn cli_round_trips_focus_state_and_exits_with_outcome_code() {
         .unwrap();
     server_thread.join().unwrap();
 
-    // The stubbed get_focus() returns a `failed` outcome, so the CLI exits 1.
-    assert_eq!(
-        output.status.code(),
-        Some(1),
-        "expected exit 1 (failed outcome); stderr={}",
-        String::from_utf8_lossy(&output.stderr),
-    );
-
-    // stdout is the pretty-printed FocusState; parse it and compare to the
-    // canonical stub to prove the CLI faithfully round-tripped the data.
+    // The exit code follows the outcome: 0 for `Determined`, 1 for `Failed`.
     let stdout = std::str::from_utf8(&output.stdout).expect("stdout is UTF-8");
     let printed: FocusState = serde_json::from_str(stdout)
         .unwrap_or_else(|e| panic!("stdout is not a valid FocusState ({e}); stdout={stdout}"));
-    assert_eq!(printed, focus::get_focus());
-    assert!(
-        matches!(printed.outcome, Outcome::Failed { .. }),
-        "stub outcome should be `failed`; got {:?}",
+    let expected_exit = match printed.outcome {
+        Outcome::Determined(_) => 0,
+        Outcome::Failed { .. } => 1,
+    };
+    assert_eq!(
+        output.status.code(),
+        Some(expected_exit),
+        "exit code should agree with outcome (expected {expected_exit}); \
+         outcome={:?}; stderr={}",
         printed.outcome,
+        String::from_utf8_lossy(&output.stderr),
     );
+
+    // The CLI faithfully relays whatever the helper returned. Compare the
+    // printed FocusState to a fresh `get_focus()` call: both touch the same
+    // host state so they should agree (unless host state changed between
+    // calls — unlikely in a sub-second test window).
+    assert_eq!(printed, focus::get_focus());
 
     // Pretty-printed: at least one internal newline (not just the trailing
     // one). Compact one-line JSON would only have the trailing newline, so a
