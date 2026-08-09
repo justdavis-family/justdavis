@@ -19,6 +19,18 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 **Available issue templates:** bug report, product requirement,
   product vision, maintenance.
 
+## Design-Process Tracking Issues
+
+Work that follows the [design process](/design/README.md) is tracked with a matching hierarchy of
+  issues: a `vision` issue, a `requirement` issue, and — when there is a delivery plan —
+  one `milestone` sub-issue per milestone.
+The design documents stay authoritative for *content*;
+  these issues are authoritative for *status*.
+
+See [`design/delivery-plans/README.md`](/design/delivery-plans/README.md)
+  for the title formats, labels, issue-body structure,
+  and guidance on how requirements, milestones, and PRs correspond.
+
 ## Linking Issues to PRs
 
 - Reference related issues in PR descriptions using `#issue-number` syntax.
