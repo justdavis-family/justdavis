@@ -33,7 +33,7 @@ Milestones must be **thin vertical slices**:
 A good test is whether the reader could stop after any milestone
   and still have something worth having.
 
-### M1 — [Short milestone title]
+### M1 — [Short Milestone Title]
 
 **Deliverable:** one or two sentences describing what a user, consumer, or contributor
   can actually do once this milestone merges.
@@ -65,12 +65,12 @@ This checklist is **authoritative here, in the plan**.
 The milestone's tracking issue carries a copy so progress can be ticked off as work proceeds,
   but the copy is a convenience — when the two disagree, this document is correct.
 
-### M2 — [Short milestone title]
+### M2 — [Short Milestone Title]
 
 Repeat the `Deliverable` / `Deferred` / `In scope` / `Acceptance criteria` structure
   for each milestone.
 
-### M[N] — [Short milestone title] (optional; may not be reached)
+### M[N] — [Short Milestone Title] (Optional; May Not Be Reached)
 
 Mark genuinely optional milestones as such in the heading,
   and open the section by saying what makes them optional
@@ -78,7 +78,7 @@ Mark genuinely optional milestones as such in the heading,
 Note any prerequisite that would have to be satisfied before the milestone could start
   (a paid account, an external dependency, a decision that hasn't been made yet).
 
-## Explicitly Deferred (out of scope for this plan)
+## Explicitly Deferred (Out of Scope for This Plan)
 
 Work that is deliberately *not* in any milestone, with a brief reason for each.
 This section prevents the plan from being read as an exhaustive roadmap,

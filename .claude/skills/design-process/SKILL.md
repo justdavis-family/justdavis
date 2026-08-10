@@ -18,14 +18,14 @@ The authoritative content lives in `design/` — this skill routes, it does not 
 When this skill and a `README.md` disagree, the README wins;
   fix the skill.
 
-## First: does this work need the process at all?
+## First: Does This Work Need the Process at All?
 
 - **New features and significant enhancements** — yes, design docs come before (or alongside) the code.
 - **Simple bug fixes, maintenance, and infrastructure changes** — no, go straight to implementation.
 
 Don't over-apply this. A one-line fix does not need a vision document.
 
-## The sequence
+## The Sequence
 
 Work forward through these. Skip a step only when you can say why it doesn't apply.
 
@@ -47,7 +47,7 @@ Two supporting document types sit outside the sequence:
     while designing; add a principle only when it is generalizable, non-obvious, and has real trade-offs.
 - [`design/notes/`](../../../design/notes/) — half-baked ideas that aren't ready to be anything else.
 
-## When to write an analysis
+## When to Write an Analysis
 
 Analyses come *before* design decisions, and exist to evaluate options.
 Write one when a significant decision has multiple viable options,
@@ -62,7 +62,7 @@ Analyses are durable and committed — they explain *why* a design is what it is
 If a claim in an analysis was inherited from elsewhere rather than verified,
   say so explicitly and say what would settle it.
 
-## Distinctions that are easy to get wrong
+## Distinctions That Are Easy to Get Wrong
 
 These trip people up repeatedly, so check yourself against them.
 
@@ -92,7 +92,7 @@ A good test: could the reader stop after any milestone and still have something 
 Update designs as the system evolves.
 Don't retroactively edit implemented requirements.
 
-## Naming and formatting
+## Naming and Formatting
 
 - Single-file: `YYYY-MM-DD-short-name.md`.
   Multi-file: a `YYYY-MM-DD-short-name/` directory with `README.md` as the main document.
@@ -104,7 +104,7 @@ Don't retroactively edit implemented requirements.
     one sentence per line, 110-character wrap, two-space continuation indent, periods on list items.
   This is enforced by review, and it makes prose diffs readable.
 
-## Tracking and shipping the work
+## Tracking and Shipping the Work
 
 - **Tracking issues** mirror the documents: a `vision` issue, a `requirement` issue,
     and — when there's a delivery plan — one `milestone` sub-issue per milestone.
@@ -119,7 +119,7 @@ Don't retroactively edit implemented requirements.
     for branch naming, the required PR description outline, the Success Criteria checklist,
     and the squash-merge convention.
 
-## Authoring a full lineage
+## Authoring a Full Lineage
 
 When writing several documents for one project, prefer **one PR with a commit per document**,
   pausing for review between them.
