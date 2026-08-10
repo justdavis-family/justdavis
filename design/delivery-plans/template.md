@@ -35,19 +35,25 @@ A good test is whether the reader could stop after any milestone
 
 ### M1 — [Short milestone title]
 
-**In scope:**
-
-- The concrete work this milestone includes.
-- Enough detail to bound the scope, but *not* an implementation recipe —
-    the steps inside the PR are left to whoever does the work.
-- Include tests, docs, and CI wiring as explicit scope items where they apply.
-
 **Deliverable:** one or two sentences describing what a user, consumer, or contributor
   can actually do once this milestone merges.
 Write it from their perspective, not the implementer's.
 
 **Deferred:** what this milestone explicitly does *not* include,
   particularly anything a reader might otherwise assume is covered.
+
+**In scope:**
+
+- The concrete work needed to reach the deliverable above.
+- Enough detail to bound the scope, but *not* an implementation recipe —
+    the steps inside the PR are left to whoever does the work.
+- Include tests, docs, and CI wiring as explicit scope items where they apply.
+
+Scope bounds the work; it doesn't describe how the work is done.
+Where the *how* matters for judging scope, **reference the relevant part of the engineering design**
+  rather than restating it —
+  the design is authoritative and evergreen,
+  so a copy here will drift out of date and start contradicting it.
 
 **Acceptance criteria:**
 
