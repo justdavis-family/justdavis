@@ -49,9 +49,20 @@ Write it from their perspective, not the implementer's.
 **Deferred:** what this milestone explicitly does *not* include,
   particularly anything a reader might otherwise assume is covered.
 
+**Acceptance criteria:**
+
+- [ ] The conditions that have to hold before this milestone is done.
+- [ ] Write them so they can be checked off, and so someone other than the author could check them.
+- [ ] Include the testing and documentation bars the milestone has to clear.
+
+This checklist is **authoritative here, in the plan**.
+The milestone's tracking issue carries a copy so progress can be ticked off as work proceeds,
+  but the copy is a convenience — when the two disagree, this document is correct.
+
 ### M2 — [Short milestone title]
 
-Repeat the `In scope` / `Deliverable` / `Deferred` structure for each milestone.
+Repeat the `Deliverable` / `Deferred` / `In scope` / `Acceptance criteria` structure
+  for each milestone.
 
 ### M[N] — [Short milestone title] (optional; may not be reached)
 

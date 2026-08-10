@@ -76,9 +76,11 @@ A **requirement issue** links to its requirement document, summarizes it in a pa
   and points at the delivery plan and the milestone sub-issues that deliver it.
 
 A **milestone issue** links to the delivery plan and names which milestone it tracks,
-  then restates that milestone's `Scope` and `Deliverable` briefly,
-  and turns the milestone's scope into an **acceptance-criteria checklist** that can be ticked off.
-Close it when its PR merges, noting the implementing PR number.
+  then restates that milestone's deliverable briefly
+  and **copies its acceptance-criteria checklist** so progress can be ticked off as work proceeds.
+The checklist is authored in the delivery plan and is authoritative there;
+  the issue's copy is a convenience for tracking, not a second source of truth.
+Close the issue when its PR merges, noting the implementing PR number.
 
 ### When Tracking Issues Are Warranted
 
