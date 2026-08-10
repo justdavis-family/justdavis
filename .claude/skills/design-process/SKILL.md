@@ -66,7 +66,7 @@ If a claim in an analysis was inherited from elsewhere rather than verified,
 
 These trip people up repeatedly, so check yourself against them.
 
-**A requirement is one user story that fits in one PR.**
+**A requirement is one user story, generally scoped to fit in one PR.**
 The litmus test is: *does this affect the product's capabilities or quality for users?*
 If yes, it's a requirement.
 If it only affects how developers work on the product, it isn't —

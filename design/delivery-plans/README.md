@@ -94,7 +94,7 @@ Work small enough to fit in a single PR needs no delivery plan
 
 These are **not** necessarily one-to-one, and conflating them causes trouble:
 
-- A requirement is scoped to be implementable in a single PR
+- A requirement should generally be scoped to be implementable in a single PR
     (see [../product-requirements/README.md](../product-requirements/README.md)).
 - A milestone also ships as a single PR.
 - But a milestone may deliver *part* of a large requirement,

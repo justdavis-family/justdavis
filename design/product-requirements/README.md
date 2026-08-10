@@ -5,7 +5,8 @@ Atomic, implementable requirements for projects in this monorepo.
 ## Purpose
 
 Product requirements break down vision into deliverable units.
-Each requirement represents a single user story that can be fully implemented in one PR.
+Each requirement represents a single user story,
+  and should generally be scoped so that it can be fully implemented in one PR.
 
 **Key distinction from vision docs:**
 
