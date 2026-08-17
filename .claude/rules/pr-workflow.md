@@ -117,18 +117,13 @@ Use `--admin` only when bypassing review has been explicitly authorized
 
 ### Description Outline
 
-[`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md) pre-fills this outline,
-  so a new PR starts with the right sections already in place.
-The description for all PRs should have the following sections.
+Every PR description needs these sections:
+  **Summary**, **Design Process**, **Success Criteria**, **Test Plan**, and **Context** —
+  plus **Acceptance Criteria** when the PR delivers a delivery-plan milestone.
 
-- **Summary**: 1-3 sentences explaining things at a user story level:
-    _who_ the changes are for and the _why_ (i.e. the motivation).
-  Follow that with 1-3 bullet points explaining _what_ changed.
-- **Design Process**: Link to all of the [`design/`](../../design/README.md) process docs
-    that the PR adds, modifies, and/or implements.
-- **Success Criteria**: Include the success criteria checklist (see below).
-- **Test Plan**: How the changes were tested (commands run, test coverage, manual verification).
-- **Context**: Link to related issues or provide background for the change.
+[`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md) pre-fills all of them,
+  along with guidance on what belongs in each,
+  so a new PR starts with the outline already in place and there is nothing to copy by hand.
 
 ### Description Formatting
 
@@ -142,21 +137,14 @@ Accordingly, our usual line-wrapping and continuation formatting rules should no
 
 **Every pull request must include a "Success Criteria" section** in the PR description.
 
-#### General Criteria (Required for All PRs)
-
-- [ ] **All CI checks pass**: Tests pass, linting succeeds, formatting correct.
-- [ ] **Code review recommendations addressed**: All review feedback implemented.
-- [ ] **No stubbed/incomplete code**: All implementations are complete and tested.
-- [ ] **No TODO/FIXME without tracking**: All TODOs tracked in GitHub issues with references.
-- [ ] **Deferred work tracked in GitHub issues**: Any work deferred for future implementation
-        must be tracked in GitHub issues with clear descriptions and acceptance criteria.
-- [ ] **Follows Engineering Principles**: Code adheres to all
-        [`design/engineering-principles/`](design/engineering-principles/) or has
-        documented (and reasonable) explanations for any divergences.
+The criteria required of *all* PRs are pre-filled by
+  [`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md);
+  don't delete them, and don't tick one until it is actually true.
 
 #### Task-Specific Criteria
 
-Add task-specific criteria based on the work being done.
+On top of those, add the criteria for the kind of change being made.
+These are not in the template — carrying all four sets in every PR would bury the relevant one.
 
 **For refactoring PRs:**
 
