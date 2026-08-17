@@ -53,13 +53,7 @@ That duplication is only worth its cost once it is applied automatically,
      `git checkout -b feat/your-feature-name`.
 2. Make changes and commit to the branch.
 3. Push branch: `git push -u origin feat/your-feature-name`.
-4. Compose the PR body by filling in
-     [`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md),
-     then create the PR with `gh pr create --title "Title" --body-file <filled-in-body>`.
-
-   **Read that template first.**
-   Passing `--body` or `--body-file` makes `gh` skip the template it would otherwise apply,
-     so a PR created that way only carries the required sections if you put them there.
+4. Create the PR — see [Creating a PR with the Template](#creating-a-pr-with-the-template) below.
    Title it with the same type prefix as the branch, assign it to yourself,
      and apply the matching type label
      — see [`github-issues.md`](github-issues.md) for what else does and doesn't get set.
@@ -67,6 +61,41 @@ That duplication is only worth its cost once it is applied automatically,
 6. Merge the PR — squash by default; see [Merging PRs](#merging-prs) below
      for the commit-message convention and exact `gh` invocation.
 7. Branches are automatically deleted after merge (GitHub setting).
+
+## Creating a PR with the Template
+
+[`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md) holds the required
+  description outline.
+How it reaches your PR depends on how you invoke `gh`, and the two paths differ in a way
+  that is easy to get wrong.
+
+**Interactively — nothing special to do.**
+Run `gh pr create` with no `--title` or `--body`.
+`gh` prompts for both, and applies the repository's template automatically.
+
+**Non-interactively — you must supply the filled-in body yourself.**
+`gh` requires `--body` or `--body-file` when it can't prompt,
+  and supplying either skips the template
+  (`gh pr create --help`: "Use `--title` and `--body` to skip this").
+So copy the template to a scratch file, fill in the copy, and pass that:
+
+```bash
+cp .github/PULL_REQUEST_TEMPLATE.md /tmp/pr-body.md
+# …edit /tmp/pr-body.md, filling in each section…
+gh pr create --title "docs: your title" --body-file /tmp/pr-body.md \
+  --assignee @me --label docs
+```
+
+**Never edit `.github/PULL_REQUEST_TEMPLATE.md` itself to compose a PR body** —
+  it is a checked-in file, and your description would land in the next PR's template.
+Work on a copy, outside the repository.
+
+`--assignee` and `--label` are worth passing at creation, as above,
+  rather than following up with `gh pr edit`.
+
+Note that `-T` / `--template` does **not** help here:
+  it only seeds the interactive editor,
+  and `gh` rejects a non-interactive run that supplies it without a body.
 
 ## Merging PRs
 
