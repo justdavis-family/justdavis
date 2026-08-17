@@ -34,14 +34,16 @@ Simple, clearly-scoped requirements that fit comfortably in one PR do not need a
 
 ## What Makes a Good Delivery Plan
 
-- **Thin slices**: each milestone or PR delivers something independently usable or testable,
-    not just an intermediate state that only makes sense in hindsight.
+- **Thin slices**: each milestone delivers something independently usable or testable,
+    not an intermediate state that only makes sense in hindsight.
 - **Clear scope boundaries**: what is explicitly *in* each milestone, and what is deferred.
 - **Honest deferral**: separate work that is *required for the feature to function* from
-    *nice-to-have UX or polish*; sequence the latter into explicitly-optional later milestones
-    (that may never be reached) or drop it entirely, rather than bundling it into the first cut.
+    *nice-to-have UX or polish*, and either sequence the latter late or drop it entirely
+    rather than bundling it into the first cut.
 - **Human decisions recorded**: the plan captures choices about sequencing and scope
     that aren't obvious from the requirements themselves.
+
+[`template.md`](template.md) expands on each of these at the point where they apply.
 
 ## Tracking Delivery in GitHub Issues
 
