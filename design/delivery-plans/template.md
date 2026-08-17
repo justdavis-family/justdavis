@@ -10,8 +10,9 @@ This is the most valuable paragraph in the document:
   it records *why* the sequence is what it is,
   which is exactly the reasoning that is otherwise lost.
 
-Call out anything deliberately pushed to a late, optional milestone,
-  and say plainly that the earlier milestones stand on their own without it.
+Note anything a later milestone depends on that isn't in hand yet
+  — a paid account, an external dependency, a decision still open —
+  since that is what actually determines whether it can be started, not where it sits in the order.
 
 ## Delivery Conventions
 
@@ -32,6 +33,13 @@ Milestones must be **thin vertical slices**:
   not an intermediate state that only makes sense in hindsight.
 A good test is whether the reader could stop after any milestone
   and still have something worth having.
+
+That test implies that **every milestone after the first is optional** — if slicing is working,
+  the plan can be abandoned at any point and what shipped is still worth having.
+So don't single out particular milestones as "optional";
+  that distinction carries no information.
+What *is* worth stating for a given milestone is whether it depends on something not yet in hand,
+  and what kind of value it adds (new capability versus polish on an existing one).
 
 ### M1 — [Short Milestone Title]
 
@@ -69,14 +77,6 @@ The milestone's tracking issue carries a copy so progress can be ticked off as w
 
 Repeat the `Deliverable` / `Deferred` / `In scope` / `Acceptance criteria` structure
   for each milestone.
-
-### M[N] — [Short Milestone Title] (Optional; May Not Be Reached)
-
-Mark genuinely optional milestones as such in the heading,
-  and open the section by saying what makes them optional
-  and confirming that the earlier milestones are fully usable without them.
-Note any prerequisite that would have to be satisfied before the milestone could start
-  (a paid account, an external dependency, a decision that hasn't been made yet).
 
 ## Explicitly Deferred (Out of Scope for This Plan)
 
