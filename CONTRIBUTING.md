@@ -45,15 +45,24 @@ MISE_EXPERIMENTAL=1 mise run ':ci'
 
 ## How Is This Repository Organized?
 
-Here is the current structure of the repository:
+The repository is roughly organized by domain,
+  with different subtrees for different types of projects.
+Here is the current structure:
 
 ```
-.github/     GitHub workflows and other config.
-.claude/     Agent instructions and other config.
-  rules/     Most agent instructions go here.
-design/      Design documents, workflow, and related materials.
-mise.toml    mise-en-place: dev env, tools, and tasks.
+.github/               GitHub workflows, issue templates, and the PR template.
+.claude/               Agent instructions and other config.
+  rules/               Shared agent rules and conventions, by topic and/or path.
+  skills/              Agent-invocable skills, one directory each.
+design/                Design documents, workflow, and related materials.
+github-analytics/      Collects GitHub repository analytics, and reports on them.
+macos-focus-gopher/    Reports the current macOS Focus / Do Not Disturb state.
+mise.toml              mise-en-place: dev env, tools, and tasks.
 ```
+
+New agent rules belong in `.claude/rules/`.
+A skill in `.claude/skills/` routes an agent through a workflow
+  that spans several rules or documents, rather than restating any of them.
 
 As sub-projects are added, they should be organized/grouped into directories by domain.
 
@@ -70,77 +79,38 @@ As sub-projects are added, they should be organized/grouped into directories by 
 
 ## What Workflow Is Used in This Repository?
 
-See [`design/README.md`](design/README.md)
-  for the full design process
-  and [`.claude/rules/pr-workflow.md`](.claude/rules/pr-workflow.md)
-  for the full PR workflow.
-As an intro to the process, here's the overview section from it...
+Design documents drive and guide the development of new features and capabilities,
+  and every change — design documents and implementations alike — lands through a pull request.
+The two documents below are authoritative;
+  read them rather than any summary of them:
 
-> ## Design and Development Workflow Overview
->
-> The design docs are used to drive and guide the development of new features and capabilities.
-> These documents are generally created/updated either during or before their implementation.
->
-> ```mermaid
-> flowchart TB
->     subgraph design [Design Workflow]
->         direction LR
->         vision["Product Vision<br/>(why)"]
->         requirements["Product Requirements<br/>(what, atomic)"]
->         engineering-designs["Engineering Designs<br/>(how)"]
->         vision --> requirements --> engineering-designs
->     end
->
->     subgraph development [Development Workflow]
->         direction LR
->         plans["Delivery Plans<br/>(iterations)"]
->         pull-requests["Pull Requests"]
->         plans --> pull-requests
->     end
->
->     design --> development
-> ```
->
-> 1. The **Design Workflow** is...
->   1. [**Product Vision**](design/product-vision/README.md):
->      ensure that your goals/work align with a new or existing product vision,
->      which capture the high-level goals and direction for the product.
->   2. [**Product Requirements**](design/product-requirements/README.md):
->      break out each new feature or capability that you'll be implementing into product requirements,
->      which capture the user story and acceptance criteria for each feature.
->    Once fully implemented, Product Requirements are generally immutable,
->      with any divergences from earlier requirements being captured in _new_ Product Requirements,
->      mutually cross-linked with the ones that they supercede.
->   3. [**Engineering Designs**](design/engineering-designs/README.md):
->      capture any significant decisions that guide the architecture and design
->      of the projects, modules, and other components in the repository.
->    Should be evergreen: Engineering Designs should be updated as the system evolves.
->     1. [**Engineering Principles**](design/engineering-principles/README.md):
->        codify the higher-level, cross-cutting, or philosophical standards and norms
->        that all Engineering Designs, Delivery Plans, and code should align with.
-> 2. The **Development Workflow** is...
->   1. [**Delivery Plans**](design/delivery-plans/README.md):
->      capture the planned iterations, PRs, and milestones that will deliver a product vision
->      or set of requirements — and in what order.
->    The primary value is scope management: making explicit decisions about what goes into
->      each PR before development begins, to surface over-commitment early.
->   2. [**Pull Requests**](.claude/rules/pr-workflow.md):
->      are used to prepare, review, and merge all changes
->      \— design documents, delivery plans, and the actual implementations \—
->      and this is enforced via the GitHub project's branch protection rules.
->    Note that, unless a PR's commits are very carefully curated,
->      they should generally be squashed before merging;
->      the `main` branch's commit history should tell a clear story of the project's evolution.
+- [`design/README.md`](design/README.md):
+    the full design and development process.
+  It covers what each type of design document is for,
+    what order they're written in,
+    and when the process can be skipped entirely
+    (simple bug fixes, maintenance, and infrastructure changes go straight to implementation).
+- [`.claude/rules/pr-workflow.md`](.claude/rules/pr-workflow.md):
+    the full PR workflow.
+  It covers branch naming, the required PR description outline,
+    and how PRs get reviewed and merged.
 
 ## What Other Conventions Should I Follow?
 
-This repository's conventions and standards apply to both humans and agents,
-  but are all codified for agent use:
+This repository's conventions and standards apply to both humans and agents.
+Most are codified for agent use, and live under `.claude/`:
 
 1. [`.claude/CLAUDE.md`](.claude/CLAUDE.md):
      the overall, repository-wide conventions.
 2. [`.claude/rules/`](.claude/rules/):
      more specific conventions, broken out by topic and/or file path/pattern.
+
+Where a convention is just as relevant to humans,
+  it lives in a contributor-facing document instead
+  — this file, or something under [`design/`](design/) —
+  and the `.claude/` files point at it rather than restating it.
+Agents reliably read the docs written for humans;
+  humans don't reliably read the docs written for agents.
 
 In particular, the project's [**Engineering Principles**](design/engineering-principles/README.md)
   codify the higher-level, cross-cutting, or philosophical standards and norms
