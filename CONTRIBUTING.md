@@ -104,9 +104,9 @@ Most are codified for agent use, and live under `.claude/`:
      more specific conventions, broken out by topic and/or file path/pattern.
 
 Where a convention is just as relevant to humans,
-  it lives in a contributor-facing document instead
+  it should live in a contributor-facing document instead
   — this file, or something under [`design/`](design/) —
-  and the `.claude/` files point at it rather than restating it.
+  and the `.claude/` files should point at it rather than restating it.
 Agents reliably read the docs written for humans;
   humans don't reliably read the docs written for agents.
 
