@@ -46,8 +46,6 @@ Also read: [`design/README.md`](../../../design/README.md) for the workflow over
 
 ## Authoring a Full Lineage
 
-This is the part that isn't written down anywhere else.
-
 Prefer **one PR with a commit per document**, pausing for review between them.
 Each document constrains the next,
   so a review that lands after the whole set is written arrives too late to help.
