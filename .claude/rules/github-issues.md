@@ -20,7 +20,9 @@ Work that follows the design process is tracked differently — see
 
 - Use available issue templates for consistency.
 - Write clear descriptions with context about why the work is needed.
-- Include acceptance criteria or definition of done.
+- Include acceptance criteria or a definition of done,
+    unless the issue points at a document that already carries them
+    — see [Design-Process Tracking Issues](#design-process-tracking-issues).
 - Apply metadata per the [Metadata](#metadata-types-labels-and-relationships) section below.
 
 **Available issue templates:**
@@ -90,11 +92,16 @@ For PRs that is normally the author, set when the PR is opened; an unassigned PR
 
 ### Deliberately Unused
 
-Recorded so they don't get re-litigated on sight:
+These are GitHub *fields*, recorded here so they don't get re-litigated on sight:
   **Priority**, **Effort**, **Start date**, and **Target date** (planning judgements that shift
   faster than a field can track, or schedule commitments that delivery plans avoid);
   **GitHub Milestones** (wrong granularity, and the name collides with delivery-plan milestones);
   and **Projects** boards (`gh issue list` already answers what a board would show at this scale).
+
+Not using them as fields doesn't stop an issue's *body* from discussing priority or effort
+  where that context helps — the maintenance template does exactly that.
+The objection is to the queryable, sortable dimension a field creates,
+  which invites triaging by a value that was only ever a guess.
 
 Revisit if a concrete, repeated need appears — but not before.
 
