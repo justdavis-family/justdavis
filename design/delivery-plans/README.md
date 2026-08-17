@@ -122,10 +122,11 @@ It does not restate the plan's content, and it closes cleanly when its last mile
 ### What a Milestone Issue Contains
 
 A milestone issue links to the delivery plan, names which milestone it tracks,
-  restates that milestone's deliverable briefly,
-  and **copies its acceptance-criteria checklist** so progress can be ticked off as work proceeds.
-The checklist is authored in the delivery plan and is authoritative there;
-  the issue's copy is a convenience for tracking, not a second source of truth.
+  and restates that milestone's deliverable briefly.
+It does **not** copy the acceptance criteria — a reader can follow the link,
+  and a second copy only creates something to drift.
+The working copy that gets ticked off belongs in the milestone's **PR**,
+  where the person doing the work is already looking.
 Close the issue when its PR merges, noting the implementing PR number.
 
 ### Sequencing and Cross-Links Use Issue Relationships

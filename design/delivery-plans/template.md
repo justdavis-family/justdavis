@@ -79,8 +79,9 @@ Citing that provenance is what makes it possible to notice when a requirement ch
 Without the citation, the two drift silently.
 
 This checklist is **authoritative here, in the plan**.
-The milestone's tracking issue carries a copy so progress can be ticked off as work proceeds,
-  but the copy is a convenience — when the two disagree, this document is correct.
+The milestone's PR carries a working copy so progress can be ticked off as the work proceeds,
+  but that copy is a convenience — when the two disagree, this document is correct.
+The milestone's tracking issue just links here rather than copying.
 
 ### M2 — [Short Milestone Title]
 

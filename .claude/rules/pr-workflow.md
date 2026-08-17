@@ -117,6 +117,8 @@ Use `--admin` only when bypassing review has been explicitly authorized
 
 ### Description Outline
 
+[`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md) pre-fills this outline,
+  so a new PR starts with the right sections already in place.
 The description for all PRs should have the following sections.
 
 - **Summary**: 1-3 sentences explaining things at a user story level:

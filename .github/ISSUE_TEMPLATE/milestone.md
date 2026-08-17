@@ -16,17 +16,6 @@ Set this issue as a sub-issue of that plan's issue.
 What a user, consumer, or contributor can actually do once this milestone merges.
 Copy the plan's wording; keep it short.
 
-## Acceptance Criteria
-
-Copy the milestone's checklist from the plan so it can be ticked off as work proceeds.
-
-- [ ] Criterion 1.
-- [ ] Criterion 2.
-- [ ] All CI checks pass.
-
-The plan is authoritative for this list.
-If the two ever disagree, correct this copy — not the plan.
-
 ## Blocked By
 
 Any milestone that has to land first.
