@@ -52,17 +52,15 @@ Here is the current structure:
 ```
 .github/               GitHub workflows, issue templates, and the PR template.
 .claude/               Agent instructions and other config.
-  rules/               Shared agent rules and conventions, by topic and/or path.
-  skills/              Agent-invocable skills, one directory each.
+  rules/               Shared agent rules and conventions, by topic and/or path;
+                         new agent rules belong here.
+  skills/              Agent-invocable skills, one directory each; a skill routes an
+                         agent through a workflow spanning several rules or documents.
 design/                Design documents, workflow, and related materials.
 github-analytics/      Collects GitHub repository analytics, and reports on them.
 macos-focus-gopher/    Reports the current macOS Focus / Do Not Disturb state.
 mise.toml              mise-en-place: dev env, tools, and tasks.
 ```
-
-New agent rules belong in `.claude/rules/`.
-A skill in `.claude/skills/` routes an agent through a workflow
-  that spans several rules or documents, rather than restating any of them.
 
 As sub-projects are added, they should be organized/grouped into directories by domain.
 
