@@ -16,8 +16,9 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
   so a parser surprise on a future macOS version does not block the earlier milestones.
 
 Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md),
-  **code signing and notarization are deferred to a final, optional milestone (M6) that may or may not
-  be reached.** The earlier milestones ship build-from-source distribution (`cargo install`, Homebrew
+  **code signing and notarization are deferred to the final milestone, which is gated on an Apple
+  Developer Program membership that has not been obtained.**
+  The earlier milestones ship build-from-source distribution (`cargo install`, Homebrew
   formula/tap), which need no Apple Developer account and no notarization. Because Full Disk Access can
   never be granted programmatically and is invalidated on every upgrade of an unsigned build, **graceful
   missing-FDA handling — a dedicated error code, an actionable deep-linked message, and clear
@@ -169,10 +170,11 @@ Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda
   documented path for contributors to extend coverage, and a project that is easy for humans and agents
   to discover, install, and use.
 
-### M6 — Code signing, notarization, and signed-update distribution (optional; may not be reached)
+### M6 — Code signing, notarization, and signed-update distribution
 
-This milestone is a **nice-to-have UX improvement**, explicitly optional, and may never be done.
-Everything in M1–M5 is fully usable without it; per the
+This milestone adds **polish rather than capability**, and it is gated on a prerequisite
+  not currently in hand (below).
+Everything before it is fully usable without it; per the
   [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md)
   signing/notarization do **not** enable programmatic FDA granting and do **not** remove the one-time
   manual grant — their value is narrower and incremental.
@@ -202,7 +204,7 @@ Everything in M1–M5 is fully usable without it; per the
 
 - A packaged client *library* (Rust, Python, or otherwise) for consumers — clients can speak the
     documented socket protocol or use the `focus-gopher` CLI until there is a concrete need.
-- Distribution beyond `cargo install` and Homebrew (formula/tap, plus the optional M6 cask) —
+- Distribution beyond `cargo install` and Homebrew (formula/tap, plus the signed cask) —
     e.g. a standalone downloadable installer — and auto-update.
 - Any operation beyond `get_focus()` — the narrow API is the point.
 
