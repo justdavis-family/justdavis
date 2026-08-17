@@ -18,11 +18,13 @@ The plan front-loads the stable parts (the project skeleton and the wire contrac
 Per the [FDA / signing / distribution analysis](../analyses/2026-05-18-macos-fda-distribution-signing.md),
   **code signing and notarization are deferred to the final milestone, which is gated on an Apple
   Developer Program membership that has not been obtained.**
-  The earlier milestones ship build-from-source distribution (`cargo install`, Homebrew
-  formula/tap), which need no Apple Developer account and no notarization. Because Full Disk Access can
-  never be granted programmatically and is invalidated on every upgrade of an unsigned build, **graceful
-  missing-FDA handling — a dedicated error code, an actionable deep-linked message, and clear
-  documentation — is a first-class concern of the earlier milestones, not something M6 introduces.**
+The earlier milestones ship build-from-source distribution (`cargo install`, Homebrew formula/tap),
+  which need no Apple Developer account and no notarization.
+Because Full Disk Access can never be granted programmatically
+  and is invalidated on every upgrade of an unsigned build,
+  **graceful missing-FDA handling — a dedicated error code, an actionable deep-linked message,
+  and clear documentation — is a first-class concern of the earlier milestones,
+  not something M6 introduces.**
 
 ## Delivery Conventions
 
