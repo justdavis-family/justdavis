@@ -106,10 +106,10 @@ Don't retroactively edit implemented requirements.
 
 ## Tracking and Shipping the Work
 
-- **Tracking issues** mirror the documents: a `vision` issue, a `requirement` issue,
-    and — when there's a delivery plan — one `milestone` sub-issue per milestone.
-  Documents are authoritative for *content*; issues for *status*.
-  Formats and structure are in
+- **Tracking issues start at the delivery plan**, not before it —
+    only concrete, shippable work gets tracked.
+  There are no vision, requirement, design, or analysis issues.
+  Formats, the idea-to-tracked-work flow, and the sequencing conventions are in
     [`design/delivery-plans/README.md`](../../../design/delivery-plans/README.md).
 - **Don't hard-code future milestone identifiers** in code, comments, or long-lived docs — plans shift.
   See [`.claude/rules/delivery-milestones.md`](../../rules/delivery-milestones.md)

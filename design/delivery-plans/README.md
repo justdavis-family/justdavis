@@ -45,54 +45,98 @@ Simple, clearly-scoped requirements that fit comfortably in one PR do not need a
 
 ## Tracking Delivery in GitHub Issues
 
-Design documents and GitHub issues play different roles, and the split matters:
+### What Earns a Tracking Issue
 
-- **The documents are authoritative for content.**
-  What a requirement means, and what each milestone contains, lives in the docs.
-- **The issues are authoritative for status.**
-  Whether something is in progress, blocked, or done lives in the issue tracker.
+**Only work that is concrete and shippable gets a tracking issue.**
+A delivery plan is the first artifact in the design process that qualifies:
+  it commits to a fixed list of milestones, each with acceptance criteria and a merge event.
+Everything upstream of it — analyses, the vision, requirements, engineering designs — is *thinking*,
+  and thinking is tracked as the single rough task it started life as.
 
-Issues therefore *summarize and link* their documents rather than restating them.
-When the two disagree about content, the document wins and the issue should be corrected.
+Two issue types come out of that:
 
-### The Issue Hierarchy
-
-Three levels of tracking issue mirror the design documents,
-  each carrying a label matching its document type:
-
-| Issue | Title format | Label | Mirrors |
+| Issue | Type | Title format | Represents |
 |---|---|---|---|
-| Vision | `<Project> — product vision` | `vision` | A product vision document. |
-| Requirement | `<Project> — product requirement` | `requirement` | A product requirement document. |
-| Milestone | `<Project> M<N> — <milestone title>` | `milestone` | One milestone in a delivery plan. |
+| Delivery plan | `Delivery Plan` | `<Project> — <plan title>` | A delivery plan, as a container for its milestones. |
+| Milestone | `Milestone` | `<Project> M<N> — <milestone title>` | One milestone, delivered by one PR. |
 
-Milestone issues are created as **GitHub sub-issues of the requirement issue** they deliver,
-  so the requirement issue shows delivery progress without duplicating the milestone list.
+Milestone issues are **GitHub sub-issues of the delivery-plan issue**,
+  which gives the plan issue a rollup progress view across its milestones.
 
-### What Each Issue Contains
+Deliberately excluded:
 
-A **requirement issue** links to its requirement document, summarizes it in a paragraph,
-  links to the related vision issue, records priority,
-  and points at the delivery plan and the milestone sub-issues that deliver it.
+- **No vision issues.**
+  A vision is inspirational rather than deliverable; it has no done-state,
+    so an issue for it would stay open forever and track nothing.
+- **No requirement issues.**
+  Requirements *do* carry acceptance criteria, so this is not a "nothing to track" case —
+    it is a redundancy case.
+  A requirement's acceptance criteria are satisfied *through* the milestones that deliver it,
+    so a requirement issue would duplicate the status its milestone issues already report.
+  A requirement's own lifecycle lives in its document's `status:` frontmatter,
+    updated by the PR that implements it.
+- **No engineering-design or analysis issues**, for the same reason as visions:
+    they are reasoning, not deliverables.
 
-A **milestone issue** links to the delivery plan and names which milestone it tracks,
-  then restates that milestone's deliverable briefly
+Revisit these exclusions if a concrete use case appears that the milestone issues cannot serve.
+
+### How an Idea Becomes Tracked Work
+
+Tracking issues are not created as a batch of paperwork when the design docs land.
+The tracker follows the work as it matures:
+
+1. A rough idea gets captured as an ordinary task, wherever capture normally happens.
+2. Over days or weeks it is refined — into analyses, then a vision,
+     then requirements and engineering designs.
+   Throughout, it stays **one** task.
+   Nothing is created per document.
+3. When a delivery plan lands, that original task **becomes** the delivery-plan issue,
+     and milestone sub-issues are created under it.
+
+The point of step 3 is that nothing is duplicated:
+  the task you already had matures into the container for the work it turned out to require.
+
+### The Delivery-Plan Issue Is Not the Delivery Plan
+
+The plan **document** stays in `design/`.
+It is versioned, reviewed through a PR, and accumulates the record of *why* the sequence is what it is
+  — including how it was resequenced along the way.
+None of that survives in an issue.
+
+The plan **issue** is a *container*: a pointer to the document, plus the milestone sub-issues.
+It does not restate the plan's content, and it closes cleanly when its last milestone closes.
+That done-condition is what distinguishes it from a vision issue.
+
+### What a Milestone Issue Contains
+
+A milestone issue links to the delivery plan, names which milestone it tracks,
+  restates that milestone's deliverable briefly,
   and **copies its acceptance-criteria checklist** so progress can be ticked off as work proceeds.
 The checklist is authored in the delivery plan and is authoritative there;
   the issue's copy is a convenience for tracking, not a second source of truth.
 Close the issue when its PR merges, noting the implementing PR number.
 
-### When Tracking Issues Are Warranted
+### Sequencing and Cross-Links Use Issue Relationships
 
-Create tracking issues when a delivery plan exists —
-  that is, when work spans multiple PRs and the sequencing matters.
-Work small enough to fit in a single PR needs no delivery plan
-  and no milestone issues;
-  a plain issue (or no issue at all, for trivial changes) is enough.
+Milestones are sequenced, and they relate to requirements many-to-many.
+Both facts are recorded as **GitHub issue relationships**, not as prose:
 
-### Requirements, Milestones, and PRs
+- A milestone that cannot start until another finishes is marked **blocked by** it.
+- A milestone that delivers part of a requirement links to that requirement's *document*;
+    since requirements have no issues, there is nothing to link to in the tracker.
 
-These are **not** necessarily one-to-one, and conflating them causes trouble:
+Recording the blocking relationships is what makes creating every milestone sub-issue up front
+  workable rather than noisy:
+  unstarted milestones are *visibly blocked*,
+  so a query for actionable work skips them automatically,
+  and the plan issue's rollup still counts them.
+If those relationships are ever dropped,
+  the up-front sub-issues become a queue of speculative work that resequencing invalidates —
+  so the two conventions stand or fall together.
+
+### Milestones, Requirements, and PRs
+
+These are **not** one-to-one, and conflating them causes trouble:
 
 - A requirement should generally be scoped to be implementable in a single PR
     (see [../product-requirements/README.md](../product-requirements/README.md)).
@@ -103,10 +147,20 @@ These are **not** necessarily one-to-one, and conflating them causes trouble:
     (project scaffolding, CI wiring, a contract definition).
 
 When a milestone doesn't map cleanly onto exactly one requirement,
-  say so explicitly in the milestone issue,
-  and link every requirement it touches.
+  say so explicitly in the milestone's section of the plan,
+  and link every requirement document it touches.
 If a requirement repeatedly needs several milestones to deliver,
   that is a signal the requirement was sliced too thick — consider splitting it.
+
+### Issues Outside the Design Process
+
+Two other kinds of issue are unaffected by any of the above,
+  and remain the most common reason to open one:
+
+- **Capture**: an idea, an annoyance, or a defect that shouldn't be lost.
+- **Deferred work**: anything a PR consciously left undone,
+    which [`.claude/rules/pr-workflow.md`](/.claude/rules/pr-workflow.md)
+    requires be tracked before that PR can merge.
 
 ## Referencing Milestones in Code and Docs
 

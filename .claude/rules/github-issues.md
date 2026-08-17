@@ -21,15 +21,17 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 
 ## Design-Process Tracking Issues
 
-Work that follows the [design process](/design/README.md) is tracked with a matching hierarchy of
-  issues: a `vision` issue, a `requirement` issue, and — when there is a delivery plan —
-  one `milestone` sub-issue per milestone.
-The design documents stay authoritative for *content*;
-  these issues are authoritative for *status*.
+Work that follows the [design process](/design/README.md) is **not** mirrored into issues
+  document-by-document.
+Tracking starts only once the work is concrete and shippable —
+  that is, once a delivery plan exists.
+At that point the idea's original capture task becomes a `Delivery Plan` issue,
+  with one `Milestone` sub-issue per milestone.
+There are no vision, requirement, engineering-design, or analysis issues.
 
 See [`design/delivery-plans/README.md`](/design/delivery-plans/README.md)
-  for the title formats, labels, issue-body structure,
-  and guidance on how requirements, milestones, and PRs correspond.
+  for the reasoning behind those exclusions, the title formats,
+  the issue-body structure, and how milestone sequencing is recorded.
 
 ## Linking Issues to PRs
 
