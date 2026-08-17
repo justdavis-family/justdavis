@@ -16,7 +16,11 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 - Include acceptance criteria or definition of done.
 - Apply metadata per the [Metadata](#metadata-types-labels-and-relationships) section below.
 
-**Available issue templates:** bug report, maintenance, delivery plan, milestone.
+**Available issue templates:**
+  [bug report](/.github/ISSUE_TEMPLATE/bug_report.md),
+  [maintenance](/.github/ISSUE_TEMPLATE/maintenance.md),
+  [delivery plan](/.github/ISSUE_TEMPLATE/delivery_plan.md),
+  [milestone](/.github/ISSUE_TEMPLATE/milestone.md).
 
 ## Design-Process Tracking Issues
 
