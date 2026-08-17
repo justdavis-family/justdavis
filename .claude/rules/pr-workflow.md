@@ -53,7 +53,13 @@ That duplication is only worth its cost once it is applied automatically,
      `git checkout -b feat/your-feature-name`.
 2. Make changes and commit to the branch.
 3. Push branch: `git push -u origin feat/your-feature-name`.
-4. Create PR: `gh pr create --title "Title" --body "Description"`.
+4. Compose the PR body by filling in
+     [`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md),
+     then create the PR with `gh pr create --title "Title" --body-file <filled-in-body>`.
+
+   **Read that template first.**
+   Passing `--body` or `--body-file` makes `gh` skip the template it would otherwise apply,
+     so a PR created that way only carries the required sections if you put them there.
    Title it with the same type prefix as the branch, assign it to yourself,
      and apply the matching type label
      — see [`github-issues.md`](github-issues.md) for what else does and doesn't get set.
