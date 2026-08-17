@@ -31,6 +31,12 @@ This list is deliberately short — resist adding types until one is genuinely n
 
 Scoped prefixes are allowed where a change is confined to one project
   (`docs(squawkbox): …`), as is the `!` breaking-change marker (`feat!: …`).
+Scopes are especially worth using here because this is a monorepo:
+  `git log --oneline` spans every project at once,
+  so the scope is often the fastest way to tell whose history you are reading.
+Note that a scope can only be expressed in the commit and PR title —
+  branch names and labels carry the bare type,
+  since a scoped variant of each would multiply the vocabulary for no gain.
 
 **The PR label duplicates the title prefix on purpose.**
 It makes the vocabulary visible to anyone reading a PR list,
