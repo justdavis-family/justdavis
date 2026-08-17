@@ -32,19 +32,12 @@ Point-in-time content
 
 #### Exceptions
 
-**The delivery plan itself**, and its milestone tracking issues, are where milestones are
-  enumerated — that is the whole point of the document.
-`M1`, `M2`, … headings in a delivery plan are expected, not a violation:
-  the rule above governs everything that *refers* to the breakdown,
-  not the document that *defines* it.
+The rule governs content that *refers* to the milestone breakdown, not content that *defines* it.
+So two places may name milestones:
 
-**A project's own `README.md`** may name the **current** milestone
-  (for example, to mark "this state"),
-  because that describes the present, not a forecast,
-  and a README is consciously updated as project state changes.
-
-Future and past milestones still should not be enumerated in long-lived content
-  outside those two places.
+- **The delivery plan and its tracking issues** — `M1`, `M2`, … headings are the point.
+- **A project's own `README.md`**, for the **current** milestone only,
+    since that describes the present rather than a forecast.
 
 ### Point-in-Time Content — PR Titles/Descriptions, Commit Messages
 
