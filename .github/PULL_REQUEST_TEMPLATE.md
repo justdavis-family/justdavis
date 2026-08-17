@@ -36,8 +36,8 @@ The plan remains authoritative — if the two disagree, fix this copy.
 - [ ] **Deferred work tracked in GitHub issues**: Any work deferred for future implementation
       must be tracked in GitHub issues with clear descriptions and acceptance criteria.
 - [ ] **Follows Engineering Principles**: Code adheres to all
-      [`design/engineering-principles/`](../design/engineering-principles/) or has documented
-      (and reasonable) explanations for any divergences.
+      [`design/engineering-principles/`](https://github.com/justdavis-family/justdavis/tree/main/design/engineering-principles/)
+      or has documented (and reasonable) explanations for any divergences.
 
 <!--
 Add task-specific criteria for the kind of change this is — refactor, new feature,
