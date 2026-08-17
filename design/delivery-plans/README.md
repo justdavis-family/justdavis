@@ -104,7 +104,7 @@ The tracker follows the work as it matures:
 Step 3 has two paths, and neither is more correct than the other:
 
 - If the idea was already tracked as a GitHub issue,
-    **relabel and rewrite that issue in place** rather than opening a new one.
+    **retype and rewrite that issue in place** rather than opening a new one.
   The task you already had matures into the container for the work it turned out to require,
     and its history and any discussion on it come along.
 - If it was tracked elsewhere, or not at all, **create the delivery-plan issue fresh.**
