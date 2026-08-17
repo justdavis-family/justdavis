@@ -71,6 +71,12 @@ A milestone may relate to zero engineering designs or to several:
 - [ ] The conditions that have to hold before this milestone is done.
 - [ ] Write them so they can be checked off, and so someone other than the author could check them.
 - [ ] Include the testing and documentation bars the milestone has to clear.
+- [ ] Cite the source when a criterion comes from a product requirement, e.g.
+        "…(from [Requirement Title](../product-requirements/YYYY-MM-DD-short-name.md))".
+
+Citing that provenance is what makes it possible to notice when a requirement changes
+  and its milestones no longer satisfy it.
+Without the citation, the two drift silently.
 
 This checklist is **authoritative here, in the plan**.
 The milestone's tracking issue carries a copy so progress can be ticked off as work proceeds,
