@@ -30,14 +30,21 @@ Point-in-time content
     for the milestone breakdown;
     link to them rather than restating the list.
 
-#### Exception
+#### Exceptions
 
-A project's own `README.md` **may** name the **current** milestone
+**The delivery plan itself**, and its milestone tracking issues, are where milestones are
+  enumerated — that is the whole point of the document.
+`M1`, `M2`, … headings in a delivery plan are expected, not a violation:
+  the rule above governs everything that *refers* to the breakdown,
+  not the document that *defines* it.
+
+**A project's own `README.md`** may name the **current** milestone
   (for example, to mark "this state"),
   because that describes the present, not a forecast,
   and a README is consciously updated as project state changes.
+
 Future and past milestones still should not be enumerated in long-lived content
-  outside the delivery plan and its issues.
+  outside those two places.
 
 ### Point-in-Time Content — PR Titles/Descriptions, Commit Messages
 
