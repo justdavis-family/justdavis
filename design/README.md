@@ -168,7 +168,7 @@ Examples:
 
 ## How Do I Author a Full Set of These Documents?
 
-When writing several documents for one project,
+When writing several design documents for one project,
   prefer **one PR with a commit per document**, pausing for review between them.
 Each document constrains the next,
   so a review that lands after the whole set is written arrives too late to help.
