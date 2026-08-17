@@ -2,7 +2,7 @@
 name: Bug Report
 about: Report a bug that needs resolution
 title: ''
-labels: bug
+type: Bug
 assignees: ''
 ---
 

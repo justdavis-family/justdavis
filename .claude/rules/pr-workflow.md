@@ -8,22 +8,49 @@ This repository uses a **PR-based workflow** with branch protection rules enforc
 - **ALWAYS** create a feature branch before making any code changes.
 - **NEVER** attempt to commit directly to the main branch.
 
-## Branch Naming Conventions
+## Change Types
 
-- `feature/descriptive-name` — New features or enhancements.
-- `fix/descriptive-name` — Bug fixes.
-- `refactor/descriptive-name` — Code refactoring without functional changes.
-- `maintenance/descriptive-name` — Dependency updates and maintenance tasks.
-- `docs/descriptive-name` — Documentation updates.
+One vocabulary, taken from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/),
+  runs through the whole life of a change:
+  the branch it is developed on, the commit that lands it, and the label on its PR.
+Keeping the three identical means the branch name predicts the commit subject,
+  and neither can quietly disagree with the label.
+
+| Type | Branch | Commit / PR title | PR label | Use for |
+|---|---|---|---|---|
+| `feat` | `feat/<name>` | `feat: …` | `feat` | New features or capabilities. |
+| `fix` | `fix/<name>` | `fix: …` | `fix` | Bug fixes. |
+| `docs` | `docs/<name>` | `docs: …` | `docs` | Documentation and design-process changes. |
+| `chore` | `chore/<name>` | `chore: …` | `chore` | Dependency updates, tooling, and other maintenance. |
+| `ci` | `ci/<name>` | `ci: …` | `ci` | CI workflow and automation changes. |
+| `refactor` | `refactor/<name>` | `refactor: …` | `refactor` | Restructuring without behavior change. |
+
+Only `feat` and `fix` are mandated by the Conventional Commits spec itself;
+  the other four come from the Angular convention that the spec references.
+This list is deliberately short — resist adding types until one is genuinely needed.
+
+Scoped prefixes are allowed where a change is confined to one project
+  (`docs(squawkbox): …`), as is the `!` breaking-change marker (`feat!: …`).
+
+**The PR label duplicates the title prefix on purpose.**
+It makes the vocabulary visible to anyone reading a PR list,
+  and `label:docs` is a cleaner filter than searching title text.
+That duplication is only worth its cost once it is applied automatically,
+  which is tracked in
+  [#34](https://github.com/justdavis-family/justdavis/issues/34);
+  until that lands, treat the label as best-effort rather than expected,
+  and never let it contradict the title.
 
 ## Workflow Using gh CLI
 
-1. Create and checkout a feature branch: `git checkout -b feature/your-feature-name`.
-2. Make changes and commit to the feature branch.
-3. Push branch: `git push -u origin feature/your-feature-name`.
+1. Create and checkout a branch, prefixed per the table above:
+     `git checkout -b feat/your-feature-name`.
+2. Make changes and commit to the branch.
+3. Push branch: `git push -u origin feat/your-feature-name`.
 4. Create PR: `gh pr create --title "Title" --body "Description"`.
-   Assign it to yourself, and apply a label only if one earns its place
-     — see [`github-issues.md`](github-issues.md).
+   Title it with the same type prefix as the branch, assign it to yourself,
+     and apply the matching type label
+     — see [`github-issues.md`](github-issues.md) for what else does and doesn't get set.
 5. Review and approve PR (self-review is acceptable, particularly for small changes).
 6. Merge the PR — squash by default; see [Merging PRs](#merging-prs) below
      for the commit-message convention and exact `gh` invocation.
@@ -36,9 +63,8 @@ The squashed commit lives in `git log` forever, so invest in writing a good mess
 
 ### Commit Message
 
-- **Subject**: `<type>: <description> (#<PR-number>)`.
-  Use the same `<type>:` prefixes as recent history
-    (e.g. `docs:`, `fix:`, `chore:`, `ci:`, `feat:`, `refactor:`).
+- **Subject**: `<type>: <description> (#<PR-number>)`,
+    where `<type>` is from the [Change Types](#change-types) table above.
   GitHub does not append `(#<PR-number>)` automatically when `--subject` is supplied,
     so include it manually for traceability back to the PR.
 - **Body**: copy the **Summary** and **Context** sections of the PR description verbatim,
