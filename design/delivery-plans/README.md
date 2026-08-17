@@ -129,23 +129,22 @@ The working copy that gets ticked off belongs in the milestone's **PR**,
   where the person doing the work is already looking.
 Close the issue when its PR merges, noting the implementing PR number.
 
-### Sequencing and Cross-Links Use Issue Relationships
+### Sequencing Uses Issue Relationships
 
-Milestones are sequenced, and they relate to requirements many-to-many.
-Both facts are recorded as **GitHub issue relationships**, not as prose:
+A milestone that cannot start until another finishes is marked **blocked by** it,
+  as a GitHub issue relationship rather than as prose in the issue body.
 
-- A milestone that cannot start until another finishes is marked **blocked by** it.
-- A milestone that delivers part of a requirement links to that requirement's *document*;
-    since requirements have no issues, there is nothing to link to in the tracker.
+Requirements are a different case: a milestone may deliver part of one, or several,
+  but requirements have no issues, so there is nothing to relate to in the tracker.
+Link the requirement *document* instead.
 
 Recording the blocking relationships is what makes creating every milestone sub-issue up front
   workable rather than noisy:
   unstarted milestones are *visibly blocked*,
   so a query for actionable work skips them automatically,
-  and the plan issue's rollup still counts them.
-If those relationships are ever dropped,
-  the up-front sub-issues become a queue of speculative work that resequencing invalidates —
-  so the two conventions stand or fall together.
+  while the plan issue's rollup still counts them.
+Drop the relationships and those sub-issues become a queue of speculative work
+  that resequencing invalidates.
 
 ### Milestones, Requirements, and PRs
 
