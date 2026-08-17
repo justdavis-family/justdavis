@@ -107,8 +107,6 @@ Where a convention is just as relevant to humans,
   it should live in a contributor-facing document instead
   — this file, or something under [`design/`](design/) —
   and the `.claude/` files should point at it rather than restating it.
-Agents reliably read the docs written for humans;
-  humans don't reliably read the docs written for agents.
 
 In particular, the project's [**Engineering Principles**](design/engineering-principles/README.md)
   codify the higher-level, cross-cutting, or philosophical standards and norms
