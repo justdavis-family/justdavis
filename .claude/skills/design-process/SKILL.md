@@ -11,8 +11,8 @@ description: >-
 
 # Design Process
 
-Routing only.
-Every rule lives in the linked documents — read the one you need and follow it there.
+This skill points you at the right document for each step.
+Read the ones you need and follow them; the rules live there, not here.
 
 ## First: Does This Work Need the Process at All?
 
