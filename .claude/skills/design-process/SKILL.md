@@ -11,20 +11,22 @@ description: >-
 
 # Design Process
 
-Routing only. Every rule lives in the linked documents — read the one you need and follow it there.
+Routing only.
+Every rule lives in the linked documents — read the one you need and follow it there.
 
 ## First: Does This Work Need the Process at All?
 
-New features and significant enhancements do; simple bug fixes, maintenance, and infrastructure
-  changes go straight to implementation
+New features and significant enhancements do;
+  simple bug fixes, maintenance, and infrastructure changes go straight to implementation
   — see [When Should the Design Process Be Followed?](../../../design/README.md#when-should-the-design-process-be-followed).
 
-Don't over-apply this. A one-line fix does not need a vision document.
+Don't over-apply this.
+A one-line fix does not need a vision document.
 
 ## The Sequence
 
-Work forward through these; skip a step only when you can say why it doesn't apply.
-Read each directory's `README.md` before writing that document — it defines what belongs there.
+Work forward through these;
+  skip a step only when you can say why it doesn't apply.
 
 | Step | Directory | Rules | Template |
 |---|---|---|---|
@@ -36,14 +38,15 @@ Read each directory's `README.md` before writing that document — it defines wh
 
 Supporting types outside the sequence:
   [engineering principles](../../../design/engineering-principles/README.md) — cross-cutting standards,
-  indexed in [`.claude/rules/engineering-principles.md`](../../rules/engineering-principles.md);
+    indexed in [`.claude/rules/engineering-principles.md`](../../rules/engineering-principles.md);
   and [notes](../../../design/notes/) — half-baked ideas.
 
-Also read: [`design/README.md`](../../../design/README.md) for the workflow overview and naming
-  conventions, [`.claude/rules/markdown-style.md`](../../rules/markdown-style.md) for formatting,
-  [`.claude/rules/pr-workflow.md`](../../rules/pr-workflow.md) for shipping, and
-  [`.claude/rules/delivery-milestones.md`](../../rules/delivery-milestones.md) before naming a
-  milestone anywhere outside the delivery plan.
+Also read:
+  [`design/README.md`](../../../design/README.md) for the workflow overview and naming conventions;
+  [`.claude/rules/markdown-style.md`](../../rules/markdown-style.md) for formatting;
+  [`.claude/rules/pr-workflow.md`](../../rules/pr-workflow.md) for shipping;
+  and [`.claude/rules/delivery-milestones.md`](../../rules/delivery-milestones.md)
+  before naming a milestone anywhere outside the delivery plan.
 
 ## Authoring a Full Lineage
 

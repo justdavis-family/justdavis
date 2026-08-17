@@ -65,9 +65,11 @@ Most fields GitHub offers do not clear that bar, and are listed as unused below.
 
 Every issue carries one; PRs cannot, as GitHub does not offer types there.
 
-- **`Bug`** — something is broken. Set by the bug-report template.
+- **`Bug`** — something is broken.
+  Set by the bug-report template.
 - **`Feature`** — a new capability, not yet broken down into deliverable work.
-- **`Task`** — everything else, including maintenance and tooling. Set by the maintenance template.
+- **`Task`** — everything else, including maintenance and tooling.
+  Set by the maintenance template.
 - **`Delivery Plan`** and **`Milestone`** — the tracking issues described above.
 
 ### Labels
@@ -93,8 +95,9 @@ For PRs that is normally the author, set when the PR is opened; an unassigned PR
 ### Deliberately Unused
 
 These are GitHub *fields*, recorded here so they don't get re-litigated on sight:
-  **Priority**, **Effort**, **Start date**, and **Target date** (planning judgements that shift
-  faster than a field can track, or schedule commitments that delivery plans avoid);
+  **Priority**, **Effort**, **Start date**, and **Target date**
+    (planning judgements that shift faster than a field can track,
+    or schedule commitments that delivery plans avoid);
   **GitHub Milestones** (wrong granularity, and the name collides with delivery-plan milestones);
   and **Projects** boards (`gh issue list` already answers what a board would show at this scale).
 
