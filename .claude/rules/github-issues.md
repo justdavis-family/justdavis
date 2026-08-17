@@ -4,7 +4,8 @@ Most issues exist for one of two reasons, and neither involves the design proces
 
 - **Capture**: an idea, an annoyance, or a defect that shouldn't be lost.
 - **Deferred work**: anything a PR consciously left undone,
-    which [`pr-workflow.md`](pr-workflow.md) requires be tracked before that PR can merge.
+    which the [PR template](/.github/PULL_REQUEST_TEMPLATE.md)'s success criteria
+    require be tracked before that PR can merge.
 
 Work that follows the design process is tracked differently — see
   [Design-Process Tracking Issues](#design-process-tracking-issues) below.
