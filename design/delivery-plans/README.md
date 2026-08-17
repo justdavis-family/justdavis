@@ -164,16 +164,6 @@ When a milestone doesn't map cleanly onto exactly one requirement,
 If a requirement repeatedly needs several milestones to deliver,
   that is a signal the requirement was sliced too thick — consider splitting it.
 
-### Issues Outside the Design Process
-
-Two other kinds of issue are unaffected by any of the above,
-  and remain the most common reason to open one:
-
-- **Capture**: an idea, an annoyance, or a defect that shouldn't be lost.
-- **Deferred work**: anything a PR consciously left undone,
-    which [`.claude/rules/pr-workflow.md`](/.claude/rules/pr-workflow.md)
-    requires be tracked before that PR can merge.
-
 ## Referencing Milestones in Code and Docs
 
 Don't hard-code specific milestone identifiers (M2, M3, …) in code, comments, or project docs:

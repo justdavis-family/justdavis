@@ -1,6 +1,13 @@
 # GitHub Issue Workflow
 
-Use GitHub issues to track all planned work, deferred features, and known bugs.
+Most issues exist for one of two reasons, and neither involves the design process:
+
+- **Capture**: an idea, an annoyance, or a defect that shouldn't be lost.
+- **Deferred work**: anything a PR consciously left undone,
+    which [`pr-workflow.md`](pr-workflow.md) requires be tracked before that PR can merge.
+
+Work that follows the design process is tracked differently — see
+  [Design-Process Tracking Issues](#design-process-tracking-issues) below.
 
 ## Before Creating an Issue
 
