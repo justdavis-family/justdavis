@@ -27,6 +27,19 @@ Use [`template.md`](template.md) as a starting point for new vision documents.
 The template includes sections for Problem and Motivation, Vision,
   Success Metrics, and Requirements tracking.
 
+## Priority Annotations
+
+Vision documents may annotate each requirement in the Requirements list
+  with a parenthetical priority label that captures its standing in the broader vision:
+
+- `(must have)` — required for the vision to be considered delivered.
+- `(nice to have)` — improves the vision but the vision can be delivered without it.
+- `(stretch)` — aspirational;
+    will be delivered if time and circumstances permit but is not required.
+
+These labels are advisory and live alongside the requirement's `status` field,
+  which captures lifecycle state (`draft`, `implemented`, `superseded`).
+
 ## File Naming Convention
 
 See [../README.md](../README.md) for file naming conventions
