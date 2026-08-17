@@ -58,10 +58,13 @@ Write it from their perspective, not the implementer's.
 - Include tests, docs, and CI wiring as explicit scope items where they apply.
 
 Scope bounds the work; it doesn't describe how the work is done.
-Where the *how* matters for judging scope, **reference the relevant part of the engineering design**
-  rather than restating it —
-  the design is authoritative and evergreen,
-  so a copy here will drift out of date and start contradicting it.
+Where the *how* matters for judging scope, **reference the relevant parts of any related engineering designs**
+  rather than restating them —
+  designs are authoritative and evergreen,
+  so a copy here will drift out of date and start contradicting them.
+A milestone may relate to zero engineering designs or to several:
+  designs are written for specific concerns that warrant one,
+  not one per milestone.
 
 **Acceptance criteria:**
 
@@ -93,5 +96,5 @@ Track anything here that needs to survive as actionable work
 
 - **Product Vision**: [Vision Title](../product-vision/YYYY-MM-DD-short-name.md).
 - **Product Requirements**: [Requirement Title](../product-requirements/YYYY-MM-DD-short-name.md).
-- **Engineering Design**: [Design Title](../engineering-designs/YYYY-MM-DD-short-name.md).
+- **Engineering Designs**: [Design Title](../engineering-designs/YYYY-MM-DD-short-name.md).
 - **Analyses**: [Analysis Title](../analyses/YYYY-MM-DD-short-name.md).
