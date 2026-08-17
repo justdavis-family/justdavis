@@ -27,6 +27,10 @@ The repository is roughly organized by domain,
     shared agent rules and conventions,
     broken out by topic and/or file path/pattern;
     new agent rules belong here.
+- `.claude/skills/`:
+    agent-invocable skills, one directory each, containing a `SKILL.md`;
+    a skill routes an agent through a workflow that spans several rules or documents,
+    rather than restating any of them.
 - `design/`:
     shared design documentation,
     including vision, requirements, principles, designs, and plans.

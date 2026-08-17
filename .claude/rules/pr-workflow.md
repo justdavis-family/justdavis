@@ -8,24 +8,87 @@ This repository uses a **PR-based workflow** with branch protection rules enforc
 - **ALWAYS** create a feature branch before making any code changes.
 - **NEVER** attempt to commit directly to the main branch.
 
-## Branch Naming Conventions
+## Change Types
 
-- `feature/descriptive-name` — New features or enhancements.
-- `fix/descriptive-name` — Bug fixes.
-- `refactor/descriptive-name` — Code refactoring without functional changes.
-- `maintenance/descriptive-name` — Dependency updates and maintenance tasks.
-- `docs/descriptive-name` — Documentation updates.
+One vocabulary, taken from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/),
+  runs through the whole life of a change:
+  the branch it is developed on, the commit that lands it, and the label on its PR.
+Keeping the three identical means the branch name predicts the commit subject,
+  and neither can quietly disagree with the label.
+
+| Type | Branch | Commit / PR title | PR label | Use for |
+|---|---|---|---|---|
+| `feat` | `feat/<name>` | `feat: …` | `feat` | New features or capabilities. |
+| `fix` | `fix/<name>` | `fix: …` | `fix` | Bug fixes. |
+| `docs` | `docs/<name>` | `docs: …` | `docs` | Documentation and design-process changes. |
+| `chore` | `chore/<name>` | `chore: …` | `chore` | Dependency updates, tooling, and other maintenance. |
+| `ci` | `ci/<name>` | `ci: …` | `ci` | CI workflow and automation changes. |
+| `refactor` | `refactor/<name>` | `refactor: …` | `refactor` | Restructuring without behavior change. |
+
+Only `feat` and `fix` are mandated by the Conventional Commits spec itself;
+  the other four come from the Angular convention that the spec references.
+This list is deliberately short — resist adding types until one is genuinely needed.
+
+Scoped prefixes are allowed where a change is confined to one project
+  (`docs(squawkbox): …`), as is the `!` breaking-change marker (`feat!: …`).
+Scopes are especially worth using here because this is a monorepo:
+  `git log --oneline` spans every project at once,
+  so the scope is often the fastest way to tell whose history you are reading.
+Note that a scope can only be expressed in the commit and PR title —
+  branch names and labels carry the bare type,
+  since a scoped variant of each would multiply the vocabulary for no gain.
+
+**The PR label duplicates the title prefix on purpose.**
+It makes the vocabulary visible to anyone reading a PR list,
+  and `label:docs` is a cleaner filter than searching title text.
+That duplication is only worth its cost once it is applied automatically,
+  which is tracked in
+  [#34](https://github.com/justdavis-family/justdavis/issues/34);
+  until that lands, treat the label as best-effort rather than expected,
+  and never let it contradict the title.
 
 ## Workflow Using gh CLI
 
-1. Create and checkout a feature branch: `git checkout -b feature/your-feature-name`.
-2. Make changes and commit to the feature branch.
-3. Push branch: `git push -u origin feature/your-feature-name`.
-4. Create PR: `gh pr create --title "Title" --body "Description"`.
+1. Create and checkout a branch, prefixed per the table above:
+     `git checkout -b feat/your-feature-name`.
+2. Make changes and commit to the branch.
+3. Push branch: `git push -u origin feat/your-feature-name`.
+4. Create the PR — see [Creating a PR with the Template](#creating-a-pr-with-the-template) below.
+   Title it with the same type prefix as the branch, assign it to yourself,
+     and apply the matching type label
+     — see [`github-issues.md`](github-issues.md) for what else does and doesn't get set.
 5. Review and approve PR (self-review is acceptable, particularly for small changes).
 6. Merge the PR — squash by default; see [Merging PRs](#merging-prs) below
      for the commit-message convention and exact `gh` invocation.
 7. Branches are automatically deleted after merge (GitHub setting).
+
+## Creating a PR with the Template
+
+[`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md) holds the required
+  description outline.
+How it reaches your PR depends on how you invoke `gh`, and the two paths differ in a way
+  that is easy to get wrong.
+
+**Interactively — nothing special to do.**
+Run `gh pr create` with no `--title` or `--body`.
+`gh` prompts for both, and applies the repository's template automatically.
+
+**Non-interactively — you must supply the filled-in body yourself.**
+`gh` requires `--body` or `--body-file` when it can't prompt,
+  and supplying either skips the template
+  (`gh pr create --help`: "Use `--title` and `--body` to skip this").
+So copy the template to a scratch file, fill in the copy, and pass that:
+
+```bash
+cp .github/PULL_REQUEST_TEMPLATE.md /tmp/pr-body.md
+# …edit /tmp/pr-body.md, filling in each section…
+gh pr create --title "docs: your title" --body-file /tmp/pr-body.md \
+  --assignee @me --label docs
+```
+
+Note that `-T` / `--template` does **not** help here:
+  it only seeds the interactive editor,
+  and `gh` rejects a non-interactive run that supplies it without a body.
 
 ## Merging PRs
 
@@ -34,9 +97,8 @@ The squashed commit lives in `git log` forever, so invest in writing a good mess
 
 ### Commit Message
 
-- **Subject**: `<type>: <description> (#<PR-number>)`.
-  Use the same `<type>:` prefixes as recent history
-    (e.g. `docs:`, `fix:`, `chore:`, `ci:`, `feat:`, `refactor:`).
+- **Subject**: `<type>: <description> (#<PR-number>)`,
+    where `<type>` is from the [Change Types](#change-types) table above.
   GitHub does not append `(#<PR-number>)` automatically when `--subject` is supplied,
     so include it manually for traceability back to the PR.
 - **Body**: copy the **Summary** and **Context** sections of the PR description verbatim,
@@ -83,16 +145,13 @@ Use `--admin` only when bypassing review has been explicitly authorized
 
 ### Description Outline
 
-The description for all PRs should have the following sections.
+Every PR description needs these sections:
+  **Summary**, **Design Process**, **Success Criteria**, **Test Plan**, and **Context** —
+  plus **Acceptance Criteria** when the PR delivers a delivery-plan milestone.
 
-- **Summary**: 1-3 sentences explaining things at a user story level:
-    _who_ the changes are for and the _why_ (i.e. the motivation).
-  Follow that with 1-3 bullet points explaining _what_ changed.
-- **Design Process**: Link to all of the [`design/`](../../design/README.md) process docs
-    that the PR adds, modifies, and/or implements.
-- **Success Criteria**: Include the success criteria checklist (see below).
-- **Test Plan**: How the changes were tested (commands run, test coverage, manual verification).
-- **Context**: Link to related issues or provide background for the change.
+[`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md) pre-fills all of them,
+  along with guidance on what belongs in each,
+  so a new PR starts with the outline already in place and there is nothing to copy by hand.
 
 ### Description Formatting
 
@@ -106,21 +165,14 @@ Accordingly, our usual line-wrapping and continuation formatting rules should no
 
 **Every pull request must include a "Success Criteria" section** in the PR description.
 
-#### General Criteria (Required for All PRs)
-
-- [ ] **All CI checks pass**: Tests pass, linting succeeds, formatting correct.
-- [ ] **Code review recommendations addressed**: All review feedback implemented.
-- [ ] **No stubbed/incomplete code**: All implementations are complete and tested.
-- [ ] **No TODO/FIXME without tracking**: All TODOs tracked in GitHub issues with references.
-- [ ] **Deferred work tracked in GitHub issues**: Any work deferred for future implementation
-        must be tracked in GitHub issues with clear descriptions and acceptance criteria.
-- [ ] **Follows Engineering Principles**: Code adheres to all
-        [`design/engineering-principles/`](design/engineering-principles/) or has
-        documented (and reasonable) explanations for any divergences.
+The criteria required of *all* PRs are pre-filled by
+  [`.github/PULL_REQUEST_TEMPLATE.md`](/.github/PULL_REQUEST_TEMPLATE.md);
+  don't delete them, and don't tick one until it is actually true.
 
 #### Task-Specific Criteria
 
-Add task-specific criteria based on the work being done.
+On top of those, add the criteria for the kind of change being made.
+These are not in the template — carrying all four sets in every PR would bury the relevant one.
 
 **For refactoring PRs:**
 

@@ -14,10 +14,13 @@ These documents are generally created/updated either during or before their impl
 flowchart TB
     subgraph design [Design Workflow]
         direction LR
+        analyses["Analyses<br/>(what are the options?)"]
         vision["Product Vision<br/>(why)"]
         requirements["Product Requirements<br/>(what, atomic)"]
         engineering-designs["Engineering Designs<br/>(how)"]
+        analyses -.-> vision
         vision --> requirements --> engineering-designs
+        analyses -.-> engineering-designs
     end
 
     subgraph development [Development Workflow]
@@ -31,6 +34,12 @@ flowchart TB
 ```
 
 1. The **Design Workflow** is...
+  0. [**Analyses**](analyses/README.md):
+     where a decision has multiple viable options, or rests on facts nobody has checked,
+     evaluate them first so that the documents downstream can cite the conclusion
+     rather than assert it.
+     Not every project needs one, and they inform the vision and the engineering designs alike
+     — which is why they sit alongside the sequence rather than at a fixed point in it.
   1. [**Product Vision**](product-vision/README.md):
      ensure that your goals/work align with a new or existing product vision,
      which capture the high-level goals and direction for the product.
@@ -89,18 +98,27 @@ The design and development documentation is broken out into the following subdir
 
 - [`product-vision/`](product-vision/):
     over-arching goals and story that tie the product requirements together.
+  Start from [`template.md`](product-vision/template.md).
 - [`product-requirements/`](product-requirements/):
     specific user stories and acceptance criteria for each feature.
+  Start from [`template.md`](product-requirements/template.md).
 - [`engineering-principles/`](engineering-principles/):
     higher-level, cross-cutting, or philosophical standards and norms.
+  Start from [`template.md`](engineering-principles/template.md).
 - [`engineering-designs/`](engineering-designs/):
     significant decisions that guide architecture and design.
+  Start from [`template.md`](engineering-designs/template.md).
 - [`delivery-plans/`](delivery-plans/):
     planned iterations, PRs, and milestones for delivering on a product vision or requirements.
+  Start from [`template.md`](delivery-plans/template.md).
 - [`analyses/`](analyses/):
     research, experiments, and/or evaluations that inform design and implementation decisions.
+  No template — see the existing analyses for the genre.
 - [`notes/`](notes/):
     miscellaneous notes, observations, and half-baked ideas.
+
+Read a directory's `README.md` before writing a document into it;
+  each one defines what belongs there and what doesn't.
 
 ### Naming Conventions
 
@@ -147,3 +165,27 @@ Examples:
 - Use kebab-case for all file and directory names (compatible with both Rust and Swift projects).
 - Dates always in ISO 8601 format: YYYY-MM-DD.
 - All documents should be in Markdown format unless a different format is specifically required.
+
+## How Do I Author a Full Set of These Documents?
+
+When writing several design documents for one project,
+  prefer **one PR with a commit per document**, pausing for review between them.
+Each document constrains the next,
+  so a review that lands after the whole set is written arrives too late to help.
+
+Work in a git worktree under `.claude/worktrees/<branch>/` (already gitignored)
+  to keep the main checkout usable.
+Check [`.worktreeinclude`](/.worktreeinclude) for gitignored files
+  that need copying into new worktrees.
+
+Let each document genuinely constrain the next.
+If while writing a requirement you find the vision doesn't support it,
+  fix the vision rather than quietly widening the requirement.
+That backpressure is the point of the sequence.
+
+Tracking issues are **not** created per document — they start at the delivery plan.
+See [`delivery-plans/README.md`](delivery-plans/README.md).
+
+Agents working in this repository can invoke the
+  [`design-process` skill](/.claude/skills/design-process/SKILL.md),
+  which routes through the steps above and links the rules for each.

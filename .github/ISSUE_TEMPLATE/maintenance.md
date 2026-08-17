@@ -2,7 +2,7 @@
 name: Maintenance Issue
 about: Developer-focused maintainability issues including code quality improvements, refactoring, and technical debt
 title: ''
-labels: maintenance
+type: Task
 assignees: ''
 ---
 
