@@ -27,14 +27,26 @@ A one-line fix does not need a vision document.
 
 Work forward through these;
   skip a step only when you can say why it doesn't apply.
+This table indexes each step's rules and template;
+  [`design/README.md`](../../../design/README.md) is authoritative
+  for the sequence itself and for what each step means.
 
 | Step | Directory | Rules | Template |
 |---|---|---|---|
-| 1. Analysis *(when needed)* | `design/analyses/` | [README](../../../design/analyses/README.md) | none — see existing analyses |
-| 2. Product Vision | `design/product-vision/` | [README](../../../design/product-vision/README.md) | [template.md](../../../design/product-vision/template.md) |
-| 3. Product Requirements | `design/product-requirements/` | [README](../../../design/product-requirements/README.md) | [template.md](../../../design/product-requirements/template.md) |
-| 4. Engineering Design | `design/engineering-designs/` | [README](../../../design/engineering-designs/README.md) | [template.md](../../../design/engineering-designs/template.md) |
-| 5. Delivery Plan *(when multi-PR)* | `design/delivery-plans/` | [README](../../../design/delivery-plans/README.md) | [template.md](../../../design/delivery-plans/template.md) |
+| 1. Product Vision | `design/product-vision/` | [README](../../../design/product-vision/README.md) | [template.md](../../../design/product-vision/template.md) |
+| 2. Product Requirements | `design/product-requirements/` | [README](../../../design/product-requirements/README.md) | [template.md](../../../design/product-requirements/template.md) |
+| 3. Engineering Design | `design/engineering-designs/` | [README](../../../design/engineering-designs/README.md) | [template.md](../../../design/engineering-designs/template.md) |
+| 4. Delivery Plan *(when multi-PR)* | `design/delivery-plans/` | [README](../../../design/delivery-plans/README.md) | [template.md](../../../design/delivery-plans/template.md) |
+
+Alongside the sequence rather than at a fixed point in it:
+
+| Type | Directory | Rules | Template |
+|---|---|---|---|
+| Analysis *(when a decision has options)* | `design/analyses/` | [README](../../../design/analyses/README.md) | none — see existing analyses |
+
+An analysis informs the vision and the engineering design alike,
+  so write one whenever a decision downstream would otherwise have to assert
+  what it should be able to cite.
 
 Supporting types outside the sequence:
   [engineering principles](../../../design/engineering-principles/README.md) — cross-cutting standards,
