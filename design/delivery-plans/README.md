@@ -105,7 +105,6 @@ None of that survives in an issue.
 
 The plan **issue** is a *container*: a pointer to the document, plus the milestone sub-issues.
 It does not restate the plan's content, and it closes cleanly when its last milestone closes.
-That done-condition is what distinguishes it from a vision issue.
 
 ### What a Milestone Issue Contains
 
