@@ -14,7 +14,7 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 - Use available issue templates for consistency.
 - Write clear descriptions with context about why the work is needed.
 - Include acceptance criteria or definition of done.
-- Apply labels only where they earn their place — see [Labels](#labels) below.
+- Apply metadata per the [Metadata](#metadata-types-labels-and-relationships) section below.
 
 **Available issue templates:** bug report, maintenance, delivery plan, milestone.
 
