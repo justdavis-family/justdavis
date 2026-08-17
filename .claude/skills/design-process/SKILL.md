@@ -15,8 +15,9 @@ Routing only. Every rule lives in the linked documents — read the one you need
 
 ## First: Does This Work Need the Process at All?
 
-- **New features and significant enhancements** — yes, design docs come before (or alongside) the code.
-- **Simple bug fixes, maintenance, and infrastructure changes** — no, go straight to implementation.
+New features and significant enhancements do; simple bug fixes, maintenance, and infrastructure
+  changes go straight to implementation
+  — see [When Should the Design Process Be Followed?](../../../design/README.md#when-should-the-design-process-be-followed).
 
 Don't over-apply this. A one-line fix does not need a vision document.
 
@@ -46,18 +47,12 @@ Also read: [`design/README.md`](../../../design/README.md) for the workflow over
 
 ## Authoring a Full Lineage
 
-Prefer **one PR with a commit per document**, pausing for review between them.
-Each document constrains the next,
-  so a review that lands after the whole set is written arrives too late to help.
-
-Work in a git worktree under `.claude/worktrees/<branch>/` (already gitignored)
-  to keep the main checkout usable.
-Check `.worktreeinclude` for gitignored files that need copying into new worktrees.
-
-Let each document genuinely constrain the next.
-If while writing a requirement you find the vision doesn't support it,
-  fix the vision rather than quietly widening the requirement.
-That backpressure is the point of the sequence.
+Writing several of these documents for one project has its own conventions —
+  one PR with a commit per document, worktree setup,
+  and letting each document constrain the next.
+Read
+  [How Do I Author a Full Set of These Documents?](../../../design/README.md#how-do-i-author-a-full-set-of-these-documents)
+  before starting.
 
 Tracking issues are **not** created per document — they start at the delivery plan.
 See [`design/delivery-plans/README.md`](../../../design/delivery-plans/README.md).
