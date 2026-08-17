@@ -38,7 +38,7 @@ Work forward through these;
 
 Supporting types outside the sequence:
   [engineering principles](../../../design/engineering-principles/README.md) — cross-cutting standards,
-    indexed in [`.claude/rules/engineering-principles.md`](../../rules/engineering-principles.md);
+  indexed in [`.claude/rules/engineering-principles.md`](../../rules/engineering-principles.md);
   and [notes](../../../design/notes/) — half-baked ideas.
 
 Also read:
