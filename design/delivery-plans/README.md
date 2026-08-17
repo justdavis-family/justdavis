@@ -47,11 +47,15 @@ Simple, clearly-scoped requirements that fit comfortably in one PR do not need a
 
 ### What Earns a Tracking Issue
 
-**Only work that is concrete and shippable gets a tracking issue.**
+**Only work that is concrete and shippable gets a *design-process* tracking issue.**
 A delivery plan is the first artifact in the design process that qualifies:
   it commits to a fixed list of milestones, each with acceptance criteria and a merge event.
-Everything upstream of it — analyses, the vision, requirements, engineering designs — is *thinking*,
-  and thinking is tracked as the single rough task it started life as.
+Everything upstream of it — analyses, the vision, requirements, engineering designs — is *thinking*.
+
+That does not mean the thinking goes untracked.
+A rough idea often has a task somewhere long before it has a plan,
+  and a plain GitHub issue is a perfectly good home for one.
+What it should *not* have is an issue per design document.
 
 Two issue types come out of that:
 
@@ -85,16 +89,25 @@ Revisit these exclusions if a concrete use case appears that the milestone issue
 Tracking issues are not created as a batch of paperwork when the design docs land.
 The tracker follows the work as it matures:
 
-1. A rough idea gets captured as an ordinary task, wherever capture normally happens.
+1. A rough idea gets captured as an ordinary task — a plain GitHub issue,
+     a Todoist task, a line in a daily note, or nothing at all.
+   Which of those it is doesn't matter yet.
 2. Over days or weeks it is refined — into analyses, then a vision,
      then requirements and engineering designs.
    Throughout, it stays **one** task.
    Nothing is created per document.
-3. When a delivery plan lands, that original task **becomes** the delivery-plan issue,
-     and milestone sub-issues are created under it.
+3. When a delivery plan lands, a `Delivery Plan` issue exists for it,
+     with milestone sub-issues underneath.
 
-The point of step 3 is that nothing is duplicated:
-  the task you already had matures into the container for the work it turned out to require.
+Step 3 has two paths, and neither is more correct than the other:
+
+- If the idea was already tracked as a GitHub issue,
+    **relabel and rewrite that issue in place** rather than opening a new one.
+  The task you already had matures into the container for the work it turned out to require,
+    and its history and any discussion on it come along.
+- If it was tracked elsewhere, or not at all, **create the delivery-plan issue fresh.**
+
+The thing to avoid is not "creating an issue late" — it is creating one *per design document*.
 
 ### The Delivery-Plan Issue Is Not the Delivery Plan
 

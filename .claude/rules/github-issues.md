@@ -26,11 +26,14 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 
 Work that follows the [design process](/design/README.md) is **not** mirrored into issues
   document-by-document.
-Tracking starts only once the work is concrete and shippable —
-  that is, once a delivery plan exists.
-At that point the idea's original capture task becomes a `Delivery Plan` issue,
-  with one `Milestone` sub-issue per milestone.
 There are no vision, requirement, engineering-design, or analysis issues.
+
+A rough idea may well have a plain issue tracking it long before it has a delivery plan;
+  that is fine and often useful.
+What changes once a plan exists is that the work becomes concrete enough to track properly:
+  a `Delivery Plan` issue with one `Milestone` sub-issue per milestone.
+If a GitHub issue was already tracking the idea, it becomes that delivery-plan issue;
+  otherwise one is created.
 
 See [`design/delivery-plans/README.md`](/design/delivery-plans/README.md)
   for the reasoning behind those exclusions, the title formats,
