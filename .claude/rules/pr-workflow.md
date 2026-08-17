@@ -22,6 +22,8 @@ This repository uses a **PR-based workflow** with branch protection rules enforc
 2. Make changes and commit to the feature branch.
 3. Push branch: `git push -u origin feature/your-feature-name`.
 4. Create PR: `gh pr create --title "Title" --body "Description"`.
+   Assign it to yourself, and apply a label only if one earns its place
+     — see [`github-issues.md`](github-issues.md).
 5. Review and approve PR (self-review is acceptable, particularly for small changes).
 6. Merge the PR — squash by default; see [Merging PRs](#merging-prs) below
      for the commit-message convention and exact `gh` invocation.

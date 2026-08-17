@@ -14,10 +14,9 @@ Use GitHub issues to track all planned work, deferred features, and known bugs.
 - Use available issue templates for consistency.
 - Write clear descriptions with context about why the work is needed.
 - Include acceptance criteria or definition of done.
-- Add appropriate labels for categorization.
+- Apply labels only where they earn their place — see [Labels](#labels) below.
 
-**Available issue templates:** bug report, product requirement,
-  product vision, maintenance.
+**Available issue templates:** bug report, maintenance, delivery plan, milestone.
 
 ## Design-Process Tracking Issues
 
@@ -32,6 +31,43 @@ There are no vision, requirement, engineering-design, or analysis issues.
 See [`design/delivery-plans/README.md`](/design/delivery-plans/README.md)
   for the reasoning behind those exclusions, the title formats,
   the issue-body structure, and how milestone sequencing is recorded.
+
+## Labels
+
+**A label earns its place when it answers a question nothing else already answers.**
+That bar is deliberately high.
+Tagging systems invite the opposite instinct — that every item deserves the "right" set of tags —
+  and the result is a taxonomy nobody queries and everybody feels obliged to maintain.
+Most issues and PRs need **no** labels at all, and that is the expected case, not an oversight.
+
+Before applying a label, ask what search it would make possible.
+If the answer is already visible in the title
+  — a `docs:` or `fix:` prefix says the same thing a `documentation` or `bug` label would —
+  the label is redundant, and redundant labels are the ones that rot.
+
+Two labels do clear the bar:
+
+- **`claude-review`** is *mechanical*, not descriptive:
+    it triggers the Claude Code Review workflow on a PR.
+  Apply it when you want that review.
+- **`milestone`** marks a PR that delivers a milestone from a delivery plan.
+  Issues express this with the `Milestone` issue *type*,
+    but GitHub does not offer issue types on pull requests,
+    so on the PR side this label fills that gap.
+  It makes "which PRs delivered planned work, as opposed to ad-hoc changes"
+    answerable when reconstructing a project's history.
+
+The remaining labels exist for specific, narrow reasons:
+  `bug` and `maintenance` are applied automatically by their issue templates,
+  and `help wanted` and `good first issue` are surfaced by GitHub's own
+  contributor-discovery pages.
+Leave them to those uses rather than applying them by hand for tidiness.
+
+## Assignees
+
+Assign issues and PRs to whoever is actually responsible for them.
+For PRs, that is normally the author, and it should be set when the PR is opened —
+  an unassigned PR reads as unowned.
 
 ## Linking Issues to PRs
 
