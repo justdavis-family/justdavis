@@ -86,13 +86,6 @@ gh pr create --title "docs: your title" --body-file /tmp/pr-body.md \
   --assignee @me --label docs
 ```
 
-**Never edit `.github/PULL_REQUEST_TEMPLATE.md` itself to compose a PR body** —
-  it is a checked-in file, and your description would land in the next PR's template.
-Work on a copy, outside the repository.
-
-`--assignee` and `--label` are worth passing at creation, as above,
-  rather than following up with `gh pr edit`.
-
 Note that `-T` / `--template` does **not** help here:
   it only seeds the interactive editor,
   and `gh` rejects a non-interactive run that supplies it without a body.
