@@ -15,6 +15,38 @@ There should never be more than one blank line before or after headers;
   normalize multiple blank lines right before and after headers
   to a single blank line.
 
+### Capitalization
+
+Use Title Case for every heading, `#` through `######`,
+  following Chicago's headline style
+  ([CMOS 8.159](https://www.chicagomanualofstyle.org/book/ed17/part2/ch08/psec159.html)):
+  capitalize the first and last word, and every major word in between.
+Lowercase articles (`a`, `an`, `the`),
+  the coordinating conjunctions (`and`, `but`, `for`, `or`, `nor`, `so`, `yet`),
+  the `to` of an infinitive,
+  and prepositions of *any* length — `with`, `from`, `between`, `without`.
+Chicago lowercases long prepositions where AP would capitalize them;
+  that is the one place the two differ, and we follow Chicago.
+
+Capitalize a word that merely looks like a preposition
+  but is working as an adverb or a verb particle: `Set Up`, `Keeping Artifacts Out of Sync`.
+Capitalize the first word of a parenthetical, and each element of a hyphenated compound
+  (`Trade-Offs`, `Read-Only`), applying the same exceptions inside it (`Out-of-Scope`).
+Where a heading opens with a marker — `### 1. …`, `### M1 — …` —
+  the rule starts at the first word after it.
+
+Chicago has nothing to say about source code, so a few carve-outs are ours.
+None of these is ever re-cased:
+
+- Anything inside a code span, which is an identifier rather than a word:
+    `` `get_focus()` ``, `` `FocusState` ``, `` `EPERM` ``.
+- Anything inside quotation marks, which is a quotation and belongs to whoever said it.
+- Names that are conventionally lowercase even when bare: `mise`, `gh`, `serde`, `clap`, `vs.`.
+- Link targets, bare URLs, and `@handles`, which are addresses rather than words.
+- Words carrying an internal capital: `macOS`, `CLI`, `FDA`.
+
+This is enforced by review; there is no Markdown linting in this repository.
+
 ## Line Structure
 
 - One sentence per line for better version control.

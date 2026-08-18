@@ -1,4 +1,4 @@
-# 60% Automated Test Coverage is Good Enough
+# 60% Automated Test Coverage Is Good Enough
 
 ## Principle
 

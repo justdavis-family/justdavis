@@ -1,4 +1,4 @@
-# Mocks are Usually Dumb
+# Mocks Are Usually Dumb
 
 ## Principle
 

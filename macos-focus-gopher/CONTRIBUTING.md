@@ -12,7 +12,7 @@ This file covers setup specific to Focus Gopher.
 >   plus the thin `focus-gopher` CLI that speaks it;
 >   real Focus parsing, install, and distribution come later.
 
-## Design Docs (the source of truth)
+## Design Docs (The Source of Truth)
 
 The design drives the implementation.
 Before changing behavior, read:

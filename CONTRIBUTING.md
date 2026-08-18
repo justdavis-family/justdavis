@@ -1,4 +1,4 @@
-# Contributing To This Project
+# Contributing to This Project
 
 Welcome! We're glad you've wandered across this collection
   of small projects, home lab tooling, and other assorted experiments and resources.
@@ -15,7 +15,7 @@ If you see something that is incorrect, or out of date, or otherwise needs impro
 The guidance below is intended to help you get started with that
   (and for our own reference).
 
-## How Do I Get Started With Development?
+## How Do I Get Started with Development?
 
 [mise-en-place or "mise"](https://mise.jdx.dev/)
   is the dev tool, env, and task manager

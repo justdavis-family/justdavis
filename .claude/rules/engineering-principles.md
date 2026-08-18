@@ -25,11 +25,11 @@ During design discussions, watch for generalizable patterns that could become
 
 ### Testing Principles
 
-- [Test Automation is a Good Thing](/design/engineering-principles/2026-01-12-test-automation.md):
+- [Test Automation Is a Good Thing](/design/engineering-principles/2026-01-12-test-automation.md):
   Automated tests correlate with DORA metrics and business outcomes.
-- [60% Automated Test Coverage is Good Enough](/design/engineering-principles/2026-01-13-60-percent-coverage.md):
+- [60% Automated Test Coverage Is Good Enough](/design/engineering-principles/2026-01-13-60-percent-coverage.md):
   Use 60% branch coverage as minimum; no strong evidence for higher targets.
 - [Inverted Test Pyramid](/design/engineering-principles/2026-01-14-inverted-test-pyramid.md):
   Prioritize e2e > integration > unit tests, based on value, not dogma.
-- [Mocks are Usually Dumb](/design/engineering-principles/2026-01-15-avoid-mocks.md):
+- [Mocks Are Usually Dumb](/design/engineering-principles/2026-01-15-avoid-mocks.md):
   Prefer real components; use mocks only for external services or with good reason.

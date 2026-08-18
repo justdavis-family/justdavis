@@ -63,7 +63,7 @@ The Focus Gopher solves this by being a small, stable-identity broker:
 
 ## Architecture
 
-### Component flow
+### Component Flow
 
 ```mermaid
 flowchart TB
@@ -84,7 +84,7 @@ flowchart TB
 The client gets a narrow read-only API — directly over the socket, or via the CLI wrapper.
 The helper owns the macOS-specific access and is the only component that touches the database files.
 
-### `FocusState` data model
+### `FocusState` Data Model
 
 A single fixed-schema object whose shape **mirrors the helper's internal strongly-typed model** rather
   than flattening it onto the wire — so invalid combinations are unrepresentable rather than merely
@@ -170,7 +170,7 @@ Why this shape rather than a flat object of nullable siblings: the helper has no
     "message": "Full Disk Access is required. Grant it to /Applications/FocusGopher.app under System Settings > Privacy & Security > Full Disk Access, then retry." } }
 ```
 
-### Retrieval pipeline
+### Retrieval Pipeline
 
 1. Detect the macOS version.
 2. Look the version up in the compatibility table.
@@ -199,7 +199,7 @@ The stable interface is the contract; the schema is not.
 See [the format-stability analysis](../analyses/2026-05-12-macos-focus-db-format.md) for how the format
   has held up across macOS 12–15 and what that means for the compatibility table.
 
-### Error taxonomy
+### Error Taxonomy
 
 A small, stable set of `error` codes, e.g.:
 
@@ -279,7 +279,7 @@ New codes may be added; existing codes are not repurposed.
     `~/Library/DoNotDisturb/DB/ModeConfigurations.json` — undocumented macOS internals,
     subject to change across releases.
 
-## Trade-offs
+## Trade-Offs
 
 - **A stable-identity helper vs. granting the agent Full Disk Access directly.**
     Chosen: the helper. Granting Full Disk Access to an internet-connected, tool-using,

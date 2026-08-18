@@ -14,7 +14,7 @@ Before committing to that approach — and before seeding the helper's macOS-ver
 
 ## Findings
 
-### 1. Where the state lives, and the format
+### 1. Where the State Lives, and the Format
 
 Since **macOS 12 Monterey** (when "Focus" replaced the older standalone "Do Not Disturb"),
   the state lives in JSON files under `~/Library/DoNotDisturb/DB/`, principally:
@@ -39,7 +39,7 @@ Before macOS 12 (Big Sur and earlier), Do Not Disturb was *not* stored this way 
   structure. That older mechanism is out of scope for this project; supporting it would require a
   separate parser and is not planned.
 
-### 2. How long the format has existed, and how stable it has been
+### 2. How Long the Format Has Existed, and How Stable It Has Been
 
 The `~/Library/DoNotDisturb/DB/` JSON layout has been in place since macOS 12 (2021) and has been
   relied on by a steady stream of community tools across macOS 12 Monterey, 13 Ventura, 14 Sonoma,
@@ -67,7 +67,7 @@ Caveats the same sources surface, which a robust parser must handle:
 We did not find authoritative confirmation of the format on the current **macOS 26 Tahoe** release;
   it is presumed similar but should be treated as unverified until we test it.
 
-### 3. Specific point releases vs. major-version wildcards
+### 3. Specific Point Releases vs. Major-Version Wildcards
 
 Because the format is undocumented, the conservative default is to claim support only for versions we
   have actually exercised. However, the evidence above is strong enough that the *major-version*

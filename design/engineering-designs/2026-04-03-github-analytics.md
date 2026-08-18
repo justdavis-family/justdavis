@@ -145,7 +145,7 @@ Based on actual API response sizes sampled from `karlmdavis` repos:
 Projected 5-year total (42 current repos + 2/year): ~45 MB in the data repository.
 This is 4.5% of GitHub's 1 GB repository size guideline.
 
-## Trade-offs
+## Trade-Offs
 
 | Approach | Chosen | Reason |
 |---|---|---|

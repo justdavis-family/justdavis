@@ -61,7 +61,7 @@ The Focus Gopher should also be *pleasant to discover and adopt*: easy to instal
 
 ## Success Metrics
 
-### Core capability
+### Core Capability
 
 - An agent can retrieve the current Focus state (on/off, and the Focus name when on)
     via a single local call, without holding Full Disk Access or any other broad macOS privacy permission.
@@ -78,7 +78,7 @@ The Focus Gopher should also be *pleasant to discover and adopt*: easy to instal
 - The helper reports whether the running macOS version is known-supported, and emits actionable
     guidance on unlisted ("unknown") versions and on parsing failures.
 
-### Discoverability and adoption
+### Discoverability and Adoption
 
 - It is easy for the intended audiences — both human and agent — to find, install, understand, and
     start using the Focus Gopher (including a one-command install and clear, example-rich docs for both

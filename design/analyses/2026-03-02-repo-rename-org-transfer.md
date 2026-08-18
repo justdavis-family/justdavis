@@ -92,7 +92,7 @@ As of January 12, 2026,
 The current workflow is to create an organization separately
   and use the "Transfer" feature to move repositories into it.
 
-### 4. GitHub Redirect Behavior Across Rename and Transfer
+### 4. GitHub Redirect Behavior across Rename and Transfer
 
 #### Rename Redirects
 
