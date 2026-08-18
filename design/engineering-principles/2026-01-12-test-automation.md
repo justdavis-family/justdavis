@@ -1,4 +1,4 @@
-# Test Automation is a Good Thing
+# Test Automation Is a Good Thing
 
 ## Principle
 

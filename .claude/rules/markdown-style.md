@@ -17,7 +17,7 @@ There should never be more than one blank line before or after headers;
 
 ### Capitalization
 
-Use Title Case for every section heading, `##` through `######`,
+Use Title Case for every heading, `#` through `######`,
   following Chicago's headline style
   ([CMOS 8.159](https://www.chicagomanualofstyle.org/book/ed17/part2/ch08/psec159.html)):
   capitalize the first and last word, and every major word in between.
@@ -34,15 +34,15 @@ Capitalize the first word of a parenthetical, and each element of a hyphenated c
   (`Trade-Offs`, `Read-Only`), applying the same exceptions inside it (`Out-of-Scope`).
 Where a heading opens with a marker — `### 1. …`, `### M1 — …` —
   the rule starts at the first word after it.
-File-level titles (`#`) keep the existing convention: the project or document name.
 
-Chicago has nothing to say about source code, so four carve-outs are ours.
+Chicago has nothing to say about source code, so a few carve-outs are ours.
 None of these is ever re-cased:
 
 - Anything inside a code span, which is an identifier rather than a word:
     `` `get_focus()` ``, `` `FocusState` ``, `` `EPERM` ``.
 - Anything inside quotation marks, which is a quotation and belongs to whoever said it.
 - Names that are conventionally lowercase even when bare: `mise`, `gh`, `serde`, `clap`, `vs.`.
+- Link targets, bare URLs, and `@handles`, which are addresses rather than words.
 - Words carrying an internal capital: `macOS`, `CLI`, `FDA`.
 
 This is enforced by review; there is no Markdown linting in this repository.

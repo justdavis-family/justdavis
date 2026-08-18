@@ -1,4 +1,4 @@
-# Contributing To This Project
+# Contributing to This Project
 
 Welcome! We're glad you've wandered across this collection
   of small projects, home lab tooling, and other assorted experiments and resources.
