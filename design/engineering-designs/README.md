@@ -28,29 +28,25 @@ Create an engineering design document when:
 - Defining development workflows and tooling standards.
 - Making cross-cutting technical decisions that affect the entire codebase.
 
-## Design Process
+## Where an Engineering Design Fits
 
-Engineering design decisions should generally be preceded by analysis:
+An engineering design is one step in the repository's design and development process;
+  see [`../README.md`](../README.md) for the full sequence and how the steps relate.
 
-1. **Analysis phase** ([analyses/](../analyses/)):
-   - Research available options and alternatives.
-   - Evaluate trade-offs between different approaches.
-   - Document findings and recommendations.
-   - Example: "Analysis: PostgreSQL ORM Options (Diesel vs SQLx vs SeaORM)".
+The two steps immediately either side of this one:
 
-2. **Design phase** (this directory):
-   - Make concrete technology choices based on analysis.
-   - Specify architecture patterns and implementation approach.
-   - Define configuration and setup details.
-   - Document rationale linking back to analysis.
+- Before, only as needed: an [analysis](../analyses/),
+    where a decision has multiple viable options,
+    so that the design can cite a conclusion rather than assert one.
+  Many designs don't need one, and straightforward choices shouldn't have one.
+  See [`../analyses/README.md`](../analyses/README.md) for when one is warranted.
+- After: a [delivery plan](../delivery-plans/) where the design takes more than one PR to build,
+    which fixes the milestones and scope boundaries before development begins.
 
-3. **Delivery phase** ([delivery-plans/](../delivery-plans/)):
-   - Plan the iterations and PRs that will deliver the design.
-   - Define milestones and scope boundaries across PRs.
-   - Surface over-commitment early by making sequencing explicit.
-
-Not all engineering decisions require formal analysis documents (especially straightforward choices),
-  but significant decisions with multiple viable options should be analyzed before design.
+An engineering design itself makes the concrete technology choices,
+  specifies the architecture and implementation approach,
+  defines configuration and setup details,
+  and documents its rationale — linking back to any analysis it rests on.
 
 ## Naming Convention
 
@@ -66,21 +62,9 @@ The template includes sections for Overview, Technology Choices, Architecture,
 
 ## Relationship to Other Document Types
 
-- [**Product Vision**](../product-vision/):
-  Defines high-level product direction and goals.
-- [**Product Requirements**](../product-requirements/):
-  Atomic, implementable requirements.
-- [**Engineering Designs**](../engineering-designs/) (this directory):
-  Defines technical implementation approach.
-- [**Delivery Plans**](../delivery-plans/):
-  Plans iterations and milestones for delivering on designs.
-- [**Analyses**](../analyses/):
-  Evaluates options to inform design decisions.
-- [**Notes**](../notes/):
-  Exploratory thinking and broader technical concepts.
-
-The typical flow is:
-  Product Vision → Product Requirements → Engineering Design → Delivery Plans → Code.
+This directory holds the **how**: the technical approach that delivers on the requirements.
+For what every other `design/` subdirectory is for, see
+  [How Is the Design and Development Documentation Organized?](../README.md#how-is-the-design-and-development-documentation-organized).
 
 Engineering design docs typically address a set of related requirements
   and should reference them in their content.

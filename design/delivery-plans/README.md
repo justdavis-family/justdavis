@@ -181,15 +181,7 @@ See [../README.md](../README.md) for file naming conventions
 
 ## Relationship to Other Document Types
 
-- [**Product Vision**](../product-vision/):
-  Defines high-level product direction and goals.
-- [**Product Requirements**](../product-requirements/):
-  Atomic, implementable requirements — the *what*.
-- [**Engineering Designs**](../engineering-designs/):
-  Significant technical decisions — the *how*.
-- [**Delivery Plans**](../delivery-plans/) (this directory):
-  Planned iterations and milestones — the *when and in what order*.
-- [**Analyses**](../analyses/):
-  Research and evaluations that inform design decisions.
-- [**Notes**](../notes/):
-  Exploratory thinking and half-baked ideas.
+This directory holds the **when and in what order**:
+  the iterations and milestones that deliver on a vision, its requirements, and their designs.
+For what every other `design/` subdirectory is for, see
+  [How Is the Design and Development Documentation Organized?](../README.md#how-is-the-design-and-development-documentation-organized).
