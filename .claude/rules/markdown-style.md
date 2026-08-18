@@ -31,8 +31,10 @@ Capitalize each element of a hyphenated compound (`Trade-Offs`, `Read-Only`),
   applying the same exceptions within it (`Out-of-Scope`, `Build-From-Source`).
 Where a heading opens with a marker — `### 1. …`, `### M1 — …` —
   the rule starts at the first word *after* the marker.
-Also capitalize the first word of a parenthetical,
-  and of a phrase introduced by a colon or an em dash.
+Also capitalize the first word of a parenthetical, and of a phrase introduced by a colon.
+An em dash only starts a new phrase when it is part of a leading marker;
+  mid-heading it is an aside, and the words after it keep their ordinary treatment
+  (`… Unrepresentable — in Code and on the Wire`).
 
 Four things are never re-cased, because they aren't prose:
 

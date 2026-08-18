@@ -5,7 +5,7 @@ The repo's `design/` directory contains all shared project design documentation,
 Domain- and application- specific design documentation
   will appear in their respective directories.
 
-## What is the Design and Development Workflow?
+## What Is the Design and Development Workflow?
 
 The design docs are used to drive and guide the development of new features and capabilities.
 These documents are generally created/updated either during or before their implementation.
@@ -70,7 +70,7 @@ flowchart TB
      they should generally be squashed before merging;
      the `main` branch's commit history should tell a clear story of the project's evolution.
 
-### What Are the Key Principles of this Workflow?
+### What Are the Key Principles of This Workflow?
 
 This workflow's design is guided by these principles and observations:
 

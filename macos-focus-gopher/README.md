@@ -73,7 +73,7 @@ The schema is published and versioned at
     "message": "Full Disk Access is required. Grant it to the helper, then retry." } }
 ```
 
-## Trying It (developers only)
+## Trying It (Developers Only)
 
 There is no install path yet.
 You can build both binaries — the `focus-gopherd` helper and the `focus-gopher` CLI — and run

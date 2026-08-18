@@ -28,7 +28,7 @@ It records the final decision and the reasoning, including why the first pass wa
 
 ## Findings
 
-### Two different questions, often conflated
+### Two Different Questions, Often Conflated
 
 "Nesting" bundles two unrelated decisions that should be judged separately:
 
@@ -42,7 +42,7 @@ It records the final decision and the reasoning, including why the first pass wa
 The first pass conflated the two: it argued (correctly) against an envelope and then carried that
   conclusion over to the union question, where it does not apply.
 
-### Why the "flat is fine" precedent does not transfer to us
+### Why the "flat is fine" Precedent Does Not Transfer to Us
 
 Single-resource responses in big, well-liked REST APIs *are* mostly flat — GitHub, Stripe, Twilio,
   much of Slack. But they are flat largely because **HTTP status carries the success-vs-error
@@ -70,7 +70,7 @@ Honest counter-evidence, kept on the record:
     ([graphql.org](https://graphql.org/learn/response/)) — a reason to avoid a strict XOR. We have no
     partial state, so it does not apply.
 
-### Keep the wire aligned with the internal model (serde, Fowler, "parse, don't validate")
+### Keep the Wire Aligned With the Internal Model (serde, Fowler, "parse, don't validate")
 
 The helper is a Rust producer with a real sum type. That makes the alignment argument concrete:
 
@@ -88,7 +88,7 @@ The helper is a Rust producer with a real sum type. That makes the alignment arg
     boundary; a tagged shape lets each consumer parse straight into its own sum type instead of
     re-deriving "if not ok, ignore focus_enabled."
 
-### Making invalid states unrepresentable — in code *and* on the wire
+### Making Invalid States Unrepresentable — in Code *and* on the Wire
 
 The strongest argument for grouping is *making invalid states unrepresentable* — the
   [Strong Typing and Information Preservation](../engineering-principles/2026-01-07-strong-typing.md)
@@ -104,7 +104,7 @@ The strongest argument for grouping is *making invalid states unrepresentable* �
     force an ad-hoc consumer that never validates to branch correctly, which is an argument for making
     the structure itself unambiguous.)
 
-### Why "Focus on but no name" is a failure, not a partial success
+### Why "Focus on but no name" Is a Failure, Not a Partial Success
 
 A tempting fourth state is "a Focus is on, but its identifier could not be mapped to a name." We model
   this as a **failure** (`focus_name_unresolved`), not a partial success, for three reasons:

@@ -9,14 +9,14 @@ If you _do_ find something here particularly enlightening or useful,
   and letting us know about it over in the
   [discussions](https://github.com/justdavis-family/justdavis/discussions) section.
 
-## What's In Here?
+## What's in Here?
 
 | Project | Description |
 |---|---|
 | [github-analytics](github-analytics/README.md) | Collects and stores GitHub repository analytics data that the API exposes but the web UI doesn't retain historically. |
 | [macos-focus-gopher](macos-focus-gopher/README.md) | A per-user macOS helper that reports the current Focus / Do Not Disturb state — including the active Focus's name — to local clients, so unprivileged agents don't need Full Disk Access (early development). |
 
-## How is this Repository Organized?
+## How Is This Repository Organized?
 
 This repository is roughly organized by domain,
   with different subtrees for the different types of projects.
@@ -44,7 +44,7 @@ For instance, we doubt anyone cares to configure their home lab
   but it's entirely possible that someone is trying to get Kerberos and OpenLDAP working together
   and can reference the Ansible roles for that combo.
 
-## How Do I Develop In and Contribute To This Repository?
+## How Do I Develop in and Contribute to This Repository?
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) file
   for development environment setup and contribution guidelines.

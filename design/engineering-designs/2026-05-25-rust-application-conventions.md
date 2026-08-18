@@ -18,7 +18,7 @@ These are near-consensus community choices, so no separate analysis document pre
 
 ## Technology Choices
 
-### Logging and diagnostics: `tracing` + `tracing-subscriber`
+### Logging and Diagnostics: `tracing` + `tracing-subscriber`
 
 Use [`tracing`](https://docs.rs/tracing) for instrumentation (structured events and spans)
   and [`tracing-subscriber`](https://docs.rs/tracing-subscriber) to configure output in the binary.
@@ -39,7 +39,7 @@ Rationale: `tracing` is the de-facto standard, is structured and span-aware (car
 JSON output is machine-parseable for operators, and a TTY-aware default serves both interactive
   developers and production operators with no configuration.
 
-### Error handling: `thiserror` for libraries, `anyhow` for binaries
+### Error Handling: `thiserror` for Libraries, `anyhow` for Binaries
 
 - **Library crates** define typed error enums with [`thiserror`](https://docs.rs/thiserror),
     so callers can match on specific variants.
@@ -64,7 +64,7 @@ Rationale: `serde` is the de-facto standard with no real competition, and derivi
 This is a "use it when you serialize" choice rather than a facility every binary needs — but when
   serialization is in play, there is no decision to make.
 
-### Command-line parsing: `clap` (derive)
+### Command-Line Parsing: `clap` (derive)
 
 Use [`clap`](https://docs.rs/clap) v4 with the derive API.
 It gives consistent parsing and validation, and `--help` / `--version` nearly for free.
@@ -73,7 +73,7 @@ Rationale: the de-facto standard, with ergonomic derive macros and good help out
 Its heavier compile time (versus minimal parsers) is accepted for the features and consistency,
   and is mitigated by CI dependency caching.
 
-### Signal handling: `signal-hook`
+### Signal Handling: `signal-hook`
 
 Long-running binaries (daemons and servers) install handlers for `SIGINT` and `SIGTERM` via
   [`signal-hook`](https://docs.rs/signal-hook) to shut down gracefully — releasing resources such as
@@ -104,7 +104,7 @@ This keeps the policy decisions (how to log, how to exit, how to parse args) in 
 - `--log-level` — an optional convenience over `RUST_LOG`.
 - Diagnostic logs are written to stderr; a program's results are written to stdout.
 
-## Trade-offs
+## Trade-Offs
 
 - **Logging:** `log` + `env_logger` is simpler but unstructured and span-less;
     `slog` has waning momentum.

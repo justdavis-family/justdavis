@@ -36,7 +36,7 @@ Because Full Disk Access can never be granted programmatically
 
 ## Milestones
 
-### M1 — Project skeleton and the `get_focus()` contract
+### M1 — Project Skeleton and the `get_focus()` Contract
 
 **In scope:**
 
@@ -59,7 +59,7 @@ Because Full Disk Access can never be granted programmatically
 **Deferred to later milestones:** the CLI wrapper; any real Focus parsing; packaging as an installed
   LaunchAgent; distribution.
 
-### M2 — The `focus-gopher` CLI wrapper
+### M2 — The `focus-gopher` CLI Wrapper
 
 **In scope:**
 
@@ -74,7 +74,7 @@ Because Full Disk Access can never be granted programmatically
 
 **Deferred:** real Focus parsing; packaging/install; distribution.
 
-### M3 — Read-only Focus parsing on the verified macOS versions
+### M3 — Read-Only Focus Parsing on the Verified macOS Versions
 
 **In scope:**
 
@@ -116,7 +116,7 @@ Because Full Disk Access can never be granted programmatically
 
 **Deferred:** packaging/install; distribution; broader macOS version coverage; bundled agent skills.
 
-### M4 — Build-from-source packaging, install, and distribution
+### M4 — Build-From-Source Packaging, Install, and Distribution
 
 **In scope:**
 
@@ -153,7 +153,7 @@ Because Full Disk Access can never be granted programmatically
 **Deferred:** code signing, notarization, and cask distribution (M6); auto-update; broader macOS
   version coverage; bundled agent skills.
 
-### M5 — Compatibility breadth, the agent ecosystem, and docs polish
+### M5 — Compatibility Breadth, the Agent Ecosystem, and Docs Polish
 
 **In scope:**
 
@@ -172,7 +172,7 @@ Because Full Disk Access can never be granted programmatically
   documented path for contributors to extend coverage, and a project that is easy for humans and agents
   to discover, install, and use.
 
-### M6 — Code signing, notarization, and signed-update distribution
+### M6 — Code Signing, Notarization, and Signed-Update Distribution
 
 This milestone adds **polish rather than capability**, and it is gated on a prerequisite
   not currently in hand (below).
@@ -202,7 +202,7 @@ Everything before it is fully usable without it; per the
 
 **Deferred:** auto-update.
 
-## Explicitly Deferred (out of scope for this plan)
+## Explicitly Deferred (Out of Scope for This Plan)
 
 - A packaged client *library* (Rust, Python, or otherwise) for consumers — clients can speak the
     documented socket protocol or use the `focus-gopher` CLI until there is a concrete need.

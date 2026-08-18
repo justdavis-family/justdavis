@@ -18,7 +18,7 @@ Before committing build, signing, and distribution effort, we want to know:
 
 ## Findings
 
-### 1. The three macOS mechanisms in play
+### 1. The Three macOS Mechanisms in Play
 
 - **Code-signing identity (what TCC uses to recognize "the same app" across updates).**
   A **Developer ID** signature (a certificate held by the publisher; requires the paid Apple Developer
@@ -47,7 +47,7 @@ A from-source build cannot carry the publisher's signature (it is built on the u
   so realistically it is a binary choice:
   a **signed + notarized prebuilt** artifact, or an **unsigned/ad-hoc from-source** build.
 
-### 2. Full Disk Access can never be granted programmatically
+### 2. Full Disk Access Can Never Be Granted Programmatically
 
 There is no `requestAuthorization`-style API that prompts for, and grants, Full Disk Access —
   on any channel or signing state.
@@ -78,7 +78,7 @@ Note: the exact redirect-dialog behavior (when it fires, for which signing state
   is version-sensitive and should be empirically verified on device
   rather than asserted categorically.
 
-### 3. Detecting a missing FDA grant (`EPERM` vs. `ENOENT`)
+### 3. Detecting a Missing FDA Grant (`EPERM` vs. `ENOENT`)
 
 There is **no API to query the helper's own FDA status**; detection is necessarily *reactive*
   (attempt the read, interpret the failure).
@@ -111,7 +111,7 @@ The message should print the *canonical resolved* executable path
   (cargo and Homebrew both symlink into `bin/`, and TCC matches the real binary,
   so naming the symlink can misfire).
 
-### 4. Per-channel impact
+### 4. Per-Channel Impact
 
 | Channel | Quarantined? | Notarization | Signature the publisher can ship | FDA across updates | Apple acct |
 | --- | --- | --- | --- | --- | --- |
@@ -140,7 +140,7 @@ The message should print the *canonical resolved* executable path
     this is the **only** channel where the FDA grant persists across updates
     and where the OS redirect dialog reliably appears.
 
-### 5. What signing + notarization actually buys this project
+### 5. What Signing + Notarization Actually Buys This Project
 
 - **FDA persists across updates** (stable Developer ID identity vs. per-build cdhash) —
     the only channel that delivers this is the signed + notarized **cask**.
@@ -152,7 +152,7 @@ The message should print the *canonical resolved* executable path
 It does **not** enable programmatic FDA granting,
   and it does **not** remove the one-time manual System Settings step on any channel.
 
-### 6. Developing and testing locally without a Developer ID signature
+### 6. Developing and Testing Locally Without a Developer ID Signature
 
 Because an unsigned/ad-hoc binary's TCC identity is its cdhash,
   every rebuild produces a new identity and invalidates the Full Disk Access grant —

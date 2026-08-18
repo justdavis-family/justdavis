@@ -19,7 +19,7 @@ Include diagrams where helpful.
 
 Specific settings, parameters, and deployment details.
 
-## Trade-offs
+## Trade-Offs
 
 What was gained and what was sacrificed with the chosen approach.
 Document alternatives considered and why they were rejected.

@@ -20,7 +20,7 @@ Prefer using real components, real databases (via containers), and real integrat
 
 ## What Counts as a Good Reason
 
-### 1. External Services with VCR-Style Mocks
+### 1. External Services With VCR-Style Mocks
 
 **When:**
 - Testing code that calls external services or platform libraries you can't run locally.
