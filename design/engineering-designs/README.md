@@ -35,8 +35,10 @@ An engineering design is one step in the repository's design and development pro
 
 The two steps immediately either side of this one:
 
-- Before: an [analysis](../analyses/) where the decision has multiple viable options,
+- Before, only as needed: an [analysis](../analyses/),
+    where a decision has multiple viable options,
     so that the design can cite a conclusion rather than assert one.
+  Many designs don't need one, and straightforward choices shouldn't have one.
   See [`../analyses/README.md`](../analyses/README.md) for when one is warranted.
 - After: a [delivery plan](../delivery-plans/) where the design takes more than one PR to build,
     which fixes the milestones and scope boundaries before development begins.
