@@ -17,28 +17,29 @@ There should never be more than one blank line before or after headers;
 
 ### Capitalization
 
-Use Title Case for every section heading, `##` through `######`.
-Capitalize the first and last word, and every word in between,
-  except for articles (`a`, `an`, `the`),
-  coordinating conjunctions (`and`, `but`, `or`, `nor`, `for`, `yet`, `so`),
-  and these short prepositions:
-  `as`, `at`, `by`, `in`, `of`, `on`, `to`, `via`, `off`, `per`.
-Longer prepositions are capitalized — `With`, `From`, `Into`, `Without` —
-  as are verb particles that merely look like prepositions, e.g. `Set Up`.
+Use Title Case for every section heading, `##` through `######`,
+  following Chicago's headline style
+  ([CMOS 8.159](https://www.chicagomanualofstyle.org/book/ed17/part2/ch08/psec159.html)):
+  capitalize the first and last word, and every major word in between.
+Lowercase articles (`a`, `an`, `the`),
+  the coordinating conjunctions (`and`, `but`, `for`, `or`, `nor`, `so`, `yet`),
+  the `to` of an infinitive,
+  and prepositions of *any* length — `with`, `from`, `between`, `without`.
+Chicago lowercases long prepositions where AP would capitalize them;
+  that is the one place the two differ, and we follow Chicago.
+
+Capitalize a word that merely looks like a preposition
+  but is working as an adverb or a verb particle: `Set Up`, `Keeping Artifacts Out of Sync`.
+Capitalize the first word of a parenthetical, and each element of a hyphenated compound
+  (`Trade-Offs`, `Read-Only`), applying the same exceptions inside it (`Out-of-Scope`).
+Where a heading opens with a marker — `### 1. …`, `### M1 — …` —
+  the rule starts at the first word after it.
 File-level titles (`#`) keep the existing convention: the project or document name.
 
-Capitalize each element of a hyphenated compound (`Trade-Offs`, `Read-Only`),
-  applying the same exceptions within it (`Out-of-Scope`, `Build-From-Source`).
-Where a heading opens with a marker — `### 1. …`, `### M1 — …` —
-  the rule starts at the first word *after* the marker.
-Also capitalize the first word of a parenthetical, and of a phrase introduced by a colon.
-An em dash only starts a new phrase when it is part of a leading marker;
-  mid-heading it is an aside, and the words after it keep their ordinary treatment
-  (`… Unrepresentable — in Code and on the Wire`).
+Chicago has nothing to say about source code, so four carve-outs are ours.
+None of these is ever re-cased:
 
-Four things are never re-cased, because they aren't prose:
-
-- Anything inside a code span, which is an identifier and not a word:
+- Anything inside a code span, which is an identifier rather than a word:
     `` `get_focus()` ``, `` `FocusState` ``, `` `EPERM` ``.
 - Anything inside quotation marks, which is a quotation and belongs to whoever said it.
 - Names that are conventionally lowercase even when bare: `mise`, `gh`, `serde`, `clap`, `vs.`.

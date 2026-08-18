@@ -70,7 +70,7 @@ Honest counter-evidence, kept on the record:
     ([graphql.org](https://graphql.org/learn/response/)) — a reason to avoid a strict XOR. We have no
     partial state, so it does not apply.
 
-### Keep the Wire Aligned With the Internal Model (serde, Fowler, "parse, don't validate")
+### Keep the Wire Aligned with the Internal Model (serde, Fowler, "parse, don't validate")
 
 The helper is a Rust producer with a real sum type. That makes the alignment argument concrete:
 

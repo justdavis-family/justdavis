@@ -152,7 +152,7 @@ The message should print the *canonical resolved* executable path
 It does **not** enable programmatic FDA granting,
   and it does **not** remove the one-time manual System Settings step on any channel.
 
-### 6. Developing and Testing Locally Without a Developer ID Signature
+### 6. Developing and Testing Locally without a Developer ID Signature
 
 Because an unsigned/ad-hoc binary's TCC identity is its cdhash,
   every rebuild produces a new identity and invalidates the Full Disk Access grant —
