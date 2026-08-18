@@ -15,6 +15,35 @@ There should never be more than one blank line before or after headers;
   normalize multiple blank lines right before and after headers
   to a single blank line.
 
+### Capitalization
+
+Use Title Case for every section heading, `##` through `######`.
+Capitalize the first and last word, and every word in between,
+  except for articles (`a`, `an`, `the`),
+  coordinating conjunctions (`and`, `but`, `or`, `nor`, `for`, `yet`, `so`),
+  and these short prepositions:
+  `as`, `at`, `by`, `in`, `of`, `on`, `to`, `via`, `off`, `per`.
+Longer prepositions are capitalized — `With`, `From`, `Into`, `Without` —
+  as are verb particles that merely look like prepositions, e.g. `Set Up`.
+File-level titles (`#`) keep the existing convention: the project or document name.
+
+Capitalize each element of a hyphenated compound (`Trade-Offs`, `Read-Only`),
+  applying the same exceptions within it (`Out-of-Scope`, `Build-From-Source`).
+Where a heading opens with a marker — `### 1. …`, `### M1 — …` —
+  the rule starts at the first word *after* the marker.
+Also capitalize the first word of a parenthetical,
+  and of a phrase introduced by a colon or an em dash.
+
+Four things are never re-cased, because they aren't prose:
+
+- Anything inside a code span, which is an identifier and not a word:
+    `` `get_focus()` ``, `` `FocusState` ``, `` `EPERM` ``.
+- Anything inside quotation marks, which is a quotation and belongs to whoever said it.
+- Names that are conventionally lowercase even when bare: `mise`, `gh`, `serde`, `clap`, `vs.`.
+- Words carrying an internal capital: `macOS`, `CLI`, `FDA`.
+
+This is enforced by review; there is no Markdown linting in this repository.
+
 ## Line Structure
 
 - One sentence per line for better version control.
