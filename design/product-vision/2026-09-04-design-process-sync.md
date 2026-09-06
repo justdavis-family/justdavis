@@ -77,8 +77,11 @@ Whether they read it in files that live in the repository, or by following a poi
   definition lives, is a design choice with real trade-offs on each side;
   this vision requires only that the reading is possible and that what they read is current.
 
-Adopting a private repository never requires naming it in any public repository's content or history.
-The public repository may be pointed at; it does not point back.
+Privacy runs one way.
+A private repository may name the public one, link to it, and cite its history;
+  the public repository never names a private one, links to it, or records that it exists
+  — not in its content, and not in its commit or pull-request history.
+Nothing about a private repository joining requires the public repository to know it is there.
 
 ### What This Is Not
 
@@ -107,7 +110,7 @@ The public repository may be pointed at; it does not point back.
 - A process change merged in any adopting repository is followed by every other adopting repository
     within a bounded time — no more than a week, or before the next process change is authored,
     whichever comes first.
-- Improvements flow in both directions with equal effort:
+- Improvements flow in both directions with equal effort, apart from the publication check below:
     a change authored in a private repository reaches the public one as readily as the reverse.
 - The same shared change is authored and reviewed on its merits once.
   Whatever per-repository review the design requires is mechanical
@@ -122,6 +125,19 @@ The public repository may be pointed at; it does not point back.
 - When the same part of the process is changed in two repositories before either change has reached
     the other, both changes are surfaced together; neither is silently overwritten.
 
+### Private Stays Private
+
+- Nothing authored in a private repository is pushed to, proposed against,
+    or otherwise made visible in a public repository
+    until a human has reviewed that specific content and confirmed it is safe to publish.
+  The confirmation happens before anything leaves the private side;
+    a pull request opened in a public repository is already a publication, not a review step.
+  An agent's judgement that a change is "only process content" is never a substitute for that
+    confirmation, however plausible the judgement.
+- The public repository's content and history never identify a private repository:
+    not by name, not by link, and not by a record of a change's origin
+    beyond what the human who published it chose to say.
+
 ### Cheap to Join, Easy to Understand
 
 - A new repository starts following the current process with one pull request of its own,
@@ -130,7 +146,7 @@ The public repository may be pointed at; it does not point back.
     and which is local, before editing either.
 
 The concrete shape of these — how the boundary is declared, how staleness is detected,
-  how a change travels, how conflicts are presented —
+  how a change travels, how conflicts are presented, how publication is confirmed —
   is specified in the requirements and the engineering design, not here.
 
 ## Requirements
