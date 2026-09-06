@@ -111,3 +111,11 @@ Both the YAML frontmatter and the References section
 **Litmus test:** Does this work affect the product's capabilities or quality for users?
 If yes, it's a requirement.
 If it only affects how developers work on the product, it's not.
+
+The exclusions above assume the product is something other than the development process.
+Occasionally the development process *is* the product being built
+  — for instance, work that makes this process usable across several repositories.
+Its users are then the maintainers and agents of every repository that follows it,
+  and a change to it affects their capabilities just as a feature affects an end user's.
+Apply the litmus test with those users in mind,
+  and write requirements for that work as for any other product.
