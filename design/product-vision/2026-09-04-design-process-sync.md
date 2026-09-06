@@ -137,18 +137,4 @@ The concrete shape of these — how the boundary is declared, how staleness is d
 
 This vision is being implemented through the following requirements:
 
-- [Process and Local Content Boundary](../product-requirements/2026-09-04-process-content-boundary.md) —
-    An explicit, discoverable statement of what is process content, what may vary, and what is local
-    (draft).
-- [Staleness Is Visible](../product-requirements/2026-09-04-process-staleness-visibility.md) —
-    Automatic notice when any adopting repository is not following the current process (draft).
-- [Process Content Integrity in Each Repository](../product-requirements/2026-09-04-process-content-integrity.md) —
-    Every reference from process content resolves where it is consumed (draft).
-- [Initial Convergence of the Existing Repositories](../product-requirements/2026-09-04-initial-process-convergence.md) —
-    The repositories that already follow the process are brought to one current definition (draft).
-- [A Process Change Made Once Reaches Every Repository](../product-requirements/2026-09-04-process-change-propagation.md) —
-    A change merged anywhere is followed everywhere, as one unit, within the bounded time (draft).
-- [Concurrent-Change Conflict Resolution](../product-requirements/2026-09-04-process-change-conflicts.md) —
-    Competing changes are detected and resolved into one definition (draft).
-- [Enrolling an Additional Repository](../product-requirements/2026-09-04-enrolling-a-repository.md) —
-    A new repository joins with one pull request (draft).
+- None yet.
