@@ -153,4 +153,7 @@ The concrete shape of these — how the boundary is declared, how staleness is d
 
 This vision is being implemented through the following requirements:
 
-- None yet.
+- [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md) —
+    A skill that, run in one adopting repository and pointed at another,
+    explains how their process content has diverged and proposes the pull requests that would
+    converge them, changing nothing (draft).
