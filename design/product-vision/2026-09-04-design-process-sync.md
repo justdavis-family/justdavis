@@ -36,8 +36,7 @@ Once two repositories have diverged, the next sync is a merge rather than a copy
   which is more expensive still, so it is deferred longer.
 Every additional adopting repository multiplies the cost.
 Meanwhile the value of process work is proportional to the number of repositories it governs;
-  unsynced, every improvement pays off exactly once,
-  and usually in the repository where the process is exercised least.
+  unsynced, every improvement pays off exactly once.
 
 The root cause is not that copying is slow.
 It is that the process has no single definition that every repository demonstrably follows.
