@@ -2,7 +2,7 @@
 
 ## Question
 
-This repository's development process
+This repository's [development process](../README.md)
   — the `design/` directory's READMEs and templates, the `design-process` skill,
   the agent rules that govern process, the pull-request and issue templates,
   the process-related workflows, and the engineering principles —
@@ -54,7 +54,7 @@ The other repository's dates come from an inventory of its history made for this
 **Outward** — present here, absent there:
 
 - The `design-process` skill, and the rule that points agents at it.
-- The delivery-plan tracking conventions:
+- The [delivery-plan tracking conventions](../delivery-plans/README.md):
     `Delivery Plan` and `Milestone` issue types, sub-issues, and blocked-by sequencing.
   The other repository's issue-workflow rule is 29 lines to this one's 116.
 - The pull-request template and all four issue templates.
@@ -67,7 +67,9 @@ The other repository's dates come from an inventory of its history made for this
     `design/README.md` became the one statement of the design sequence,
     and `engineering-designs/README.md` lost its restatement of it.
 - Guidance on when an analysis is warranted and what makes a good one (12 lines there, 36 here).
-- Two engineering principles (Least Privilege; Clear, Unambiguous, Easily-Parsed Data Models),
+- Two engineering principles
+    ([Least Privilege](../engineering-principles/2026-05-12-least-privilege.md);
+    [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md)),
     and wording refinements in five of the eight principles both repositories share.
 
 **Inward** — present there, absent here:
@@ -108,8 +110,8 @@ Comparing each:
 Two further shapes hide inside "identical" and "extended":
 
 - **Renamed and edited at once.**
-  All eight principles both repositories share were re-dated here
-    (from a single December 2025 date to a spread of January 2026 dates),
+  All eight [engineering principles](../engineering-principles/README.md) both repositories share
+    were re-dated here (from a single December 2025 date to a spread of January 2026 dates),
     so no principle has the same filename on both sides.
   Three of the eight are byte-identical under the new names;
     five also differ in content, by two to thirteen lines.
@@ -214,11 +216,5 @@ The newest unpropagated change is this pull request's own amendment
 
 ## References
 
-- [Design and Planning Process](../README.md) — the process whose divergence this inventories.
-- [Delivery Plans](../delivery-plans/README.md) —
-    the tracking conventions that make up the largest single outward gap.
-- [Engineering Principles](../engineering-principles/README.md) —
-    the document type whose files were renamed and edited at once.
-- [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md) and
-    [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md) —
-    the two principles that exist only here.
+- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md)
+    — the product vision that this analysis informs.
