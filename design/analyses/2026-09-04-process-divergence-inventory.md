@@ -22,7 +22,7 @@ This analysis answers:
      and which are pure content that could in principle live anywhere?
 
 Findings compare this repository at commit `b80c62d` (2026-08-18)
-  with a checkout of one other adopting repository, taken on 2026-09-04.
+  with a checkout of one other repository that follows this process, taken on 2026-09-04.
 File names and line counts are this repository's.
 The other repository is described but not named, and none of its content is quoted.
 
@@ -165,7 +165,7 @@ The process elements split three ways by who reads them and from where:
 - **Consumed by GitHub from the repository itself:**
     the PR template, the issue templates, and the workflows.
   GitHub only reads these from `.github/` in the repository they apply to,
-    so each adopting repository must hold its own copy whatever else is decided.
+    so each repository that follows this process must hold its own copy whatever else is decided.
 - **Consumed by Claude Code from the repository:**
     `.claude/CLAUDE.md`, the path-scoped rules under `.claude/rules/`,
     the `@`-importing `design/*/CLAUDE.md` stubs, and skills under `.claude/skills/`.
@@ -206,7 +206,7 @@ Two things follow for the design work downstream:
 - The unit of sync cannot be the individual file.
   The rename-plus-edit and the cross-file moves in section 3 mean that identity
     lives at the level of the process content as a whole.
-- Every adopting repository will hold at least its own `.github/` files,
+- Every repository that follows this process will hold at least its own `.github/` files,
     so even a design that moves most of the process out of the repository
     still has to keep some of it in every repository.
 

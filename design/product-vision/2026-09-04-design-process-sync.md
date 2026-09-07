@@ -34,7 +34,7 @@ And the author of a process improvement faces a choice between a large manual co
 Drift then ratchets.
 Once two repositories have diverged, the next sync is a merge rather than a copy,
   which is more expensive still, so it is deferred longer.
-Every additional adopting repository multiplies the cost.
+Every additional repository that follows the process multiplies the cost.
 Meanwhile the value of process work is proportional to the number of repositories it governs;
   unsynced, every improvement pays off exactly once.
 
@@ -46,7 +46,7 @@ It has several copies with no relationship between them.
 
 One development process, with one definition, maintained collectively by everyone who follows it.
 Improve it from whichever repository you happen to be working in;
-  within a short, bounded time every adopting repository follows the improved process,
+  within a short, bounded time every repository that follows it has the improvement,
   and nothing is broken on arrival.
 
 A repository *follows the process* when the process content it uses is the current definition,
@@ -54,7 +54,7 @@ A repository *follows the process* when the process content it uses is the curre
 Anything else is staleness, and staleness is visible rather than discovered by accident.
 
 The boundary between process content and a repository's own content is explicit,
-  discoverable from within any adopting repository, and part of the process itself.
+  discoverable from within any repository that follows the process, and part of the process itself.
 Process content is the design directory's READMEs and templates, the design-process skill,
   the rules that govern process, the pull-request and issue templates, the process-related workflows,
   and the engineering principles.
@@ -71,8 +71,8 @@ When a heading-capitalisation rule reaches a repository,
   bringing them into line is that repository's own follow-up work, tracked as such.
 The process promises that the rule is there, not that the past has been rewritten.
 
-Contributors, human and agent, can find and read the current process from within any adopting
-  repository.
+Contributors, human and agent, can find and read the current process
+  from within any repository that follows it.
 Whether they read it in files that live in the repository, or by following a pointer to where the
   definition lives, is a design choice with real trade-offs on each side;
   this vision requires only that the reading is possible and that what they read is current.
@@ -105,9 +105,9 @@ Nothing about a private repository joining requires the public repository to kno
 
 ### One Process
 
-- At steady state, every adopting repository follows the current process,
+- At steady state, every repository that follows the process is on its current definition,
     and whenever one does not, that fact is visible without anyone going looking for it.
-- A process change merged in any adopting repository is followed by every other adopting repository
+- A process change merged in any repository that follows the process is followed by every other one
     within a bounded time — no more than a week, or before the next process change is authored,
     whichever comes first.
 - Improvements flow in both directions with equal effort, apart from the publication check below:
@@ -142,8 +142,8 @@ Nothing about a private repository joining requires the public repository to kno
 
 - A new repository starts following the current process with one pull request of its own,
     and participates equally from then on.
-- From any adopting repository alone, a contributor can tell which content is process
-    and which is local, before editing either.
+- From any repository that follows the process, on its own,
+    a contributor can tell which content is process and which is local, before editing either.
 
 The concrete shape of these — how the boundary is declared, how staleness is detected,
   how a change travels, how conflicts are presented, how publication is confirmed —
@@ -154,7 +154,7 @@ The concrete shape of these — how the boundary is declared, how staleness is d
 This vision is being implemented through the following requirements:
 
 - [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md) —
-    A skill that, run in one adopting repository and pointed at another,
+    A skill that, run in one repository that follows the process and pointed at another,
     explains how their process content has diverged and proposes the pull requests that would
     converge them, changing nothing (draft).
 - [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md) —
