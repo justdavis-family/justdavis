@@ -157,3 +157,7 @@ This vision is being implemented through the following requirements:
     A skill that, run in one adopting repository and pointed at another,
     explains how their process content has diverged and proposes the pull requests that would
     converge them, changing nothing (draft).
+- [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md) —
+    On request, the skill opens the proposed pull requests in the repository it is running in,
+    never in another; the maintainer sees everything before it is created, and explicitly confirms
+    any private content is safe to publish before it reaches a public repository (draft).
