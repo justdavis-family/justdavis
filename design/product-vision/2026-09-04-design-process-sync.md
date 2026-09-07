@@ -138,6 +138,16 @@ Nothing about a private repository joining requires the public repository to kno
     not by name, not by link, and not by a record of a change's origin
     beyond what the human who published it chose to say.
 
+### Compromise Stays Contained
+
+- No repository involved in this sync process is required to hold a credential
+    that would allow an attacker who acquires that credential
+    to automatically compromise another repository.
+- Nothing forwarded from another repository — a workflow, a build, a test, a document —
+    executes in the receiving repository until a human has reviewed it and chosen to run it.
+  This holds in every direction, public or private on either side,
+    because the danger is automatic execution of forwarded code, not the visibility of the repositories.
+
 ### Cheap to Join, Easy to Understand
 
 - A new repository starts following the current process with one pull request of its own,
@@ -146,7 +156,8 @@ Nothing about a private repository joining requires the public repository to kno
     a contributor can tell which content is process and which is local, before editing either.
 
 The concrete shape of these — how the boundary is declared, how staleness is detected,
-  how a change travels, how conflicts are presented, how publication is confirmed —
+  how a change travels, how conflicts are presented, how publication is confirmed,
+  how forwarded content is kept from running unreviewed —
   is specified in the requirements and the engineering design, not here.
 
 ## Requirements
