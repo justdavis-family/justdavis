@@ -59,9 +59,17 @@ As a maintainer who has read a process-sync proposal and decided what to do,
         the files touched by one upstream change — lands in one pull request, never split across several.
 - [ ] Renames land as renames, and removals as removals,
         so that history and links in the working repository stay coherent.
+- [ ] Where the working repository's local content — its own design documents, rules, or handbook —
+        refers to process content that a pull request renames,
+        the same pull request updates those references so they keep resolving.
+      That is the only change ever made to local content;
+        apart from it, local content is byte-for-byte unchanged.
 - [ ] Declared variation points carry the working repository's own value in the applied content.
-- [ ] Only files the manifest classifies as process content are touched;
-        the working repository's local content is byte-for-byte unchanged.
+- [ ] Only files the manifest classifies as process content are otherwise touched.
+- [ ] Where applied process content carries a rule that the working repository's existing local
+        content does not follow — a heading-case rule against documents written before it, say —
+        the skill reports which local content is affected and leaves it as it is;
+        recording the follow-up is the maintainer's choice.
 - [ ] Items the proposal marked as human-applied only are not applied;
         the skill lists them with the proposal's reason.
 - [ ] If the working repository no longer matches the proposal — the target ref has moved on,
