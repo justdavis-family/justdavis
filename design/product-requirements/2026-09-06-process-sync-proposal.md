@@ -100,14 +100,28 @@ As a maintainer working in one repository that follows this process,
 ### The Proposal
 
 - [ ] Given the path to the counterpart repository's checkout, the skill runs the checks above,
-        then classifies each difference using both repositories' histories as:
-        an edit; an addition; a removal; a rename (same content, different name);
-        a rename plus an edit; or content moved between files.
-      Differences that only make sense together — the two halves of a content move,
-        the files touched by one upstream change — are grouped as one item.
+        then uses both repositories' histories to explain and attribute each difference:
+        which upstream commits or pull requests produced it,
+        and whether it is an edit, an addition, a removal, a rename (same content, different name),
+        a rename plus an edit, or content moved between files.
+- [ ] The proposal groups differences into units, each of which becomes one proposed pull request,
+        so as to minimise the *net* review burden across all of them:
+        the fixed overhead of every additional pull request on one side,
+        the mental load of unrelated changes sharing a pull request on the other.
+- [ ] In the ordinary case — the repositories have followed each other closely,
+        and the differences come from a small number of tightly scoped, non-overlapping upstream
+        pull requests — each unit mirrors one upstream pull request.
+- [ ] Where upstream pull requests overlap, because several rewrote the same content in turn,
+        their net effect is one unit whose provenance names all of them;
+        nothing intermediate is replayed.
+      Units may also be combined where many small ones would cost more in overhead than they save.
+- [ ] An upstream pull request is never split across units.
+      Where a difference cannot be attributed to an upstream pull request at all,
+        its unit is at least whatever leaves the working repository consistent:
+        the two halves of a rename or of a content move stay together.
 - [ ] The proposal lists, for each repository, the pull requests that would converge it:
         the files each would touch, the direction the content flows, a rationale,
-        and the provenance (the commits or pull requests where the change originated).
+        and the provenance (the upstream commits or pull requests the unit mirrors or combines).
 - [ ] The proposal names every decision it cannot make itself — which of two filenames wins,
         whether a file present on one side only should be adopted or declared local —
         and states what it recommends and why.

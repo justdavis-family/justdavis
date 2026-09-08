@@ -55,10 +55,12 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 - [ ] Each applied pull request becomes one branch and one open pull request,
         based on and targeting the ref the proposal named,
         following the working repository's conventions for branches, titles, and descriptions.
-- [ ] A grouped item in the proposal — the two halves of a content move,
-        the files touched by one upstream change — lands in one pull request, never split across several.
-- [ ] Renames land as renames, and removals as removals,
-        so that history and links in the working repository stay coherent.
+- [ ] Each unit in the proposal lands as one pull request; a unit is never split.
+      The maintainer may ask for units to be combined into fewer pull requests
+        where that lowers the net review burden further.
+- [ ] Renames land as renames, so that the working repository's history follows the file
+        and references to it can be updated in the same pull request;
+        removals land as removals.
 - [ ] Where the working repository's local content — its own design documents, rules, or handbook —
         refers to process content that a pull request renames,
         the same pull request updates those references so they keep resolving.
