@@ -29,11 +29,20 @@ The skill is not a general tool for comparing arbitrary repositories.
 The skill reads a manifest that says which files are process content, which of those may vary per
   repository and how, and which files are local by design;
   compares the process content of the two repositories, honouring the declared variations;
-  reads both repositories' histories to say *why* each difference exists
-  (an edit, an addition, a removal, a rename, a rename plus an edit, or content moved between files);
+  reads both repositories' histories to say where each difference came from and what kind of change
+  it is;
   and writes a proposal: for each repository, the pull requests that would converge it,
   with rationale and provenance, and the decisions only a human can make.
 It changes nothing in either repository.
+
+The proposal is shaped for two readers at once.
+The first is the reviewer of each proposed pull request,
+  whose net burden across all of them should be as low as possible.
+The second is whoever later reads the repository's history,
+  for whom each commit's summary should explain the lines it touched
+  rather than saying something as vague as "adopt the current process".
+Mirroring the upstream pull requests usually serves both;
+  when a backlog has accumulated, regrouping serves them better.
 
 The comparison and a reference-integrity check can run on their own, without an agent,
   so that a later requirement can run them unattended;
@@ -55,87 +64,101 @@ As a maintainer working in one repository that follows this process,
 
 ### The Boundary Manifest
 
-- [ ] A manifest, held as process content in every repository that follows this process,
-        lists every element of the development process by path;
+The manifest is the skill's definition of what "process content" means,
+  and is itself process content, held in every repository that follows the process.
+
+- [ ] Every element of the development process is listed in the manifest by path;
         nothing is process content by implication.
 - [ ] Every entry is classified as one of: shared verbatim; shared with a declared variation point;
         or local by design.
-      Local-by-design entries exist only for files a reader would otherwise assume are shared
-        (the contributor handbook, the repository-wide agent brief, agent settings, CI configuration,
-        and the tool configuration at the root).
-- [ ] Each variation point names what may differ (for example, the example pull-request URL in the
-        requirements template) and the per-repository value is held in a local file
-        that the manifest points at, never inside the shared file.
+- [ ] Local-by-design entries exist only for files a reader would otherwise assume are shared:
+        the contributor handbook, the repository-wide agent brief, agent settings,
+        CI configuration, and the tool configuration at the root.
+- [ ] Each variation point names what may differ
+        (for example, the example pull-request URL in the requirements template),
+        and the per-repository value is held in a local file the manifest points at,
+        never inside the shared file.
 - [ ] Adding a repository-local rule, principle, or skill requires no change to the manifest.
-- [ ] A manifest entry whose path does not exist, or whose variation point has no local value,
-        is reported as an error by the comparison rather than silently skipped.
+- [ ] The comparison reports a manifest entry whose path does not exist,
+        or whose variation point has no local value, as an error rather than skipping it.
 
 ### Comparison and Reference Checks That Need No Agent
 
-- [ ] A command compares the working repository's process content, at a given ref,
-        against the counterpart repository's at a given ref,
+Two commands underlie the skill and can be run on their own,
+  so that later requirements can run them unattended.
+
+- [ ] The comparison takes the working repository at one ref and the counterpart at another,
         and reports, per manifest entry, exactly one of:
         identical, differs, missing in the working repository, missing in the counterpart.
-      Variation points are substituted before comparison, so a declared difference is not reported,
-        and a failure to compare is reported as a failure, never as "identical".
-- [ ] A command checks that every reference from process content — Markdown links, `@`-imports,
-        and skill pointers — resolves in the repository it is run in, and reports each that does not.
-- [ ] Both commands run without an agent and signal findings in a way that unattended automation
-        can act on.
-- [ ] Comparing a public counterpart requires no credential.
+- [ ] Declared variations are substituted before comparison, so a declared difference is not reported.
+- [ ] A failure to compare an entry is reported as a failure, never as "identical".
+- [ ] The reference check reports every reference from process content
+        — Markdown links, `@`-imports, and skill pointers —
+        that does not resolve in the repository it is run in.
+- [ ] Both commands run without an agent and exit in a way that unattended automation can act on.
+- [ ] Neither command needs a credential when the counterpart is public.
 
 ### Which Revisions Are Compared
 
-- [ ] Each side of a comparison is a specific ref, resolved to a commit and recorded in the output:
-        by default the checked-out revision in the working repository
-        and the default branch in the counterpart,
-        with either overridable so that a maintainer can compare against a branch under review
-        or an older release.
-- [ ] Both sides are read as committed content; uncommitted changes in either working tree are
-        reported as present and excluded from the comparison, never silently included.
-- [ ] Because the working repository is usually on a branch under development
-        and the counterpart's default branch is usually what the eventual pull requests target,
-        the proposal states which ref each proposed pull request would be opened against.
+- [ ] Each side of a comparison is a specific ref, resolved to a commit and recorded in the output.
+- [ ] By default the working side is the checked-out revision and the counterpart side is its
+        default branch; either can be overridden,
+        so that a maintainer can compare against a branch under review or an older release.
+- [ ] Uncommitted changes in either working tree are reported as present and excluded from the
+        comparison, never silently included.
+- [ ] The proposal states which ref each proposed pull request would be opened against,
+        since the working repository is usually on a branch under development
+        and the counterpart's default branch is usually the eventual target.
+
+### Explaining Each Difference
+
+- [ ] For each difference, the proposal names the upstream commits or pull requests that produced it,
+        drawn from both repositories' histories.
+- [ ] For each difference, the proposal says whether it is an edit, an addition, a removal,
+        a rename (same content, different name), a rename plus an edit,
+        or content moved between files.
+
+### Grouping Differences into Pull Requests
+
+Each unit in the proposal becomes one proposed pull request.
+Units are chosen to minimise the net review burden across all of them
+  — the fixed cost of every additional pull request weighed against the load of unrelated changes
+  sharing one —
+  and to leave a history in which each commit's summary explains the lines it touched.
+
+- [ ] Where the differences come from a small number of tightly scoped, non-overlapping upstream
+        pull requests, each unit mirrors one of them.
+- [ ] Where upstream pull requests overlap — several rewrote the same content in turn —
+        their net effect is proposed once; nothing intermediate is replayed.
+- [ ] Where a backlog of upstream pull requests has accumulated,
+        the proposal regroups their net effect into well-scoped units by topic,
+        each with a summary that would explain its lines to a reader of `git blame`;
+        it does not propose a unit whose only honest summary would be "adopt the current process".
+- [ ] Regrouping may split an upstream pull request across units only where its parts belong to
+        different topics.
+- [ ] No unit, however grouped, would leave the working repository inconsistent on its own:
+        the two halves of a rename, or of a content move, are always in the same unit.
+- [ ] Each unit names the upstream commits or pull requests it mirrors, combines, or draws from.
 
 ### The Proposal
 
-- [ ] Given the path to the counterpart repository's checkout, the skill runs the checks above,
-        then uses both repositories' histories to explain and attribute each difference:
-        which upstream commits or pull requests produced it,
-        and whether it is an edit, an addition, a removal, a rename (same content, different name),
-        a rename plus an edit, or content moved between files.
-- [ ] The proposal groups differences into units, each of which becomes one proposed pull request,
-        so as to minimise the *net* review burden across all of them:
-        the fixed overhead of every additional pull request on one side,
-        the mental load of unrelated changes sharing a pull request on the other.
-- [ ] In the ordinary case — the repositories have followed each other closely,
-        and the differences come from a small number of tightly scoped, non-overlapping upstream
-        pull requests — each unit mirrors one upstream pull request.
-- [ ] Where upstream pull requests overlap, because several rewrote the same content in turn,
-        their net effect is one unit whose provenance names all of them;
-        nothing intermediate is replayed.
-      Units may also be combined where many small ones would cost more in overhead than they save.
-- [ ] An upstream pull request is never split across units.
-      Where a difference cannot be attributed to an upstream pull request at all,
-        its unit is at least whatever leaves the working repository consistent:
-        the two halves of a rename or of a content move stay together.
-- [ ] The proposal lists, for each repository, the pull requests that would converge it:
-        the files each would touch, the direction the content flows, a rationale,
-        and the provenance (the upstream commits or pull requests the unit mirrors or combines).
-- [ ] The proposal names every decision it cannot make itself — which of two filenames wins,
-        whether a file present on one side only should be adopted or declared local —
-        and states what it recommends and why.
+- [ ] For each repository, the proposal lists the pull requests that would converge it:
+        the files each touches, the direction the content flows, its rationale, and its provenance.
+- [ ] The proposal names every decision it cannot make itself
+        — which of two filenames wins,
+        whether a file present on one side only is adopted or declared local —
+        with a recommendation and the reason for it.
 - [ ] The proposal marks any item that must be applied by a human rather than by automation,
-        and says why, so that a later unattended step knows what to leave alone.
-- [ ] Running the skill against two converged repositories yields an empty proposal.
-- [ ] The skill changes no tracked file in either repository.
-      The proposal is delivered as output the maintainer can save wherever they choose.
+        and says why.
+- [ ] Against two converged repositories, the proposal is empty.
+- [ ] The skill changes no tracked file in either repository;
+        the proposal is output the maintainer can save wherever they choose.
 
 ### Privacy
 
 - [ ] Every proposed change whose content originates in a private repository and whose destination is
         a public one is marked as requiring a human's explicit safe-to-publish confirmation
-        before it may be applied, regardless of how routine the content looks.
+        before it may be applied, however routine the content looks.
 - [ ] The proposal identifies the counterpart only by the path the maintainer supplied,
         so that a proposal produced in a public repository carries no private repository's name or URL.
 
@@ -161,8 +184,9 @@ As a maintainer working in one repository that follows this process,
 ### Analysis
 
 - [Process Divergence Across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
-    The real divergence this skill must classify correctly:
-    renamed-and-edited principles, content moved between files, and repository-specific lines.
+    The real divergence this skill must explain and group correctly:
+    renamed-and-edited principles, content moved between files, repository-specific lines,
+    and a five-month backlog of overlapping upstream pull requests.
 
 ### Engineering Principles
 

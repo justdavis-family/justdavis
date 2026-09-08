@@ -19,7 +19,7 @@ prs: []
 Having read a proposal from [Propose a Process Sync](2026-09-06-process-sync-proposal.md),
   a maintainer asks the same skill to carry it out in the repository they are working in
   — the *working repository* — for the changes the proposal addressed to that repository.
-The skill turns each of those proposed pull requests into a branch and an open pull request there,
+The skill turns each of the proposal's units into a branch and an open pull request there,
   with the source change's summary and provenance in the body,
   and leaves the maintainer to review and merge through the repository's normal workflow.
 Changes the proposal addressed to the *counterpart repository* — the one the proposal was
@@ -28,8 +28,9 @@ Changes the proposal addressed to the *counterpart repository* — the one the p
   with this one as its counterpart.
 
 Every crossing between repositories therefore happens with a human present in the receiving
-  repository, looking at the exact content, which is what keeps this requirement simple:
-  it never needs a credential for any repository other than the one it runs in,
+  repository, looking at the exact content.
+That is what keeps this requirement simple:
+  the skill needs no credential for any repository other than the one it runs in,
   and nothing it creates runs anywhere until the maintainer chooses to open it for review.
 
 ## User Story
@@ -43,73 +44,75 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 
 ### What Gets Applied, and Where
 
-- [ ] Given a proposal, the skill applies only the pull requests the proposal addressed to the
-        working repository;
-        pull requests addressed to the counterpart are listed as "not applied here"
+- [ ] The skill applies only the units the proposal addressed to the working repository;
+        units addressed to the counterpart are listed as "not applied here",
         with the instruction to run the skill there.
-- [ ] The maintainer can apply the whole proposal or a chosen subset of its pull requests,
-        and can defer or reject individual decisions the proposal raised
-        without the skill applying a default in their place.
+- [ ] The maintainer can apply the whole proposal or a chosen subset of its units.
+- [ ] The maintainer can defer or reject any decision the proposal raised;
+        the skill applies no default in their place.
+- [ ] The maintainer can ask for units to be combined into fewer pull requests;
+        the skill never splits a unit.
 - [ ] A dry run shows exactly which branches and pull requests would be created, with their content,
         and creates nothing.
-- [ ] Each applied pull request becomes one branch and one open pull request,
+- [ ] Units the proposal marked as human-applied only are listed with the proposal's reason
+        and not applied.
+- [ ] If the working repository no longer matches the proposal
+        — the target ref has moved on, a file the proposal expected is gone —
+        the skill stops before creating anything and says what changed.
+
+### What Each Pull Request Contains
+
+- [ ] Each applied unit becomes one branch and one open pull request,
         based on and targeting the ref the proposal named,
-        following the working repository's conventions for branches, titles, and descriptions.
-- [ ] Each unit in the proposal lands as one pull request; a unit is never split.
-      The maintainer may ask for units to be combined into fewer pull requests
-        where that lowers the net review burden further.
-- [ ] Renames land as renames, so that the working repository's history follows the file
-        and references to it can be updated in the same pull request;
+        and following the working repository's conventions for branch names, titles,
+        and descriptions.
+- [ ] Renames land as renames, so that the repository's history follows the file;
         removals land as removals.
-- [ ] Where the working repository's local content — its own design documents, rules, or handbook —
-        refers to process content that a pull request renames,
+- [ ] Declared variation points carry the working repository's own value.
+- [ ] Where the working repository's local content
+        — its own design documents, rules, or handbook —
+        refers to process content the pull request renames,
         the same pull request updates those references so they keep resolving.
-      That is the only change ever made to local content;
-        apart from it, local content is byte-for-byte unchanged.
-- [ ] Declared variation points carry the working repository's own value in the applied content.
-- [ ] Only files the manifest classifies as process content are otherwise touched.
-- [ ] Where applied process content carries a rule that the working repository's existing local
-        content does not follow — a heading-case rule against documents written before it, say —
-        the skill reports which local content is affected and leaves it as it is;
-        recording the follow-up is the maintainer's choice.
-- [ ] Items the proposal marked as human-applied only are not applied;
-        the skill lists them with the proposal's reason.
-- [ ] If the working repository no longer matches the proposal — the target ref has moved on,
-        a file the proposal expected is gone — the skill stops before creating anything
-        and says what changed, rather than applying the parts that still fit.
+- [ ] Apart from those reference updates, the pull request changes only files the manifest
+        classifies as process content; local content is otherwise byte-for-byte unchanged.
+- [ ] Where applied process content carries a rule that the repository's existing local content
+        does not follow — a heading-case rule against documents written before it, say —
+        the skill reports which local content is affected and leaves it unchanged.
 
 ### Provenance
 
-- [ ] Each pull request's description says what the change is, where it originated
-        (the counterpart as the maintainer supplied it, the ref, and the originating commits or
-        pull requests), and why, quoting the source's own summary where one exists.
-- [ ] Each pull request is individually revertible through the working repository's normal workflow.
+- [ ] Each pull request's description says what the change is,
+        where it originated (the counterpart as the maintainer supplied it, its ref,
+        and the upstream commits or pull requests), and why,
+        quoting the source's own summary where one exists.
+- [ ] Each pull request's title and description are specific enough that,
+        once squash-merged, the resulting commit explains its lines to a reader of `git blame`.
+- [ ] Each pull request is individually revertible through the repository's normal workflow.
 - [ ] Applying the same proposal twice creates nothing the second time;
-        the skill reports that the pull requests already exist and where.
+        the skill reports the pull requests that already exist and where.
 
 ### Nothing Crosses Unseen, Nothing Runs Unchosen
 
 - [ ] The skill creates nothing the maintainer has not seen in that run:
         it shows what it is about to create, and creating it is the maintainer's explicit choice.
-- [ ] When the working repository is public and a proposed change's content originates in a
-        private repository, the skill shows the maintainer the complete diff that would be pushed
+- [ ] When the working repository is public and a unit's content originates in a private repository,
+        the skill shows the complete diff that would be pushed
         and creates no branch or pull request until the maintainer explicitly confirms
-        that specific content is safe to publish.
-      Nothing the skill infers about the content — "it is only process content",
-        "it is identical to something already public" — substitutes for that confirmation.
-- [ ] When the working repository is public and a proposed change's content originates in a
-        private repository, the pull request's description names that private repository, its ref,
-        or its commits only if the maintainer chooses to include them;
+        that specific content is safe to publish;
+        nothing the skill infers about the content substitutes for that confirmation.
+- [ ] When the working repository is public and a unit's content originates in a private repository,
+        the pull request names that repository, its ref, or its commits
+        only if the maintainer chooses to include them;
         by default it says the change was synced from another repository that follows this process,
         and no more.
-- [ ] The skill writes only to the working repository, and only as branches and pull requests
-        that go through its normal review and merge;
+- [ ] The skill writes only to the working repository, and only as branches and pull requests;
         it does not approve, merge, or bypass branch protection.
 
 ### Documentation
 
-- [ ] The skill's documentation covers applying a proposal: the whole-or-subset choice,
-        the dry run, what the safe-to-publish confirmation looks like,
+- [ ] The skill's documentation covers applying a proposal:
+        choosing units, combining them, the dry run,
+        what the safe-to-publish confirmation looks like,
         and how to apply the counterpart's side.
 
 ## References
