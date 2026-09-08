@@ -42,7 +42,7 @@ The second is whoever later reads the repository's history,
   for whom each commit's summary should explain the lines it touched
   rather than saying something as vague as "adopt the current process".
 Mirroring the upstream pull requests usually serves both;
-  when a backlog has accumulated, regrouping serves them better.
+  when a backlog has accumulated, regrouping some changes may serve them better.
 
 The comparison and a reference-integrity check can run on their own, without an agent,
   so that a later requirement can run them unattended;
@@ -112,7 +112,7 @@ Two commands underlie the skill and can be run on their own,
 
 ### Explaining Each Difference
 
-- [ ] For each difference, the proposal names the upstream commits or pull requests that produced it,
+- [ ] For each difference, the proposal names the upstream commits and/or pull requests that produced it,
         drawn from both repositories' histories.
 - [ ] For each difference, the proposal says whether it is an edit, an addition, a removal,
         a rename (same content, different name), a rename plus an edit,
@@ -125,20 +125,17 @@ Units are chosen to minimise the net review burden across all of them
   — the fixed cost of every additional pull request weighed against the load of unrelated changes
   sharing one —
   and to leave a history in which each commit's summary explains the lines it touched.
+Mirroring the upstream pull requests usually serves both readers;
+  a long backlog may call for regrouping by topic.
+How to weigh those goals in a given case is a judgement:
+  the heuristics are recorded in the engineering design and are expected to evolve with use,
+  and the maintainer can regroup before applying.
 
-- [ ] Where the differences come from a small number of tightly scoped, non-overlapping upstream
-        pull requests, each unit mirrors one of them.
-- [ ] Where upstream pull requests overlap — several rewrote the same content in turn —
-        their net effect is proposed once; nothing intermediate is replayed.
-- [ ] Where a backlog of upstream pull requests has accumulated,
-        the proposal regroups their net effect into well-scoped units by topic,
-        each with a summary that would explain its lines to a reader of `git blame`;
-        it does not propose a unit whose only honest summary would be "adopt the current process".
-- [ ] Regrouping may split an upstream pull request across units only where its parts belong to
-        different topics.
-- [ ] No unit, however grouped, would leave the working repository inconsistent on its own:
+- [ ] No unit would leave the working repository inconsistent on its own:
         the two halves of a rename, or of a content move, are always in the same unit.
-- [ ] Each unit names the upstream commits or pull requests it mirrors, combines, or draws from.
+- [ ] Each unit names the upstream commits and/or pull requests it draws from.
+- [ ] The proposal states how it grouped the differences and why,
+        so that a maintainer can judge the grouping against the goals above and change it.
 
 ### The Proposal
 

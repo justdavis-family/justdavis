@@ -50,8 +50,10 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 - [ ] The maintainer can apply the whole proposal or a chosen subset of its units.
 - [ ] The maintainer can defer or reject any decision the proposal raised;
         the skill applies no default in their place.
-- [ ] The maintainer can ask for units to be combined into fewer pull requests;
-        the skill never splits a unit.
+- [ ] The maintainer can ask for units to be combined and/or regrouped
+        into a different set of pull requests.
+- [ ] However the maintainer regroups, no pull request leaves the working repository inconsistent
+        on its own: the two halves of a rename, or of a content move, stay together.
 - [ ] A dry run shows exactly which branches and pull requests would be created, with their content,
         and creates nothing.
 - [ ] Units the proposal marked as human-applied only are listed with the proposal's reason
