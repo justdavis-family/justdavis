@@ -172,3 +172,6 @@ This vision is being implemented through the following requirements:
     On request, the skill opens the proposed pull requests in the repository it is running in,
     never in another; the maintainer sees everything before it is created, and explicitly confirms
     any private content is safe to publish before it reaches a public repository (draft).
+- [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md) —
+    Each repository keeps a log of its sync decisions, which proposals honour and cite,
+    so no decision is asked twice and a resolution made on one side is carried to the other (draft).
