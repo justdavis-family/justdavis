@@ -179,3 +179,6 @@ This vision is being implemented through the following requirements:
     A repository notices on its own when it and its counterpart have diverged,
     and puts inbound changes in front of its maintainer as pull requests
     and outbound changes as approval requests, sending and running nothing itself (draft).
+- [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md) —
+    An approved outbound change reaches the counterpart exactly as approved,
+    is reviewed there as real content, and runs nothing until a human there chooses (draft).
