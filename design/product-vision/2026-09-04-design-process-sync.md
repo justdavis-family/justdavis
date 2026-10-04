@@ -175,3 +175,7 @@ This vision is being implemented through the following requirements:
 - [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md) —
     Each repository keeps a log of its sync decisions, which proposals honour and cite,
     so no decision is asked twice and a resolution made on one side is carried to the other (draft).
+- [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md) —
+    A repository notices on its own when it and its counterpart have diverged,
+    and puts inbound changes in front of its maintainer as pull requests
+    and outbound changes as approval requests, sending and running nothing itself (draft).
