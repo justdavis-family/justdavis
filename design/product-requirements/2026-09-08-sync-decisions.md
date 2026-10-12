@@ -28,7 +28,7 @@ Nothing in either repository's history says any of that,
   until the two happen to match.
 
 This requirement gives each repository a log of the decisions made during its syncs,
-  which proposals honour and cite.
+  which proposals honor and cite.
 A decision made once is not asked twice;
   a resolution made on one side is carried to the other rather than re-raised;
   and anyone wondering why the repositories differ where they do can find the answer.
@@ -38,7 +38,7 @@ Decisions are per repository, because "declined here" is not "declined everywher
 ## User Story
 
 As a maintainer who has already decided how a difference should be handled,
-  I want that decision remembered and honoured by every later proposal,
+  I want that decision remembered and honored by every later proposal,
   so that I am never asked the same question twice
   and a resolution I made on one side is carried to the other rather than raised again.
 
@@ -56,7 +56,7 @@ As a maintainer who has already decided how a difference should be handled,
 - [ ] The log is local content: it is never itself synced,
         and the manifest classifies it as local by design.
 
-### How Decisions Are Honoured
+### How Decisions Are Honored
 
 - [ ] A proposal does not ask a question the log already answers;
         where a decision applies, the proposal cites it instead.
@@ -109,7 +109,7 @@ As a maintainer who has already decided how a difference should be handled,
 ### Related Requirements
 
 - [Propose a Process Sync](2026-09-06-process-sync-proposal.md) —
-    Produces the proposals that honour and cite the log; this requirement depends on it.
+    Produces the proposals that honor and cite the log; this requirement depends on it.
 - [Apply a Process Sync Proposal](2026-09-06-process-sync-apply.md) —
     Carries decisions out, and records them in the same pull request; this requirement depends on it.
 

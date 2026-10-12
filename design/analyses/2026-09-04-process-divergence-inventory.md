@@ -35,7 +35,7 @@ The other repository adopted this repository's process content in April 2026,
 That is the only time process content has ever moved between the two,
   and it moved outward from this repository only.
 A reverse sync, bringing that repository's improvements here,
-  was analysed at the time and deferred.
+  was analyzed at the time and deferred.
 It never happened.
 
 Since mid-April, this repository has merged six pull requests whose subject is the process itself
@@ -176,7 +176,7 @@ The process elements split three ways by who reads them and from where:
   Humans and agents reach these through links, and nothing but those links requires a particular path.
 
 *Provenance:* the first bullet is inherited from general knowledge of GitHub's conventions;
-  the second is inferred from the loading behaviour observed in this repository
+  the second is inferred from the loading behavior observed in this repository
   and must be verified before a design rests on it.
 
 ## Recommendation

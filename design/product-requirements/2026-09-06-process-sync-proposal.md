@@ -28,7 +28,7 @@ The skill is not a general tool for comparing arbitrary repositories.
 
 The skill reads a manifest that says which files are process content, which of those may vary per
   repository and how, and which files are local by design;
-  compares the process content of the two repositories, honouring the declared variations;
+  compares the process content of the two repositories, honoring the declared variations;
   reads both repositories' histories to say where each difference came from and what kind of change
   it is;
   and writes a proposal: for each repository, the pull requests that would converge it,
@@ -121,7 +121,7 @@ Two commands underlie the skill and can be run on their own,
 ### Grouping Differences into Pull Requests
 
 Each unit in the proposal becomes one proposed pull request.
-Units are chosen to minimise the net review burden across all of them
+Units are chosen to minimize the net review burden across all of them
   — the fixed cost of every additional pull request weighed against the load of unrelated changes
   sharing one —
   and to leave a history in which each commit's summary explains the lines it touched.
