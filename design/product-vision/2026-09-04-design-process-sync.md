@@ -66,7 +66,7 @@ Local content is never touched by the process, and local *additions* are first-c
   without them being removed or propagated.
 
 Rules apply on arrival, but the debt lands locally.
-When a heading-capitalisation rule reaches a repository,
+When a heading-capitalization rule reaches a repository,
   that repository's existing documents do not become compliant by magic;
   bringing them into line is that repository's own follow-up work, tracked as such.
 The process promises that the rule is there, not that the past has been rewritten.
@@ -150,8 +150,9 @@ Nothing about a private repository joining requires the public repository to kno
 
 ### Cheap to Join, Easy to Understand
 
-- A new repository starts following the current process with one pull request of its own,
-    and participates equally from then on.
+- A repository that holds none of the process content starts following it with one pull request
+    of its own; one that already holds some of it needs no more than a sync would.
+  Either participates equally from then on.
 - From any repository that follows the process, on its own,
     a contributor can tell which content is process and which is local, before editing either.
 
@@ -173,7 +174,7 @@ This vision is being implemented through the following requirements:
     never in another; the maintainer sees everything before it is created, and explicitly confirms
     any private content is safe to publish before it reaches a public repository (draft).
 - [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md) —
-    Each repository keeps a log of its sync decisions, which proposals honour and cite,
+    Each repository keeps a log of its sync decisions, which proposals honor and cite,
     so no decision is asked twice and a resolution made on one side is carried to the other (draft).
 - [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md) —
     A repository notices on its own when it and its counterpart have diverged,
@@ -182,3 +183,7 @@ This vision is being implemented through the following requirements:
 - [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md) —
     An approved outbound change reaches the counterpart exactly as approved,
     is reviewed there as real content, and runs nothing until a human there chooses (draft).
+- [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md) —
+    A repository starts following the process, and stays in sync, through one pull request of its
+    own or a sync of what it already holds,
+    with no change to the repositories already there and nothing added to any public one (draft).
