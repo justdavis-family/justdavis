@@ -36,13 +36,16 @@ The private repository that follows the process is never named.
 
 The process content is five kinds of thing:
   the `design/` READMEs and templates; the `design-process` skill;
-  the agent rules under `.claude/rules/`; `.claude/CLAUDE.md` and the `design/*/CLAUDE.md` stubs;
+  the agent rules under `.claude/rules/`; the `design/*/CLAUDE.md` stubs;
   and the pull-request template, issue templates, and workflows under `.github/`.
+The repository-wide brief at `.claude/CLAUDE.md` is local by design, as the vision says,
+  because it describes the repository it sits in.
 
 A Claude Code plugin can ship skills, agents, commands, hooks, MCP and LSP servers, workflows,
   output styles, themes, and executables.
 It cannot ship a `CLAUDE.md` — the validator warns when it finds one at the plugin root —
-  and it cannot ship `.claude/rules/` files, which load from project scope only
+  and it cannot ship `.claude/rules/` files, which load only from the project's and the user's own
+  `.claude/rules/` directories, never from a plugin
   ([plugin components](https://code.claude.com/docs/en/plugins/components.md),
   [memory](https://code.claude.com/docs/en/memory.md)).
 Nothing GitHub consumes from `.github/` can come from a plugin either.
@@ -61,19 +64,20 @@ A mod could in principle inject process instructions into every session by handl
 
 So under the shared-skill family, only the skill and the documents it carries as supporting files
   (the READMEs and templates could be reworked into that) would be shared intrinsically.
-The rules, the agent briefs, and everything under `.github/` would still have to be replicated.
+The rules, the stubs, and everything under `.github/` would still have to be replicated.
 The family is not an alternative to replication; it is replication plus a second mechanism,
   with the process definition split across the two.
 *Inferred.*
 
 It would also move the human-facing documents out of the repository.
 `CONTRIBUTING.md` and `.claude/CLAUDE.md` would point at a plugin's source repository,
-  reversing the direction of the three most recent process changes here,
-  which made the in-repository contributor documents the single statement of the process
+  reversing the direction of recent changes here, #38 above all,
+  which made the in-repository contributor documents the single statement of the conventions
   because humans read those and do not reliably read `.claude/`.
 The vision names this trade-off and leaves it to this analysis;
   the finding above decides it, since the family cannot deliver its one advantage
   — a single home — anyway.
+*Inferred.*
 
 ### 2. The Repository's `@`-Imports Have Never Worked
 
@@ -81,8 +85,10 @@ The vision names this trade-off and leaves it to this analysis;
   ([memory](https://code.claude.com/docs/en/memory.md), "Import additional files").
 Every `@`-import in this repository is written root-relative:
   `@CONTRIBUTING.md` in `.claude/CLAUDE.md`, `@design/README.md` in the design-process rule,
-  and `@design/<type>/README.md` in each `design/<type>/CLAUDE.md` stub.
-Each resolves to a path that does not exist, and imports nothing.
+  `@design/<type>/README.md` in each `design/<type>/CLAUDE.md` stub,
+  and `@design/engineering-principles/` in the engineering-principles rule,
+  which names a directory and so imports nothing in any form.
+Each of the others resolves to a path that does not exist, and imports nothing.
 *Verified in docs.*
 
 One-shot sessions in this worktree confirm it:
@@ -99,6 +105,7 @@ What an agent has at launch is `.claude/CLAUDE.md`, the rules (path-scoped ones 
 It reaches the READMEs and templates only by following a link or invoking the skill.
 That favors keeping those documents where links already point — in the repository —
   and keeping the skill thin, as it is.
+*Inferred.*
 
 ### 3. Third-Party File-Sync Actions Fail the Containment Metric
 
@@ -124,6 +131,12 @@ The requirements already settled that the comparison, grouping, and proposal are
   spoke of a third repository that exists only to hold the process.
 *Verified locally; the topology point is inferred.*
 
+A template repository is not a mechanism for this problem at all:
+  it copies files once, when a repository is created, and has no notion of a later change.
+It could serve only the enrollment of a brand-new repository,
+  and the enrolling pull request already does that.
+*Inferred.*
+
 ### 4. An Unattended Run Needs No Credential Beyond Its Own Repository's
 
 The direction that matters most — a private repository following the public one — needs nothing
@@ -141,6 +154,15 @@ Both repositories currently default `GITHUB_TOKEN` to read-only and forbid it fr
   pull requests, so the workflow must request those permissions explicitly and the setting must be
   turned on in the following repository.
 *Verified locally.*
+
+The "approve" in that setting's name means submitting an approving pull request *review* with
+  `GITHUB_TOKEN`; it has nothing to do with approving parked workflow runs, which stays with a human
+  who has write access.
+The sync needs only the "create" half, but the setting is one checkbox,
+  so a following repository that turns it on also lets its own workflows approve pull requests.
+In the private repository that changes nothing, since its ruleset requires no approvals;
+  in the public repository the question never arises, since no sync workflow runs there.
+*Verified in docs for the setting's scope; the consequence is inferred.*
 
 The comparison and the reference check need no agent.
 The proposal does: classifying differences from history, grouping them, and writing descriptions
@@ -194,10 +216,21 @@ The `GITHUB_TOKEN` behavior above is the only such gate that exists.
   hold a credential an attacker could use to compromise another.
 Publishing by hand — the maintainer, in a checkout of the public repository, applying the approved
   unit with their own `gh` authorization after reading the exact content — stores no credential
-  anywhere and meets every criterion.
-Outbound changes have been rare: four items in five months, per the
-  [divergence inventory](../analyses/2026-09-04-process-divergence-inventory.md).
-*Verified locally for the volume; the rest follows from the requirement.*
+  anywhere.
+It arrives under the maintainer's own account, which the requirement's privacy criterion permits:
+  that account is already public as the public repository's maintainer,
+  and it says nothing about which private repositories the same person holds.
+Every other criterion it meets directly.
+Outbound changes have been rare: four items in the five months the
+  [divergence inventory](2026-09-04-process-divergence-inventory.md) covers.
+*The volume is the inventory's; the rest follows from the requirement.*
+
+The cost is to the vision's equal-effort and bounded-time metrics in the outbound direction,
+  which now rest on a maintainer acting rather than on a schedule.
+The approval request of the unattended run stays open until its unit is published,
+  so a lapse is visible in the private repository rather than remembered;
+  past a few items a quarter, the App shape below is the remedy.
+*Inferred.*
 
 An automated publisher would need a credential in the private repository that can write to the
   public one.
@@ -263,8 +296,8 @@ That permission is the whole of the protection; GitHub does not hold back a chan
   it is on a branch.
 A `pull_request` run executes in the context of the pull request's merge commit,
   so it uses the branch's version of every workflow file, including one the pull request changes.
-Only `pull_request_target`, `schedule`, `workflow_dispatch`, and `workflow_run` use the default
-  branch's copy
+`pull_request_target`, `schedule`, `workflow_dispatch`, `workflow_run`, and the issue, comment,
+  and repository-level events use the default branch's copy instead
   ([events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)).
 The gates that do exist are the two in finding 5: approval for runs from public forks,
   and the parked runs of a `GITHUB_TOKEN`-created pull request.
@@ -287,8 +320,8 @@ The unit stays whole, in one pull request and in history, and the manual step is
 *Inferred.*
 
 The step is still worth keeping manual: it is the one place the sync could otherwise forward
-  executable configuration, and the review workflow's prompt is the file that drifted between the
-  repositories for five months.
+  executable configuration, and the review workflow's prompt is the file the divergence inventory
+  found had drifted between the repositories.
 *Inferred.*
 
 ### 9. The Topology Is a Hub, and the Hub Runs Nothing
@@ -357,8 +390,11 @@ Deferred to the engineering design:
   the decisions log's format;
   the comparison and reference-check implementation as `mise` tasks;
   the workflow definition, schedule, and how the agent is invoked within it;
-  the canonical names and dates for the eight shared engineering principles;
   and the test strategy for the skill.
+The canonical names and dates for the eight shared engineering principles are not a design
+  choice but a sync decision, made by a human at convergence and recorded in the decisions log,
+  as the divergence inventory and
+  [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md) already say.
 
 Revisit this analysis if a repository that is not a monorepo enrolls,
   if plugins gain rules or memory support, if outbound volume grows past a few items a quarter,
