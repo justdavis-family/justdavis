@@ -11,7 +11,8 @@ extends:
   - 2026-09-06-process-sync-apply
 modifies: []
 replaces: []
-engineering_designs: []
+engineering_designs:
+  - 2026-10-13-process-sync
 prs: []
 ---
 
@@ -126,7 +127,8 @@ As a maintainer who has approved an outbound change,
 
 ### Engineering Design
 
-- None yet.
+- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+    The approval comment, the publish tool, and how the loop closes.
 
 ### Analysis
 

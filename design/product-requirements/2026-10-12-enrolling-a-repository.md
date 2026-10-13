@@ -11,7 +11,8 @@ depends_on:
 extends: []
 modifies: []
 replaces: []
-engineering_designs: []
+engineering_designs:
+  - 2026-10-13-process-sync
 prs: []
 ---
 
@@ -98,7 +99,8 @@ As a maintainer adopting this process in a new repository,
 
 ### Engineering Design
 
-- None yet.
+- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+    The enroll tool and the one-sync enrollment it leads to.
 
 ### Analysis
 

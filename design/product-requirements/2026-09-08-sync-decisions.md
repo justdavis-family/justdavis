@@ -9,7 +9,8 @@ depends_on:
 extends: []
 modifies: []
 replaces: []
-engineering_designs: []
+engineering_designs:
+  - 2026-10-13-process-sync
 prs: []
 ---
 
@@ -91,7 +92,8 @@ As a maintainer who has already decided how a difference should be handled,
 
 ### Engineering Design
 
-- None yet.
+- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+    The decisions log's format, its four kinds, and how the comparison and the skill read it.
 
 ### Analysis
 

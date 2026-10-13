@@ -8,7 +8,8 @@ depends_on:
 extends: []
 modifies: []
 replaces: []
-engineering_designs: []
+engineering_designs:
+  - 2026-10-13-process-sync
 prs: []
 ---
 
@@ -134,7 +135,9 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 
 ### Engineering Design
 
-- None yet.
+- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+    Delivery as a deterministic tool with a dry run, the carrier for human-applied units,
+    and the confirm stage.
 
 ### Analysis
 
