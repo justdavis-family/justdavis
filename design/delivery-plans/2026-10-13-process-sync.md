@@ -62,6 +62,8 @@ Four things later milestones depend on are not in hand:
     and `process-sync:test` is wired into the root `ci` task in the milestone that creates it.
 - **Nothing a milestone creates in the hub names a private repository**, in content, commit
     message, or pull-request description.
+- **A milestone pull request in the hub attaches no output produced in a private repository.**
+  Evidence from real content stays in that repository; evidence in the hub comes from fixtures.
 - **Settings changes are recorded in the pull request** that first depends on them,
     since no document in the repository can carry them.
 
@@ -112,8 +114,8 @@ Nothing in this milestone changes any process content.
 - [ ] Enrollment writes to a working tree only and changes nothing in the hub
         (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
 - [ ] The comparison, run in the first follower after enrollment, reports the divergence the
-        inventory measured, with every status accounted for; the pull request says so without
-        naming the follower.
+        inventory measured, with every status accounted for; the pull request describes that in
+        prose and attaches no output from it.
 - [ ] The hub's admin bypass on `main` is "for pull requests only", recorded in the pull request.
 - [ ] The README documents the tools that exist and says the rest of the sync does not exist yet.
 
@@ -183,8 +185,9 @@ This milestone is done by hand, with the comparison from M1 as its check.
 - The README's section on reading a proposal and answering its decisions.
 - A fixture with a backlog of a dozen overlapping hub pull requests and one follower file edited
     by hand, so that finding the base and grouping are exercised on the shape of the real backlog.
-- A first real proposal, produced in the first follower against the hub as converged by M2,
-    attached to the pull request with its counterpart named only as the path supplied.
+- A proposal produced on the backlog fixture, attached to the pull request as the worked example.
+- A first real proposal, produced in the first follower against the hub as converged by M2 and
+    read by the maintainer there; the pull request says that it was, and attaches nothing from it.
 
 **Acceptance criteria:**
 
@@ -202,7 +205,8 @@ This milestone is done by hand, with the comparison from M1 as its check.
 - [ ] Against two converged fixture repositories, the proposal is empty.
 - [ ] The skill reads commit messages and content only, never pull-request bodies or comments,
         and the skill's instructions say so.
-- [ ] The first real proposal carries no private repository's name or URL.
+- [ ] The pull request attaches no output produced in a private repository, and names none;
+        the attached example comes from the fixture.
 
 ### M4 — Attended Delivery
 
