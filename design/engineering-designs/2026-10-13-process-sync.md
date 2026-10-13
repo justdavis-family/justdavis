@@ -66,10 +66,10 @@ Rationale: a skill is the only mechanism that travels with the process, loads in
 ### The Deterministic Tools: Python Standard Library, as mise File Tasks
 
 The comparison, the reference check, delivery, publication, and enrollment are Python 3 scripts
-  using only the standard library, placed under `mise-tasks/process/` so that
+  using only the standard library, placed under `mise-tasks/process-sync/` so that
   [mise discovers them as file tasks](https://mise.jdx.dev/tasks/file-tasks.html)
-  named `process:compare`, `process:check-refs`, `process:deliver`, `process:publish`,
-  and `process:enroll`, with `process:test` running their tests.
+  named `process-sync:compare`, `process-sync:check-refs`, `process-sync:deliver`, `process-sync:publish`,
+  and `process-sync:enroll`, with `process-sync:test` running their tests.
 A file's path below `mise-tasks/` is its task name, so the tasks need no entry in `mise.toml`,
   which stays each repository's own;
   the directory travels as process content and works unchanged in any repository that uses mise.
@@ -120,7 +120,7 @@ Rationale: this is the one mechanism that runs in the follower, needs no credent
 
 ### Outbound Publication: By Hand, through the Same Tools
 
-A maintainer publishes an approved outbound change by running `process:publish` in a checkout
+A maintainer publishes an approved outbound change by running `process-sync:publish` in a checkout
   of the hub, with their own `gh` authorization.
 No automation holds a credential for the hub, now or in this design;
   the analysis names the App-only shape that could replace this if volume ever justified it.
@@ -137,7 +137,7 @@ No automation holds a credential for the hub, now or in this design;
 | `.process-sync/diverge/` | A follower, as needed. | Patch files the manifest names as divergences. |
 | `.process-sync/pending/` | A follower, on a sync branch. | Carriers for workflow-file changes, present only until a maintainer applies them. |
 | `.claude/skills/process-sync/` | Every repository; shared. | `SKILL.md`, `proposal-format.md`, and `grouping.md`. |
-| `mise-tasks/process/` | Every repository; shared. | The five tasks, their tests, and the package they share. |
+| `mise-tasks/process-sync/` | Every repository; shared. | The five tasks, their tests, and the package they share. |
 | `.github/workflows/process-sync.yml` | Every repository; shared, applied by hand. | The unattended run. |
 
 The README is the single home of explanation.
@@ -189,7 +189,7 @@ The skill may propose a split, a region, or a divergence for any file;
 Every run, attended or not, has the same four stages, and the agent is present in only one.
 
 1. **Compare.**
-   `process:compare` reads the follower's manifest, clones or fetches the hub, reads the hub's
+   `process-sync:compare` reads the follower's manifest, clones or fetches the hub, reads the hub's
      catalog from the hub's ref, and reports one status per entry.
    If no status is `differs`, `missing-here`, `missing-there`, or `suggested`,
      the run ends here and creates nothing.
@@ -204,7 +204,7 @@ Every run, attended or not, has the same four stages, and the agent is present i
    Unattended, there is no one to ask: a unit that needs a decision is held back whole and
      becomes a question, and the rest go to delivery as they are.
 4. **Deliver.**
-   `process:deliver` turns each inbound unit into a branch and a pull request in the follower,
+   `process-sync:deliver` turns each inbound unit into a branch and a pull request in the follower,
      each held unit into a question, and each outbound unit into an approval request,
      or prints what it would do.
 
@@ -213,15 +213,15 @@ Every run, attended or not, has the same four stages, and the agent is present i
 The README walks a maintainer through the four stages from a terminal, one command per step,
   each the same command the workflow runs:
 
-1. In the follower, `mise run process:compare`, which reads the hub from the manifest;
+1. In the follower, `mise run process-sync:compare`, which reads the hub from the manifest;
      `--counterpart` overrides it with a path or URL, and `--here` and `--there` choose refs.
 2. In a Claude Code session there, invoke the `process-sync` skill on the comparison's output,
      and answer the decisions it raises; it writes the proposal and the units under `out/`.
 3. Read `out/proposal.md`.
-4. `mise run process:deliver out/ --dry-run`, then the same without `--dry-run`,
+4. `mise run process-sync:deliver out/ --dry-run`, then the same without `--dry-run`,
      which uses the maintainer's own `gh` authorization.
 5. For an outbound unit, read the approval request it opened, comment the approval,
-     and in a checkout of the hub run `mise run process:publish <follower-checkout> <issue>`.
+     and in a checkout of the hub run `mise run process-sync:publish <follower-checkout> <issue>`.
 
 This sequence is delivered first and proven by converging this repository and its first
   follower by hand; the workflow automates it afterwards and is tested by running both and
@@ -229,7 +229,7 @@ This sequence is delivered first and proven by converging this repository and it
 
 ### The Comparison
 
-`process:compare [--counterpart <path-or-url>] [--here <ref>] [--there <ref>] [--json]`.
+`process-sync:compare [--counterpart <path-or-url>] [--here <ref>] [--there <ref>] [--json]`.
 
 - The counterpart is a local checkout or a URL.
   A URL is cloned once, read-only, into a cache directory outside the repository,
@@ -268,7 +268,7 @@ This sequence is delivered first and proven by converging this repository and it
 
 ### The Reference Check
 
-`process:check-refs [--find <path>]` scans every file the manifest names,
+`process-sync:check-refs [--find <path>]` scans every file the manifest names,
   plus the files under the two skills, for Markdown links, `@`-imports, and skill pointers,
   resolving relative links against the linking file, root-absolute links against the repository
   root, and `@` paths against the importing file, as Claude Code does.
@@ -286,6 +286,28 @@ For each it names the commits on the side that changed, and the pull requests th
 It reads commit messages and content, which reached the hub's default branch through review,
   and never pull-request bodies or issue comments, which anyone can write and an author can edit
   after merge.
+
+The manifest describes state, never history: a follower's content is the hub's content plus its
+  declared divergences, however far behind it is.
+So the skill finds where each adopted entry stands in the hub's history rather than being told,
+  in this order:
+
+1. **Provenance.**
+   Every commit the sync creates names the hub commit it carries,
+     so `git log` on the follower's copy finds the hub commit it was last synced from.
+2. **Content match.**
+   Before the first sync, or after an edit by hand, there is no provenance;
+     the skill takes the most recent hub commit whose normalized content equals the follower's.
+3. **Nearest version.**
+   If nothing matches, the follower changed the file beyond its declared divergences;
+     the skill takes the hub version with the smallest diff as the base and treats the remainder
+     as the follower's own change, which is an outbound unit or a conflict for a human.
+
+The backlog for the entry is every hub commit after that base that touched it,
+  grouped by the pull requests those commits name.
+A follower that took one hub change and skipped the next, on the same file,
+  holds content no hub version matches; that is a divergence, recorded as a patch,
+  not a history the manifest has to keep.
 
 Grouping follows `grouping.md`, which the first milestone writes with these starting heuristics
   and which is expected to evolve with use:
@@ -338,7 +360,7 @@ When the follower is public and the content came from a private counterpart,
 
 ### Delivery: Branches, Pull Requests, Questions, and Approval Requests
 
-`process:deliver <out> [--dry-run] [--units <id>,...]` runs with whatever `gh` authorization
+`process-sync:deliver <out> [--dry-run] [--units <id>,...]` runs with whatever `gh` authorization
   the caller has: the maintainer's own in a session, `GITHUB_TOKEN` in the workflow.
 
 For an inbound unit it creates the branch `<type>/sync-<slug>` from the unit's base ref,
@@ -411,7 +433,7 @@ An instruction planted in a commit message could have the agent run such a tool 
   and no scan of the output directory would ever see it, since nothing was written.
 
 So the allowance is: reading files; `git log`, `git show`, and `git diff` on the two local clones;
-  `process:check-refs`; and writing under the output directory.
+  `process-sync:check-refs`; and writing under the output directory.
 The comparison tool, which can clone, is not in the allowance:
   a plain step clones the hub and runs the comparison before the agent starts,
   and the tool itself refuses to clone when run unattended.
@@ -425,7 +447,7 @@ That is the trust extended to any reviewed dependency,
 
 ### Approval and Publication
 
-`process:publish <follower-checkout> <issue-number> [--dry-run]` runs in a checkout of the
+`process-sync:publish <follower-checkout> <issue-number> [--dry-run]` runs in a checkout of the
   hub, by a maintainer.
 
 1. It reads the approval request through `gh` in the follower and checks that the
@@ -471,7 +493,7 @@ A public repository's catalog or manifest never names a private repository;
 
 ### Enrollment
 
-`process:enroll <path-to-new-repository>` runs in a checkout of the hub and copies the sync
+`process-sync:enroll <path-to-new-repository>` runs in a checkout of the hub and copies the sync
   tooling into the new repository's working tree: the task directory, the skill,
   the README, the workflow file, and a manifest that names the hub and adopts every suggestion
   in the catalog, suggested regions and replacements included, with each replacement's value left
@@ -573,23 +595,23 @@ jobs:
   compare:
     permissions: { contents: read }
     # Check out this repository with full history and without persisting credentials;
-    # run process:compare --json, which clones the hub itself; expose the exit status as a
+    # run process-sync:compare --json, which clones the hub itself; expose the exit status as a
     # job output. A hub, having no manifest, stops here.
   propose:
     needs: compare
     if: needs.compare.outputs.status == 'differs'
     permissions: { contents: read }
     # In a plain step, before the agent starts: clone the hub from the manifest's URL and run
-    # process:compare --json, so the agent works on two local clones and clones nothing.
+    # process-sync:compare --json, so the agent works on two local clones and clones nothing.
     # Then run claude-code-action with github_token set to the read-only GITHUB_TOKEN, the
     # prompt invoking the process-sync skill unattended, --allowed-tools limited to
-    # reading, git log/show/diff on the clones, process:check-refs, and writing under out/,
+    # reading, git log/show/diff on the clones, process-sync:check-refs, and writing under out/,
     # and --max-turns bounded. Fail if any file under out/ contains the Claude OAuth token.
     # Upload out/ as this run's artifact, retained for one day; the deliver job downloads it.
   deliver:
     needs: propose
     permissions: { contents: write, pull-requests: write, issues: write }
-    # Download out/ from this run, and run process:deliver out/ with GITHUB_TOKEN.
+    # Download out/ from this run, and run process-sync:deliver out/ with GITHUB_TOKEN.
   report-failure:
     needs: [compare, propose, deliver]
     if: failure()
@@ -671,6 +693,10 @@ The hub holds no secret and no setting for the sync.
   The first convergence milestone tests this on the real mixed files;
     if it fails, those files return to being each repository's own and the README carries their
     baseline as a checklist.
+  Not expressible: an instruction such as "keep the broad strokes of every root `mise.toml` in
+    sync", which no matcher can state;
+    the delivery plan records it as likely to be wanted and deferred until regions and divergences
+    have been tried.
 - **Decisions in the manifest, not a log.**
   Gained: one file per follower, and dates and authors from history for free.
   Sacrificed: the narrative of a decision is a commit message rather than a log entry,
@@ -703,7 +729,7 @@ The hub holds no secret and no setting for the sync.
 
 ## Success Criteria
 
-- `process:test` passes, building its fixture repositories with `git init` at test time
+- `process-sync:test` passes, building its fixture repositories with `git init` at test time
   and covering: two converged repositories (exit `0`, nothing reported);
   an edit, an addition, a removal, a rename, a rename plus edit, and a move,
   each reported with the right status;
@@ -715,10 +741,10 @@ The hub holds no secret and no setting for the sync.
   `error` with exit `2`; a dirty working tree reported and excluded;
   and the reference check catching a dangling link, a dangling `@`-import, and a dangling skill
   pointer.
-- `process:deliver --dry-run` on a sample output directory prints every branch, pull request,
+- `process-sync:deliver --dry-run` on a sample output directory prints every branch, pull request,
   question, and approval request it would create and creates nothing; run for real and then
   again, the second run creates nothing and reports what exists.
-- `process:deliver` refuses a unit naming a path the manifest does not adopt,
+- `process-sync:deliver` refuses a unit naming a path the manifest does not adopt,
   and carries a workflow file as a patch under `pending/` rather than writing it.
 - A unit with an open decision yields one `Sync decision` issue and no pull request;
   recording the decision in the manifest and running again yields the pull request and closes
@@ -733,18 +759,18 @@ The hub holds no secret and no setting for the sync.
 - The propose job fails before uploading when a file under `out/` contains the OAuth token's
   value, demonstrated on a fixture.
 - The agent's tool allowance in the workflow names no tool that accepts a network destination,
-  and `process:compare` run with the unattended variable set refuses a counterpart other than
+  and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
   the manifest's hub, and refuses to clone, with exit `2`.
-- `process:publish --dry-run` against an approval whose hash no longer matches the content
+- `process-sync:publish --dry-run` against an approval whose hash no longer matches the content
   refuses; against a valid approval it shows the exact diff and, after `yes`, opens one pull
   request in the hub whose body names no private repository.
 - Neither repository holds any credential for the other, before or after the first milestones:
   the only secrets in a follower are those the review workflow already needs.
 - The hub's `.github/workflows/process-sync.yml` runs and creates nothing,
   and the hub's content and history contain no follower's name.
-- `process:check-refs` passes in the hub after the `@`-import fix, and fails on a fixture with
+- `process-sync:check-refs` passes in the hub after the `@`-import fix, and fails on a fixture with
   one of the ten root-relative imports restored.
-- Enrolling a scratch repository with `process:enroll` and one sync yields one pull request,
+- Enrolling a scratch repository with `process-sync:enroll` and one sync yields one pull request,
   after which the comparison between it and the hub reports every adopted entry identical.
 
 ## References
