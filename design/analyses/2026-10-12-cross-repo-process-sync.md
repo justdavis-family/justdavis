@@ -39,7 +39,8 @@ The process content is five kinds of thing:
   the agent rules under `.claude/rules/`; the `design/*/CLAUDE.md` stubs;
   and the pull-request template, issue templates, and workflows under `.github/`.
 The repository-wide brief at `.claude/CLAUDE.md` is local by design, as the vision says,
-  because it describes the repository it sits in.
+  because it describes the repository it sits in;
+  a general paragraph inside it can still be adopted on its own, which the engineering design covers.
 
 A Claude Code plugin can ship skills, agents, commands, hooks, MCP and LSP servers, workflows,
   output styles, themes, and executables.
@@ -118,7 +119,8 @@ Their deletion handling is opt-in or on by default, and neither documents rename
   so a renamed file arrives as a deletion plus an addition.
 *Verified in their READMEs; the rename behavior is inferred from their silence.*
 
-They also know nothing of a manifest, variation points, or recorded decisions,
+They also know nothing of a declaration of what is adopted, of declared divergences,
+  or of recorded decisions,
   which [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)
   requires.
 The requirements already settled that the comparison, grouping, and proposal are the sync skill's
@@ -385,14 +387,15 @@ A mesh would need a credential per pair and would multiply the finding-6 problem
      and change the public repository's admin bypass from "always" to "for pull requests only".
 
 Deferred to the engineering design:
-  the manifest's format and location and the per-repository file that holds variation values;
+  the format and location of what the hub offers and of each follower's declaration of what it
+  adopts, how its copies differ, and what it has decided;
   the form of an approval request and how an approval is recorded on it;
-  the decisions log's format;
   the comparison and reference-check implementation as `mise` tasks;
   the workflow definition, schedule, and how the agent is invoked within it;
   and the test strategy for the skill.
 The canonical names and dates for the eight shared engineering principles are not a design
-  choice but a sync decision, made by a human at convergence and recorded in the decisions log,
+  choice but a sync decision, made by a human at convergence and recorded with that repository's
+  other sync decisions,
   as the divergence inventory and
   [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md) already say.
 

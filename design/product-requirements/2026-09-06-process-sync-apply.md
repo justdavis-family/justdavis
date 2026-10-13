@@ -75,13 +75,15 @@ As a maintainer who has read a process-sync proposal and decided what to do,
         and descriptions.
 - [ ] Renames land as renames, so that the repository's history follows the file;
         removals land as removals.
-- [ ] Declared variation points carry the working repository's own value.
+- [ ] Declared divergences are preserved: the working repository's own values stay in place,
+        and a part adopted from a file is written in place, leaving the rest of that file as it was.
 - [ ] Where the working repository's local content
         — its own design documents, rules, or handbook —
         refers to process content the pull request renames,
         the same pull request updates those references so they keep resolving.
 - [ ] Apart from those reference updates and any carrier for a human-applied unit,
-        the pull request changes only files the manifest classifies as process content;
+        the pull request changes only process content the working repository has declared it
+        adopts, and only the adopted parts of a file adopted in part;
         local content is otherwise byte-for-byte unchanged.
 - [ ] Where applied process content carries a rule that the repository's existing local content
         does not follow — a heading-case rule against documents written before it, say —

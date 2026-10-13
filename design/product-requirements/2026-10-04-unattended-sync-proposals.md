@@ -60,7 +60,7 @@ As a maintainer of a repository that follows this process,
 - [ ] A process change merged in the counterpart is put in front of the working repository's
         maintainer within the bounded time the vision sets.
 - [ ] When the two repositories' process content matches,
-        apart from declared variations and recorded decisions, a run creates nothing.
+        apart from declared divergences and recorded decisions, a run creates nothing.
 - [ ] A run that could not compare the repositories, or could not produce a proposal,
         reports that to the maintainer as a failure;
         it is never indistinguishable from the repositories being in sync.

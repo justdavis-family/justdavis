@@ -51,8 +51,8 @@ As a maintainer adopting this process in a new repository,
         so that they arrive with the process and stay current with it.
 - [ ] A repository that holds none of the process content reaches the current process with one
         pull request of its own:
-        the process content, the manifest, its values for every declared variation point,
-        an empty decisions log, and unattended sync turned on.
+        the process content, its declaration of what it adopts and how its copies differ,
+        and unattended sync turned on.
 - [ ] A repository that already holds some of the process content enrolls through the same steps,
         and its existing content is reconciled as a sync:
         a proposal is produced against the counterpart and applied per
@@ -60,10 +60,10 @@ As a maintainer adopting this process in a new repository,
         with every human decision recorded per [Remember Sync Decisions](2026-09-08-sync-decisions.md),
         in as many pull requests as the proposal's grouping goals call for.
 - [ ] After enrollment, a comparison between the new repository and its counterpart reports them
-        in sync, apart from declared variations and recorded decisions.
+        in sync, apart from declared divergences and recorded decisions.
 - [ ] Process content that assumes something untrue of the new repository
         — that it is a monorepo, say —
-        is either generalized in the process or declared a variation point, as a recorded decision,
+        is either generalized in the process or declared a divergence, as a recorded decision,
         rather than edited locally and left to drift.
 
 ### Equal Participation
@@ -86,7 +86,7 @@ As a maintainer adopting this process in a new repository,
 
 - [ ] The process documentation covers enrollment end to end:
         the prerequisites, including any repository setting unattended sync needs that no pull
-        request can turn on; the enrolling pull request or sync; supplying variation values;
+        request can turn on; the enrolling pull request or sync; declaring its divergences;
         and how to confirm the new repository is in sync afterwards.
 
 ## References

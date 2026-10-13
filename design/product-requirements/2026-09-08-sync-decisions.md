@@ -28,13 +28,13 @@ Nothing in either repository's history says any of that,
   and a conflict resolved on one side is raised afresh on the other
   until the two happen to match.
 
-This requirement gives each repository a log of the decisions made during its syncs,
-  which proposals honor and cite.
+This requirement gives each repository a record of the decisions made during its syncs,
+  kept beside its declaration of what it adopts, which proposals honor and cite.
 A decision made once is not asked twice;
   a resolution made on one side is carried to the other rather than re-raised;
   and anyone wondering why the repositories differ where they do can find the answer.
 Decisions are per repository, because "declined here" is not "declined everywhere",
-  and the log lives in the repository whose decisions it records.
+  and the record lives in the repository whose decisions it records.
 
 ## User Story
 
@@ -47,38 +47,41 @@ As a maintainer who has already decided how a difference should be handled,
 
 ### What Is Remembered
 
-- [ ] A repository that follows the process keeps a log of the decisions made during its syncs,
-        each with what was decided, why, when, and by whom.
-- [ ] The log can record at least: declining a piece of process content;
+- [ ] A repository that follows the process keeps a record of the decisions made during its syncs,
+        from which what was decided, why, when, and by whom can all be read.
+- [ ] The record can hold at least: declining a piece of process content;
         resolving a conflict; choosing the canonical name for content the two sides named
         differently; and accepting a difference as a permanent variation.
 - [ ] A decision is recorded in the same pull request that carries it out,
-        so that the log never describes a decision the repository has not actually applied.
-- [ ] The log is local content: it is never itself synced,
-        and the manifest classifies it as local by design.
+        so that the record never describes a decision the repository has not actually applied.
+- [ ] The record is local content: it is never itself synced.
 
 ### How Decisions Are Honored
 
-- [ ] A proposal does not ask a question the log already answers;
+- [ ] A proposal does not ask a question the record already answers;
         where a decision applies, the proposal cites it instead.
 - [ ] A declined piece of process content is not proposed again,
         and the comparison reports it as declined rather than as missing.
+- [ ] A decline made against one version of the content does not silently cover a substantially
+        changed later one:
+        the proposal says when declined content has changed since the decline was made,
+        so that the maintainer can renew or revisit it.
 - [ ] A conflict resolved in one repository is carried to the other as the resolution,
         not raised there as a conflict a second time.
 - [ ] A maintainer can revisit any decision;
-        revisiting it is recorded as a new decision that supersedes the old one,
-        and the old one stays in the log.
+        revisiting it is itself recorded,
+        and the earlier decision stays readable in the record's history.
 
 ### Privacy
 
 - [ ] A decision recorded in a public repository describes content and reasons,
         never a private counterpart:
         it does not name the repository the sync was with, its refs, or its commits.
-- [ ] A private repository's log may name the public counterpart freely.
+- [ ] A private repository's record may name the public counterpart freely.
 
 ### Documentation
 
-- [ ] The skill's documentation covers the log: what it records, where it lives,
+- [ ] The skill's documentation covers the record: what it holds, where it lives,
         how a proposal cites it, and how to revisit a decision.
 
 ## References
@@ -93,7 +96,8 @@ As a maintainer who has already decided how a difference should be handled,
 ### Engineering Design
 
 - [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
-    The decisions log's format, its four kinds, and how the comparison and the skill read it.
+    How each kind of decision is recorded as an entry in the repository's manifest,
+    with the manifest's history as the log, and how the comparison and the skill read them.
 
 ### Analysis
 
@@ -101,7 +105,7 @@ As a maintainer who has already decided how a difference should be handled,
     Its recommendation lists the decisions the initial convergence will produce:
     canonical principle names and dates, adopt-or-decline for side-only files,
     and generalize-or-vary for repository-specific lines.
-  Those are the log's first entries.
+  Those are the record's first entries.
 
 ### Engineering Principles
 

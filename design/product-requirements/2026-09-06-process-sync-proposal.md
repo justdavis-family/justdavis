@@ -27,9 +27,10 @@ The development process in question is the one this `justdavis` monorepo defines
   as followed by this repository and by the other repositories that adopted it from here.
 The skill is not a general tool for comparing arbitrary repositories.
 
-The skill reads a manifest that says which files are process content, which of those may vary per
-  repository and how, and which files are local by design;
-  compares the process content of the two repositories, honoring the declared variations;
+The skill reads the working repository's declaration of which process content it adopts from the
+  counterpart — whole files, or named parts of files whose remainder is the repository's own —
+  and how its copies are allowed to differ;
+  compares that content between the two repositories, honoring the declared divergences;
   reads both repositories' histories to say where each difference came from and what kind of change
   it is;
   and writes a proposal: for each repository, the pull requests that would converge it,
@@ -48,11 +49,11 @@ Mirroring the upstream pull requests usually serves both;
 The comparison and a reference-integrity check can run on their own, without an agent,
   so that a later requirement can run them unattended;
   the skill adds the history-based explanation and the proposal on top.
-The manifest describes the process content wherever it lives:
+The declaration describes the process content wherever it lives:
   if a later design ever moved some of it into a shared skill or plugin
   — which the [mechanisms analysis](../analyses/2026-10-12-cross-repo-process-sync.md)
   decides against —
-  the manifest would list the in-repository stubs and the installed version instead of the files,
+  the declaration would list the in-repository stubs and the installed version instead of the files,
   and the comparison would compare those.
 
 ## User Story
@@ -65,27 +66,36 @@ As a maintainer working in one repository that follows this process,
 
 ## Acceptance Criteria
 
-### The Boundary Manifest
+### What Is Adopted, and Where It Differs
 
-The manifest is the skill's definition of what "process content" means,
-  and is itself process content, held in every repository that follows the process.
+Each repository that follows the process declares what it adopts from its counterpart.
+The declaration is the skill's definition of what "process content" means in that repository,
+  and is itself process content, held in the repository it describes.
 
-- [ ] Every element of the development process is listed in the manifest by path;
+- [ ] Every piece of process content a repository adopts is declared by path;
         nothing is process content by implication.
-- [ ] Every entry is classified as one of: shared verbatim; shared with a declared variation point;
-        or local by design.
-- [ ] Local-by-design entries exist for files a reader would otherwise assume are shared
+- [ ] A declaration can adopt a whole file,
+        or named parts of a file whose remainder is the repository's own,
+        so that a file mixing general and repository-specific content
+        — the repository-wide agent brief, a conventions rule each repository extends —
+        can be kept in sync without surrendering the rest.
+- [ ] A declaration can state how the repository's copy differs from the counterpart's
+        (for example, the issue it links for label automation),
+        as a substitution or as a larger divergence,
+        recorded in the declaration and never as a placeholder inside the content itself.
+- [ ] The counterpart lists what it offers, and may suggest parts and substitutions;
+        the proposal reports anything offered that the working repository neither adopts nor
+        declines, so that new process content is never silently missed.
+- [ ] Files a reader would otherwise assume are shared
         — the contributor handbook, the repository-wide agent brief, agent settings,
         CI configuration, and the tool configuration at the root —
-        and for what the process itself keeps per repository,
-        such as the decisions log and the variation values.
-- [ ] Each variation point names what may differ
-        (for example, the example pull-request URL in the requirements template),
-        and the per-repository value is held in a local file the manifest points at,
-        never inside the shared file.
-- [ ] Adding a repository-local rule, principle, or skill requires no change to the manifest.
-- [ ] The comparison reports a manifest entry whose path does not exist,
-        or whose variation point has no local value, as an error rather than skipping it.
+        are documented as each repository's own, or as adopted only in part,
+        so that no reader assumes them shared.
+- [ ] Adding a repository-local rule, principle, or skill requires no change to the declaration.
+- [ ] The comparison reports an adopted path that does not exist,
+        a declared part it cannot locate exactly once,
+        or a declared divergence that no longer applies,
+        as an error rather than skipping it.
 
 ### Comparison and Reference Checks That Need No Agent
 
@@ -93,9 +103,11 @@ Two commands underlie the skill and can be run on their own,
   so that later requirements can run them unattended.
 
 - [ ] The comparison takes the working repository at one ref and the counterpart at another,
-        and reports, per manifest entry, exactly one of:
-        identical, differs, missing in the working repository, missing in the counterpart.
-- [ ] Declared variations are substituted before comparison, so a declared difference is not reported.
+        and reports, per declared entry, exactly one of:
+        identical, differs, missing in the working repository, missing in the counterpart;
+        and reports separately what the counterpart offers that is neither adopted nor declined.
+- [ ] Declared divergences are applied before comparison, so a declared difference is not reported;
+        a part adopted from a file is compared on its own, and the rest of that file is not.
 - [ ] A failure to compare an entry is reported as a failure, never as "identical".
 - [ ] The reference check reports every reference from process content
         — Markdown links, `@`-imports, and skill pointers —
@@ -148,7 +160,7 @@ How to weigh those goals in a given case is a judgment:
         the files each touches, the direction the content flows, its rationale, and its provenance.
 - [ ] The proposal names every decision it cannot make itself
         — which of two filenames wins,
-        whether a file present on one side only is adopted or declared local —
+        whether a file present on one side only is adopted or declined —
         with a recommendation and the reason for it.
 - [ ] The proposal marks any item that must be applied by a human rather than by automation,
         and says why.
@@ -161,7 +173,7 @@ How to weigh those goals in a given case is a judgment:
 - [ ] Every proposed change whose content originates in a private repository and whose destination is
         a public one is marked as requiring a human's explicit safe-to-publish confirmation
         before it may be applied, however routine the content looks.
-- [ ] The proposal identifies the counterpart only by the path the maintainer supplied,
+- [ ] The proposal identifies the counterpart only by the path or URL the maintainer supplied,
         so that a proposal produced in a public repository carries no private repository's name or URL.
 
 ### Documentation
@@ -176,13 +188,14 @@ How to weigh those goals in a given case is a judgment:
 - [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
     This requirement makes divergence visible and explainable on demand,
     without changing or automating anything;
-    every other requirement under the vision builds on the manifest, the checks, and the proposal
-    it defines.
+    every other requirement under the vision builds on the declaration, the checks, and the
+    proposal it defines.
 
 ### Engineering Design
 
 - [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
-    The manifest, the comparison, the reference check, the skill, and the proposal format.
+    The counterpart's catalog, the repository's manifest, the comparison, the reference check,
+    the skill, and the proposal format.
 
 ### Analysis
 
