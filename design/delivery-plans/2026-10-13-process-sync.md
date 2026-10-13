@@ -1,0 +1,376 @@
+# Process Sync Delivery Plan
+
+## Overview
+
+This plan sequences delivery of the six requirements under
+  [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md)
+  — [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md),
+  [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md),
+  [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md),
+  [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md),
+  [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md),
+  and [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md) —
+  into eight milestones, following the
+  [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md).
+Six of the eight land in this repository, the hub.
+One lands in the first follower, a private repository that this plan describes but never names,
+  and one is proven on a scratch repository.
+
+The main delivery risk is **building automation on a model that has never met real content**.
+Three things in the design are untested until they are used:
+  whether regions and divergences keep a mixed file trackable,
+  whether the grouping heuristics produce a history a reviewer would want,
+  and whether `claude-code-action` accepts a read-only token in the way the containment argument
+  needs.
+The ordering answers that by putting every tool through real use by hand, on the real divergence the
+  [inventory](../analyses/2026-09-04-process-divergence-inventory.md) measured,
+  before any workflow exists:
+  the comparison first, then the hub's own content made adoptable,
+  then the skill, then delivery, then the first follower converged with those tools,
+  and only then publication, the unattended run, and enrollment.
+The hub's content changes come before the follower's convergence on purpose,
+  so that the follower's first sync is mostly adoption rather than conflict.
+
+Four things later milestones depend on are not in hand:
+
+- **The `@`-import fix**, tracked in
+    [#44](https://github.com/justdavis-family/justdavis/issues/44),
+    which the reference check in the first milestone will fail without.
+  It is its own small pull request, not a milestone here.
+- **Two repository settings no pull request can change**, both made by hand by an organization
+    admin: the hub's admin bypass on `main` narrowed from "always" to "for pull requests only",
+    before the first milestone; and "Allow GitHub Actions to create and approve pull requests"
+    turned on in the follower, before the unattended milestone.
+- **The action's behavior with a read-only token**, which the design flags as unverified and the
+    unattended milestone confirms first, with the weaker fallback already written down.
+- **Five human decisions** the inventory's recommendation lists, which this plan records below
+    under the milestones that carry them out, so that they are made once and in writing.
+
+## Delivery Conventions
+
+- **Each milestone ships as its own merged pull request.**
+  The follower's milestone ships as a pull request there; its tracking issue here closes when
+    its maintainer reports it merged, and names nothing about where.
+- **The README is built incrementally.**
+  Every milestone leaves `.process-sync/README.md` accurate for the tools that exist at that point,
+    and it says plainly which parts of the sync do not exist yet.
+- **Every tool arrives with its tests**, built on fixture repositories per the design,
+    and `process:test` is wired into the root `ci` task in the milestone that creates it.
+- **Nothing a milestone creates in the hub names a private repository**, in content, commit
+    message, or pull-request description.
+- **Settings changes are recorded in the pull request** that first depends on them,
+    since no document in the repository can carry them.
+
+## Milestones
+
+### M1 — The Catalog, the Comparison, and the Reference Check
+
+**Deliverable:** a maintainer of any repository that holds a manifest can run one command against
+  the hub and read, per adopted entry, whether it is identical, differs, or is missing, with
+  declared divergences and regions honored; and a maintainer of the hub can run one command and
+  learn of every dangling link, import, and skill pointer in the process content.
+
+**Deferred:** the skill and any explanation of *why* an entry differs; delivery; the workflow.
+Nothing in this milestone changes any process content.
+
+**In scope:**
+
+- `.process-sync/` in the hub, with the catalog listing every file the inventory found inside the
+    process scope and the README's first version: what the directory is, what exists so far,
+    and the by-hand steps for the two tools.
+  A line in `CONTRIBUTING.md` points at it.
+- `mise-tasks/process/compare` and `mise-tasks/process/check-refs`, with the shared package beside
+    them, implementing the comparison and the reference check as the design specifies:
+    path or URL counterparts, regions, replace and patch divergences, declines with `as_of`,
+    the seven statuses, the exit codes, and the unattended refusal.
+- `mise-tasks/process/test` and the fixture tests the design's success criteria list for these two
+    tools, wired into the root `ci` task.
+
+**Acceptance criteria:**
+
+- [ ] Every test the design's success criteria name for the comparison and the reference check
+        passes, and `process:test` runs in `ci`.
+- [ ] `process:check-refs` passes in the hub, after the `@`-import fix has merged.
+- [ ] Both commands run without an agent and need no credential against the public hub
+        (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] A failure to compare an entry is reported as an error and never as identical
+        (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] Run with the unattended variable set against any counterpart other than the manifest's hub,
+        the comparison refuses with exit `2`.
+- [ ] The hub's admin bypass on `main` is "for pull requests only", recorded in the pull request.
+- [ ] The README documents both tools and says the rest of the sync does not exist yet.
+
+### M2 — Make the Hub's Content Adoptable
+
+**Deliverable:** the hub's process content can be adopted by a follower without a divergence except
+  by choice: the repository-specific lines are generalized, the mixed files are split so that each
+  part is wholly one side's, and the improvements the inventory found only in the follower are in
+  the hub.
+
+**Deferred:** anything in the follower; the skill.
+This milestone is done by hand, with the comparison from M1 as its check.
+
+**In scope:**
+
+- The two textual fixes the inventory found: `supersede` in `design/README.md`
+    and "delivery plans" in the review workflow's prompt.
+- The centralized-configuration engineering principle, adopted into the hub.
+- A dependency-audit workflow for the hub's Rust projects, equivalent to the follower's.
+- The four repository-specific lines generalized: a placeholder example URL in the requirements
+    template, a relative link in the pull-request template, and the label-automation issue link in
+    the PR workflow rule kept as the catalog's one suggested replacement.
+- The mixed files split where the design says a split is preferred:
+    the evergreen-content guidance moved from the repository-wide brief into a rule;
+    the pre-commit hook reduced to one shared line that runs a task the repository defines.
+- The catalog updated for every file this milestone adds, splits, or generalizes.
+
+**Human decisions this milestone records** (from the inventory's recommendation):
+
+- The two textual fixes are taken.
+- The centralized-configuration principle is adopted in the hub.
+  It is project-agnostic, and the follower's own earlier analysis recommended it.
+- A dependency-audit workflow is adopted in the hub, since the hub now has Rust projects.
+- The four repository-specific lines are generalized rather than declared divergences,
+    except the issue link, which stays as the catalog's suggested replacement.
+
+**Acceptance criteria:**
+
+- [ ] Both textual fixes are in; the principle and the audit workflow exist in the hub and the
+        catalog lists them.
+- [ ] No process file in the hub names a hub-specific issue, URL, or path except the one suggested
+        replacement.
+- [ ] The repository-wide brief holds nothing the catalog offers; the rule that took its general
+        guidance loads the same way, which the pull request shows.
+- [ ] The content this milestone brings from the follower was confirmed safe to publish by a
+        human before the pull request was opened
+        (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
+- [ ] The pull request's commits and description name no private repository.
+
+### M3 — The Skill and the Proposal
+
+**Deliverable:** a maintainer in a repository with a manifest can invoke the `process-sync` skill
+  and receive a proposal that explains every difference from history, groups the differences into
+  units with rationale, raises every decision only a human can make with a recommendation,
+  and writes one unit directory per proposed pull request, changing nothing in either repository.
+
+**Deferred:** delivery; any unattended use.
+
+**In scope:**
+
+- `.claude/skills/process-sync/`: `SKILL.md`, `proposal-format.md`, and `grouping.md` with the
+    design's starting heuristics.
+- The output directory layout, the unit id, and the patch authoring the design describes,
+    including divergences put back and regions written in place.
+- The README's section on reading a proposal and answering its decisions.
+- A first real proposal, produced in the first follower against the hub as converged by M2,
+    attached to the pull request with its counterpart named only as the path supplied.
+
+**Acceptance criteria:**
+
+- [ ] For each difference, the proposal names the commits and pull requests that produced it and
+        classifies it as an edit, addition, removal, rename, rename plus edit, or move
+        (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] No unit separates the two halves of a rename or a move, and the proposal states how it
+        grouped and why
+        (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] Every decision the proposal cannot make is listed with a recommendation and the manifest
+        entry that would record it.
+- [ ] Against two converged fixture repositories, the proposal is empty.
+- [ ] The skill reads commit messages and content only, never pull-request bodies or comments,
+        and the skill's instructions say so.
+- [ ] The first real proposal carries no private repository's name or URL.
+
+### M4 — Attended Delivery
+
+**Deliverable:** a maintainer who has read a proposal can turn it into branches and pull requests
+  in their repository, questions for held units, and approval requests for outbound units, with
+  one command, after seeing exactly what it will create.
+
+**Deferred:** publication to the hub; the workflow.
+
+**In scope:**
+
+- `mise-tasks/process/deliver` as the design specifies: the dry run, the branch pattern, the body
+    marker, idempotent updates and closures, `pending/` carriers for workflow files,
+    `Sync decision` issues, `Sync out` issues with the content hash and the approval sentence,
+    and the trust boundary in the design's "What the Deliver Tool Trusts".
+- Its fixture tests, added to `process:test`.
+- The README's by-hand sequence completed through delivery.
+
+**Acceptance criteria:**
+
+- [ ] `process:deliver --dry-run` prints everything it would create and creates nothing;
+        run for real and then again, the second run creates nothing and reports what exists.
+- [ ] It refuses a unit naming a path the manifest does not adopt, and carries a workflow file as a
+        patch under `pending/` rather than writing it.
+- [ ] Each applied unit becomes one branch and one pull request following the repository's
+        conventions, with provenance in the description
+        (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
+- [ ] Local content is byte-for-byte unchanged apart from reference updates for renamed content
+        (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
+- [ ] A unit with an open decision yields one `Sync decision` issue and no pull request.
+- [ ] A decision is recorded in the same pull request that carries it out
+        (from [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md)).
+
+### M5 — Converge the First Follower
+
+**Deliverable:** the first follower holds a manifest, and a comparison between it and the hub reports
+  every adopted entry identical; the five-month backlog is closed, with each decision recorded.
+This milestone lands in the follower.
+
+**Deferred:** nothing automated; publication of anything outbound, which M2 already carried by hand.
+
+**In scope:**
+
+- The sync tooling copied into the follower by hand (the task directory, the skill, the README),
+    and its manifest written to adopt the hub's catalog.
+- The proposal from M3 regenerated against the current hub and delivered with M4's tool,
+    in as many pull requests as the grouping produces.
+- The follower's own mixed files handled as the design prefers:
+    its conventions-rule additions moved into a local companion rule,
+    and anything that resists a split adopted by region.
+- Every decision recorded in the manifest, with reasons.
+
+**Human decisions this milestone records** (from the inventory's recommendation):
+
+- The eight shared engineering principles take the hub's names and dates;
+    the follower renames its copies and updates its local references in the same pull request.
+- The follower's local additions to the conventions rule stay local, as a companion rule.
+- Content present only in the follower that the hub did not adopt in M2 is declined in the
+    follower's manifest with a reason, or adopted by the hub through a later outbound unit.
+
+**Acceptance criteria:**
+
+- [ ] `process:compare` in the follower reports every adopted entry identical and every catalog
+        suggestion adopted or declined.
+- [ ] `process:check-refs` passes in the follower.
+- [ ] Each pull request's description explains the lines it touched and names its provenance
+        (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
+- [ ] Every mixed file is either split or adopted by region, and the pull requests record which,
+        so that the design's open question about regions has an answer.
+- [ ] The tracking issue for this milestone here names no private repository.
+
+### M6 — Publish Approved Outbound Changes
+
+**Deliverable:** a change approved on a follower's approval request reaches the hub as a pull
+  request through one command run by a maintainer, who sees the exact diff first and whose own
+  authorization is the only credential involved.
+
+**Deferred:** the workflow.
+
+**In scope:**
+
+- `mise-tasks/process/publish` as the design specifies: the approval check, the hash and branch
+    checks, the shown diff and `yes`, the hub branch and pull request, and the comment that
+    closes the loop.
+- Its tests, added to `process:test`, against fixture repositories and a fixture approval.
+- The README's sections on approving and publishing.
+- One real outbound change published from the first follower, if any remains after M2 and M5;
+    otherwise a scratch change, published and then closed, with that said in the pull request.
+
+**Acceptance criteria:**
+
+- [ ] Against an approval whose hash no longer matches, publication refuses; against a valid one it
+        shows the diff and, after `yes`, opens one pull request in the hub
+        (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
+- [ ] The hub pull request's commits and description name no private repository, ref, or commit
+        (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
+- [ ] Run again for the same approval, publication creates nothing.
+- [ ] Neither repository holds any credential for the other.
+
+### M7 — The Unattended Run
+
+**Deliverable:** a follower learns of every process change merged in the hub within a day, as a
+  parked pull request or an approval request, without anyone running anything; and the hub's copy
+  of the workflow runs and does nothing.
+
+**Deferred:** enrollment.
+
+**In scope:**
+
+- `.github/workflows/process-sync.yml` as the design specifies: the four jobs, the plain step that
+    clones and compares before the agent, the agent's allowance with no tool that accepts a network
+    destination, the token scan before upload, the one-day artifact, and the failure issue.
+- The read-only-token confirmation the design flags, done first;
+    if the action does not accept it, the documented fallback and its weaker claim recorded in the
+    design and the pull request.
+- The workflow applied in the follower by hand, as the design's patch rule requires,
+    and the follower's "create and approve pull requests" setting turned on, recorded in the
+    pull request.
+- The README's sections on what a run creates and how to respond.
+
+**Acceptance criteria:**
+
+- [ ] A pull request created by the unattended run in the follower shows its workflow runs parked
+        until a maintainer approves them
+        (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)).
+- [ ] Against a converged hub a run creates nothing; against a hub with one merged process change
+        it opens one pull request within a day.
+- [ ] The propose job fails before uploading when a file under `out/` contains the OAuth token's
+        value, demonstrated on a fixture.
+- [ ] The agent's allowance names no tool that accepts a network destination,
+        checked in review against the design's rule.
+- [ ] The hub's copy of the workflow runs and creates nothing, and the hub's content and history
+        contain no follower's name.
+- [ ] A failed run opens or updates the failure issue
+        (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)).
+
+### M8 — Enrollment
+
+**Deliverable:** a maintainer can bring a new repository onto the process with one command in the
+  hub and one sync in the new repository, following steps that arrive with the process.
+
+**Deferred:** nothing; this closes the plan.
+
+**In scope:**
+
+- `mise-tasks/process/enroll` as the design specifies, writing a manifest that adopts every
+    suggestion with suggested regions and replacements copied in.
+- The README's enrollment section, covering the prerequisites and settings, the enrolling sync,
+    declaring divergences, and confirming the result.
+- Enrollment proven on a scratch repository, then torn down.
+
+**Acceptance criteria:**
+
+- [ ] Enrolling a scratch repository and running one sync yields one pull request there, after which
+        the comparison reports every adopted entry identical
+        (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
+- [ ] Nothing in the hub changes and the hub records nothing about the new repository
+        (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
+- [ ] The documentation covers enrollment end to end, including the settings no pull request can
+        turn on.
+
+## Explicitly Deferred (Out of Scope for This Plan)
+
+- **An App-based outbound path.**
+  The analysis names it as the upgrade if outbound volume ever justifies it; nothing today does.
+- **A second follower.**
+  Enrollment is proven on a scratch repository; a real second follower is a later plan's concern,
+    and the hub learns nothing when one arrives.
+- **A "required tasks present" check for root `mise.toml` files.**
+  The design keeps that file each repository's own and the README's checklist covers it;
+    a check is worth adding only if drift bites.
+- **Hardening of the hub's mention-responder workflow**, which the design notes reads comments from
+    anyone.
+  It is outside this design and should be its own maintenance issue.
+- **The analyses template** ([#42](https://github.com/justdavis-family/justdavis/issues/42))
+    and **the test-coverage criteria altitude**
+    ([#43](https://github.com/justdavis-family/justdavis/issues/43)),
+    filed along the way and unrelated to delivery.
+
+## References
+
+- **Product Vision**:
+  [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md).
+- **Product Requirements**:
+  [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md),
+  [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md),
+  [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md),
+  [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md),
+  [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md),
+  and [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md).
+- **Engineering Design**:
+  [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md).
+- **Analyses**:
+  [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md)
+  and [Keeping the Development Process in Sync across Repositories](../analyses/2026-10-12-cross-repo-process-sync.md).
