@@ -84,7 +84,7 @@ As a maintainer who has already decided how a difference should be handled,
 
 ### Vision
 
-- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
+- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
     This requirement keeps the vision's "reviewed once on the merits" promise across time:
     a decision reviewed once stays made,
     and the "private stays private" metrics govern where it is written down.
@@ -95,7 +95,7 @@ As a maintainer who has already decided how a difference should be handled,
 
 ### Analysis
 
-- [Process Divergence Across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
+- [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
     Its recommendation lists the decisions the initial convergence will produce:
     canonical principle names and dates, adopt-or-decline for side-only files,
     and generalize-or-vary for repository-specific lines.

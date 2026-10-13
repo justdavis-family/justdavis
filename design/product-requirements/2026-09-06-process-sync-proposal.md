@@ -127,7 +127,7 @@ Units are chosen to minimize the net review burden across all of them
   and to leave a history in which each commit's summary explains the lines it touched.
 Mirroring the upstream pull requests usually serves both readers;
   a long backlog may call for regrouping by topic.
-How to weigh those goals in a given case is a judgement:
+How to weigh those goals in a given case is a judgment:
   the heuristics are recorded in the engineering design and are expected to evolve with use,
   and the maintainer can regroup before applying.
 
@@ -168,7 +168,7 @@ How to weigh those goals in a given case is a judgement:
 
 ### Vision
 
-- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
+- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
     This requirement makes divergence visible and explainable on demand,
     without changing or automating anything;
     every other requirement under the vision builds on the manifest, the checks, and the proposal
@@ -180,7 +180,7 @@ How to weigh those goals in a given case is a judgement:
 
 ### Analysis
 
-- [Process Divergence Across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
+- [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
     The real divergence this skill must explain and group correctly:
     renamed-and-edited principles, content moved between files, repository-specific lines,
     and a five-month backlog of overlapping upstream pull requests.

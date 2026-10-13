@@ -1,4 +1,4 @@
-# One Development Process Across Many Repositories
+# One Development Process across Many Repositories
 
 ## Problem and Motivation
 
@@ -132,8 +132,8 @@ Nothing about a private repository joining requires the public repository to kno
     until a human has reviewed that specific content and confirmed it is safe to publish.
   The confirmation happens before anything leaves the private side;
     a pull request opened in a public repository is already a publication, not a review step.
-  An agent's judgement that a change is "only process content" is never a substitute for that
-    confirmation, however plausible the judgement.
+  An agent's judgment that a change is "only process content" is never a substitute for that
+    confirmation, however plausible the judgment.
 - The public repository's content and history never identify a private repository:
     not by name, not by link, and not by a record of a change's origin
     beyond what the human who published it chose to say.

@@ -1,4 +1,4 @@
-# Process Divergence Across Adopting Repositories
+# Process Divergence across Adopting Repositories
 
 ## Question
 
@@ -40,10 +40,11 @@ It never happened.
 
 Since mid-April, this repository has merged six pull requests whose subject is the process itself
   (#12, #25, #30, #32, #39, #40),
-  plus two project pull requests that added engineering principles along the way (#14, #15).
+  plus two project pull requests that added process content along the way:
+  #14 two engineering principles, and #15 the milestone-referencing rule.
 The three most recent (#32, #39, #40) were each cross-cutting,
   touching between three and twenty files across `design/`, `.claude/`, and `.github/` at once,
-  and #40 also re-cased headings in fifteen dated design documents.
+  and #40 also re-cased headings in twelve dated design documents.
 
 *Provenance:* this repository's history is verified from `git log`.
 The other repository's dates come from an inventory of its history made for this analysis
@@ -95,7 +96,8 @@ Process improvements made here are therefore exercised mostly somewhere else,
 
 ### 3. The Shape of the Divergence
 
-Thirty-four files fall inside the process scope.
+Thirty-four files fall inside the process scope,
+  leaving aside the engineering principles, which the two shapes after the table cover.
 Comparing each:
 
 | Shape | Files | Which |
@@ -128,10 +130,10 @@ Two further shapes hide inside "identical" and "extended":
 *Provenance:* verified by `cmp` and `diff` across the two checkouts,
   and by `git show --stat` of #32 and #39 in this repository.
 
-### 4. Repository-Specific Content Inside the Process
+### 4. Repository-Specific Content inside the Process
 
 Very little of the process content refers to the repository it sits in.
-Three files, five lines:
+Three files, four lines:
 
 | File | Line | What is repository-specific |
 |---|---|---|
@@ -152,13 +154,13 @@ Two latent cases are worth recording even though neither bites today:
 
 The process content is also densely self-linked:
   28 root-absolute links (`/design/…`, `/.claude/…`) and 49 relative links (`../…`) here.
-The skill links only relatively; the rules link only root-absolutely;
+The skill links only relatively; the rules link root-absolutely except to each other;
   the `design/*/CLAUDE.md` stubs `@`-import paths relative to the repository root.
 Any partial move of this content breaks some of those references.
 
 *Provenance:* verified by `grep` over the process content in this repository.
 
-### 5. Consumed from the Repository Versus Pure Content
+### 5. Consumed from the Repository versus Pure Content
 
 The process elements split three ways by who reads them and from where:
 
@@ -198,7 +200,7 @@ Whichever mechanism is chosen, convergence has to decide the following,
 3. **The dependency-audit workflow:** adopt an equivalent here, since this repository now has Rust
      projects, or leave it local.
 4. **The two textual fixes** (`supersede`; "delivery plans"), which should simply be taken.
-5. **The five repository-specific lines** in section 4:
+5. **The four repository-specific lines** in section 4:
      generalize them, or declare them as points where repositories are allowed to differ.
 
 Two things follow for the design work downstream:
@@ -210,11 +212,11 @@ Two things follow for the design work downstream:
     so even a design that moves most of the process out of the repository
     still has to keep some of it in every repository.
 
-The newest unpropagated change is this pull request's own amendment
-  to `design/product-requirements/README.md`;
+The newest unpropagated change is the amendment to `design/product-requirements/README.md`
+  that opened this design lineage, letting the process itself be the product;
   it will be the first thing the eventual mechanism has to carry.
 
 ## References
 
-- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md)
+- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md)
     — the product vision that this analysis informs.

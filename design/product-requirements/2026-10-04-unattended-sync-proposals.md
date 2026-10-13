@@ -112,7 +112,7 @@ As a maintainer of a repository that follows this process,
 
 ### Vision
 
-- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
+- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
     This requirement delivers the vision's "staleness is visible without anyone going looking for it"
     and bounded-time metrics, while keeping its "private stays private" and
     "compromise stays contained" metrics: everything is driven from the repository that follows,
@@ -124,7 +124,7 @@ As a maintainer of a repository that follows this process,
 
 ### Analysis
 
-- [Process Divergence Across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
+- [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
     What going unnoticed costs: five months of divergence, in both directions,
     because checking depended on someone remembering to.
 

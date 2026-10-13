@@ -1,4 +1,4 @@
-# Keeping the Development Process in Sync Across Repositories
+# Keeping the Development Process in Sync across Repositories
 
 ## Question
 
@@ -137,7 +137,7 @@ It could serve only the enrollment of a brand-new repository,
   and the enrolling pull request already does that.
 *Inferred.*
 
-### 4. An Unattended Run Needs No Credential Beyond Its Own Repository's
+### 4. An Unattended Run Needs No Credential beyond Its Own Repository's
 
 The direction that matters most — a private repository following the public one — needs nothing
   from the public side.

@@ -121,7 +121,7 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 
 ### Vision
 
-- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
+- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
     This requirement makes a proposal actionable while keeping every crossing between repositories
     behind a human in the receiving repository;
     it delivers the vision's "review once on the merits, mechanical review per repository" metric
@@ -133,7 +133,7 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 
 ### Analysis
 
-- [Process Divergence Across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
+- [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
     The shape of what will be applied first: mostly one repository adopting this one's current process,
     plus a short list of items flowing the other way.
 

@@ -118,7 +118,7 @@ As a maintainer who has approved an outbound change,
 
 ### Vision
 
-- [One Development Process Across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
+- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md) —
     This requirement delivers the outbound half of "improvements flow in both directions",
     under the vision's "private stays private" and "compromise stays contained" metrics:
     nothing is made visible in a public repository before a human confirms it,
@@ -130,7 +130,7 @@ As a maintainer who has approved an outbound change,
 
 ### Analysis
 
-- [Process Divergence Across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
+- [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md) —
     The outbound changes already waiting: two corrections to this repository's own content,
     an engineering principle, and a workflow, none of which ever made the crossing.
 
