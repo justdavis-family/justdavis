@@ -48,9 +48,11 @@ The comparison and a reference-integrity check can run on their own, without an 
   so that a later requirement can run them unattended;
   the skill adds the history-based explanation and the proposal on top.
 The manifest describes the process content wherever it lives:
-  if a later design moves some of it into a shared skill or plugin,
-  the manifest lists the in-repository stubs and the installed version instead of the files,
-  and the comparison compares those.
+  if a later design ever moved some of it into a shared skill or plugin
+  — which the [mechanisms analysis](../analyses/2026-10-12-cross-repo-process-sync.md)
+  decides against —
+  the manifest would list the in-repository stubs and the installed version instead of the files,
+  and the comparison would compare those.
 
 ## User Story
 
@@ -71,9 +73,11 @@ The manifest is the skill's definition of what "process content" means,
         nothing is process content by implication.
 - [ ] Every entry is classified as one of: shared verbatim; shared with a declared variation point;
         or local by design.
-- [ ] Local-by-design entries exist only for files a reader would otherwise assume are shared:
-        the contributor handbook, the repository-wide agent brief, agent settings,
-        CI configuration, and the tool configuration at the root.
+- [ ] Local-by-design entries exist for files a reader would otherwise assume are shared
+        — the contributor handbook, the repository-wide agent brief, agent settings,
+        CI configuration, and the tool configuration at the root —
+        and for what the process itself keeps per repository,
+        such as the decisions log and the variation values.
 - [ ] Each variation point names what may differ
         (for example, the example pull-request URL in the requirements template),
         and the per-repository value is held in a local file the manifest points at,

@@ -31,7 +31,8 @@ Every crossing between repositories therefore happens with a human present in th
   repository, looking at the exact content.
 That is what keeps this requirement simple:
   the skill needs no credential for any repository other than the one it runs in,
-  and nothing it creates runs anywhere until the maintainer chooses to open it for review.
+  and nothing it creates runs anywhere until the maintainer, having seen its content,
+  confirms its creation.
 
 ## User Story
 
@@ -56,8 +57,11 @@ As a maintainer who has read a process-sync proposal and decided what to do,
         on its own: the two halves of a rename, or of a content move, stay together.
 - [ ] A dry run shows exactly which branches and pull requests would be created, with their content,
         and creates nothing.
-- [ ] Units the proposal marked as human-applied only are listed with the proposal's reason
-        and not applied.
+- [ ] Units the proposal marked as human-applied only are never written by automation:
+        each is carried in its pull request, with the proposal's reason,
+        in a form a maintainer can review and apply by hand, such as a patch.
+      The carrier is for the maintainer to apply and remove before the pull request merges,
+        and one left behind is a difference the next comparison reports.
 - [ ] If the working repository no longer matches the proposal
         — the target ref has moved on, a file the proposal expected is gone —
         the skill stops before creating anything and says what changed.
@@ -75,8 +79,9 @@ As a maintainer who has read a process-sync proposal and decided what to do,
         — its own design documents, rules, or handbook —
         refers to process content the pull request renames,
         the same pull request updates those references so they keep resolving.
-- [ ] Apart from those reference updates, the pull request changes only files the manifest
-        classifies as process content; local content is otherwise byte-for-byte unchanged.
+- [ ] Apart from those reference updates and any carrier for a human-applied unit,
+        the pull request changes only files the manifest classifies as process content;
+        local content is otherwise byte-for-byte unchanged.
 - [ ] Where applied process content carries a rule that the repository's existing local content
         does not follow — a heading-case rule against documents written before it, say —
         the skill reports which local content is affected and leaves it unchanged.

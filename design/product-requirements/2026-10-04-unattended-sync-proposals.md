@@ -72,7 +72,10 @@ As a maintainer of a repository that follows this process,
         executes in the working repository until a human has reviewed it and chosen to run it.
 - [ ] A unit that depends on a decision only a human can make is not opened;
         the decision is put to the maintainer instead, with no default applied.
-- [ ] Units the proposal marks as human-applied only are reported to the maintainer and not applied.
+- [ ] Units the proposal marks as human-applied only arrive the same way,
+        carried for the maintainer to apply by hand as
+        [Apply a Process Sync Proposal](2026-09-06-process-sync-apply.md) requires,
+        and are never applied by automation.
 
 ### Outbound Changes
 

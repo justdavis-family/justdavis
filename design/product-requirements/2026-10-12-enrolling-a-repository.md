@@ -84,7 +84,8 @@ As a maintainer adopting this process in a new repository,
 ### Documentation
 
 - [ ] The process documentation covers enrollment end to end:
-        the prerequisites, the enrolling pull request or sync, supplying variation values,
+        the prerequisites, including any repository setting unattended sync needs that no pull
+        request can turn on; the enrolling pull request or sync; supplying variation values;
         and how to confirm the new repository is in sync afterwards.
 
 ## References
