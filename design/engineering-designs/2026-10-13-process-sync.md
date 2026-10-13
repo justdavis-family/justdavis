@@ -260,6 +260,10 @@ This sequence is delivered first and proven by converging this repository and it
 - The exit code is `0` when nothing differs, `1` when something does, and `2` on any error,
     so a workflow can branch on it without parsing the output.
 - A repository with a catalog and no manifest is a hub; the tool says so and exits `0`.
+- Run unattended, which the workflow signals with an environment variable, the tool refuses any
+    counterpart other than the manifest's hub and refuses to clone: the clone must already exist.
+  This backs up the agent's tool allowance, described in
+    [What the Agent May Run](#what-the-agent-may-run).
 - Nothing in this tool talks to GitHub beyond cloning.
 
 ### The Reference Check
@@ -394,6 +398,30 @@ So a fully subverted agent yields a reviewable pull request confined to process 
   and nothing else.
 The human review of that pull request, which the vision requires, is the defense against
   injection; the job layout below only guarantees the agent holds nothing it could act with.
+
+### What the Agent May Run
+
+The agent's job holds the Claude OAuth token, because the action needs it to reach Claude,
+  and the agent reads text that anyone could have written, so the rule for its tool allowance is:
+
+**No tool the agent may run accepts a network destination as an argument,
+  because any such tool is an exfiltration channel for the token.**
+An instruction planted in a commit message could have the agent run such a tool with the token
+  spliced into the URL; the shell would expand it, the server named would log it,
+  and no scan of the output directory would ever see it, since nothing was written.
+
+So the allowance is: reading files; `git log`, `git show`, and `git diff` on the two local clones;
+  `process:check-refs`; and writing under the output directory.
+The comparison tool, which can clone, is not in the allowance:
+  a plain step clones the hub and runs the comparison before the agent starts,
+  and the tool itself refuses to clone when run unattended.
+Nothing in the allowance can fetch, clone, push, or open a connection,
+  and a reviewer can check any later change to the allowance against the rule in one reading.
+
+What no mechanism catches is a reviewer in a follower approving a subtly bad process change,
+  such as a rule that tells agents to do something they should not.
+That is the trust extended to any reviewed dependency,
+  bounded here by process content being prose and configuration a human reads.
 
 ### Approval and Publication
 
@@ -551,10 +579,12 @@ jobs:
     needs: compare
     if: needs.compare.outputs.status == 'differs'
     permissions: { contents: read }
-    # Run claude-code-action with github_token set to the read-only GITHUB_TOKEN, the
+    # In a plain step, before the agent starts: clone the hub from the manifest's URL and run
+    # process:compare --json, so the agent works on two local clones and clones nothing.
+    # Then run claude-code-action with github_token set to the read-only GITHUB_TOKEN, the
     # prompt invoking the process-sync skill unattended, --allowed-tools limited to
-    # reading, git log/show/diff, mise run process:*, and writing under out/, and
-    # --max-turns bounded. Fail if any file under out/ contains the Claude OAuth token.
+    # reading, git log/show/diff on the clones, process:check-refs, and writing under out/,
+    # and --max-turns bounded. Fail if any file under out/ contains the Claude OAuth token.
     # Upload out/ as this run's artifact, retained for one day; the deliver job downloads it.
   deliver:
     needs: propose
@@ -593,7 +623,8 @@ Delivery runs in a separate job with `GITHUB_TOKEN`, so that every branch and pu
   no stronger token is ever introduced for the inbound direction.
 The split is a privilege boundary, not an injection defense;
   [What the Deliver Tool Trusts](#what-the-deliver-tool-trusts) is where the agent's output is
-  contained, and human review is where injection is caught.
+  contained, [What the Agent May Run](#what-the-agent-may-run) is what keeps the token from
+  leaving the runner, and human review is where injection is caught.
 The first unattended milestone confirms that the action accepts a read-only `GITHUB_TOKEN` in
   this mode; if it does not, the fallback is the action's own token with an allowance that
   excludes every write, which is weaker and would be recorded as such.
@@ -701,6 +732,9 @@ The hub holds no secret and no setting for the sync.
   within one day.
 - The propose job fails before uploading when a file under `out/` contains the OAuth token's
   value, demonstrated on a fixture.
+- The agent's tool allowance in the workflow names no tool that accepts a network destination,
+  and `process:compare` run with the unattended variable set refuses a counterpart other than
+  the manifest's hub, and refuses to clone, with exit `2`.
 - `process:publish --dry-run` against an approval whose hash no longer matches the content
   refuses; against a valid approval it shows the exact diff and, after `yes`, opens one pull
   request in the hub whose body names no private repository.
