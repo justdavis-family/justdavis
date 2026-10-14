@@ -408,7 +408,12 @@ The output directory is untrusted input, whoever wrote it.
 The tool is deterministic and holds the line between the agent's free text and anything that
   could act:
 
-- It writes only paths the manifest adopts, and refuses a unit naming any other path.
+- It writes only paths the manifest adopts, plus the three the sync itself needs:
+    the manifest, for the entry that records a decision the unit carries out;
+    `.process-sync/pending/`, for a workflow-file carrier;
+    and, in a unit that renames content, the local files `process-sync:check-refs --find` lists
+    for the old name, changed only in that reference.
+  It refuses a unit naming any other path.
 - It never writes under `.github/workflows/`, as above.
 - Branch names come from a fixed pattern and the unit's slug, never from the body.
 - The pull-request body is the repository's template with the unit's text inserted as content;
@@ -416,7 +421,7 @@ The tool is deterministic and holds the line between the agent's free text and a
 - Everything it creates is a pull request whose workflow runs are parked,
     or an issue, and a human reads both before anything else happens.
 
-So a fully subverted agent yields a reviewable pull request confined to process paths,
+So a fully subverted agent yields a reviewable pull request confined to those paths,
   and nothing else.
 The human review of that pull request, which the vision requires, is the defense against
   injection; the job layout below only guarantees the agent holds nothing it could act with.
@@ -760,7 +765,7 @@ The hub holds no secret and no setting for the sync.
 - `process-sync:deliver --dry-run` on a sample output directory prints every branch, pull request,
     question, and approval request it would create and creates nothing; run for real and then
     again, the second run creates nothing and reports what exists.
-- `process-sync:deliver` refuses a unit naming a path the manifest does not adopt,
+- `process-sync:deliver` refuses a unit naming a path outside those the trust rule allows,
     and carries a workflow file as a patch under `pending/` rather than writing it.
 - A unit with an open decision yields one `Sync decision` issue and no pull request;
     recording the decision in the manifest and running again yields the pull request and closes

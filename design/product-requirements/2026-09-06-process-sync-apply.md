@@ -82,7 +82,8 @@ As a maintainer who has read a process-sync proposal and decided what to do,
         — its own design documents, rules, or handbook —
         refers to process content the pull request renames,
         the same pull request updates those references so they keep resolving.
-- [ ] Apart from those reference updates and any carrier for a human-applied unit,
+- [ ] Apart from those reference updates, any carrier for a human-applied unit,
+        and the record of a decision the pull request carries out,
         the pull request changes only process content the working repository has declared it
         adopts, and only the adopted parts of a file adopted in part;
         local content is otherwise byte-for-byte unchanged.

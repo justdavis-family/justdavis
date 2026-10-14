@@ -229,12 +229,13 @@ This milestone is done by hand, with the comparison from M1 as its check.
 
 - [ ] `process-sync:deliver --dry-run` prints everything it would create and creates nothing;
         run for real and then again, the second run creates nothing and reports what exists.
-- [ ] It refuses a unit naming a path the manifest does not adopt, and carries a workflow file as a
-        patch under `pending/` rather than writing it.
+- [ ] It refuses a unit naming a path outside those the design's trust rule allows, and carries a
+        workflow file as a patch under `pending/` rather than writing it.
 - [ ] Each applied unit becomes one branch and one pull request following the repository's
         conventions, with provenance in the description
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
-- [ ] Local content is byte-for-byte unchanged apart from reference updates for renamed content
+- [ ] Local content is byte-for-byte unchanged apart from reference updates for renamed content,
+        a carrier, and the manifest entry that records a decision
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] A unit with an open decision yields one `Sync decision` issue and no pull request.
 - [ ] A decision is recorded in the same pull request that carries it out
