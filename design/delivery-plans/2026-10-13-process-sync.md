@@ -84,7 +84,8 @@ Nothing in this milestone changes any process content.
 
 - `.process-sync/` in the hub, with the catalog listing every file the inventory found inside the
     process scope and the README's first version: what the directory is, what exists so far,
-    and the by-hand steps for the tools that exist.
+    the by-hand steps for the tools that exist, and which files a reader might assume are shared
+    but are each repository's own or adopted only in part.
   A line in `CONTRIBUTING.md` points at it.
 - `mise-tasks/process-sync/compare` and `mise-tasks/process-sync/check-refs`, with the shared
     package beside them, implementing the comparison and the reference check as the design
@@ -109,15 +110,17 @@ Nothing in this milestone changes any process content.
         (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] A failure to compare an entry is reported as an error and never as identical
         (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
-- [ ] Run with the unattended variable set against any counterpart other than the manifest's hub,
-        the comparison refuses with exit `2`.
-- [ ] Enrollment writes to a working tree only and changes nothing in the hub
-        (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
+- [ ] Run with the unattended variable set, the comparison refuses any counterpart other than the
+        manifest's hub and refuses to clone, with exit `2`.
+- [ ] Enrollment writes only to the new repository's working tree, so that nothing in the hub
+        changes (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
 - [ ] The comparison, run in the first follower after enrollment, reports the divergence the
         inventory measured, with every status accounted for; the pull request describes that in
         prose and attaches no output from it.
 - [ ] The hub's admin bypass on `main` is "for pull requests only", recorded in the pull request.
-- [ ] The README documents the tools that exist and says the rest of the sync does not exist yet.
+- [ ] The README documents the tools that exist, says the rest of the sync does not exist yet,
+        and names the files a reader might assume are shared as each repository's own or adopted in
+        part (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 
 ### M2 — Make the Hub's Content Adoptable
 
@@ -162,7 +165,7 @@ This milestone is done by hand, with the comparison from M1 as its check.
         guidance loads the same way, which the pull request shows.
 - [ ] The content this milestone brings from the follower was confirmed safe to publish by a
         human before the pull request was opened
-        (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
+        (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] The pull request's commits and description name no private repository.
 
 ### M3 — The Skill and the Proposal
@@ -201,8 +204,10 @@ This milestone is done by hand, with the comparison from M1 as its check.
         version as the design specifies, and the hand-edited file is reported as the follower's
         own change rather than folded into an inbound unit.
 - [ ] Every decision the proposal cannot make is listed with a recommendation and the manifest
-        entry that would record it.
-- [ ] Against two converged fixture repositories, the proposal is empty.
+        entry that would record it (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] Against two converged fixture repositories, the proposal is empty (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] Where an inbound rule is one the repository's local content does not follow, the proposal
+        names the affected content and the unit leaves it unchanged (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] The skill reads commit messages and content only, never pull-request bodies or comments,
         and the skill's instructions say so.
 - [ ] The pull request attaches no output produced in a private repository, and names none;
@@ -239,7 +244,11 @@ This milestone is done by hand, with the comparison from M1 as its check.
 - [ ] Local content is byte-for-byte unchanged apart from reference updates for renamed content,
         a carrier, and the manifest entry that records a decision
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
-- [ ] A unit with an open decision yields one `Sync decision` issue and no pull request.
+- [ ] A unit with an open decision yields one `Sync decision` issue and no pull request;
+        recording the decision in the manifest and running again yields the pull request and closes
+        the issue.
+- [ ] If the base ref has moved since the proposal, or a patch no longer applies, delivery stops
+        before creating anything and says what changed (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] With `--onto`, inbound units land as commits on the named branch and no pull request is
         opened, so that enrollment can be one pull request
         (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
@@ -269,7 +278,8 @@ This milestone lands in the follower.
     and anything that resists a split adopted by region.
 - Every decision recorded in the manifest, with reasons.
 
-**Human decisions this milestone records** (from the inventory's recommendation):
+**Human decisions this milestone records** (the first from the inventory's recommendation,
+  the rest from the design's handling of mixed files and side-only content):
 
 - The eight shared engineering principles take the hub's names and dates;
     the follower renames its copies and updates its local references in the same pull request.
@@ -317,9 +327,10 @@ This milestone lands in the follower.
         opens one pull request in the hub
         (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
 - [ ] The hub pull request's commits and description name no private repository, ref, or commit
+        unless the approver chose to include them
         (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
-- [ ] Run again for the same approval, publication creates nothing.
-- [ ] Neither repository holds any credential for the other.
+- [ ] Run again for the same approval, publication creates nothing (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
+- [ ] Neither repository holds any credential for the other (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
 
 ### M7 — The Unattended Run, and Enrollment Proven End to End
 
@@ -356,13 +367,16 @@ This milestone lands in the follower.
         until a maintainer approves them
         (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)).
 - [ ] Against a converged hub a run creates nothing; against a hub with one merged process change
-        it opens one pull request within a day.
+        it opens one pull request within a day (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)).
+- [ ] The workflow's first run in the first follower, against the state the by-hand convergence
+        left, creates nothing; the pull request says so and attaches nothing from it.
 - [ ] The propose job fails before uploading when a file under `out/` contains the OAuth token's
         value, demonstrated on a fixture.
 - [ ] The agent's allowance names no tool that accepts a network destination,
         checked in review against the design's rule.
 - [ ] With the egress block in place, a command in the agent's job that tries to reach any host
-        other than Anthropic's API fails, demonstrated on a fixture.
+        other than Anthropic's API fails, demonstrated on a fixture; the hosts allowed were found
+        by an audit run and are listed in the workflow.
 - [ ] The hub's copy of the workflow runs and creates nothing, and the hub's content and history
         contain no follower's name.
 - [ ] A failed run opens or updates the failure issue
@@ -393,11 +407,12 @@ This milestone lands in the follower.
   Enrollment is proven on a scratch repository; a real second follower is a later plan's concern,
     and the hub learns nothing when one arrives.
 - **A "required tasks present" check for root `mise.toml` files.**
-  The design keeps that file each repository's own and the README's checklist covers it;
+  The design keeps that file each repository's own;
     a check is worth adding only if drift bites.
 - **Hardening of the hub's mention-responder workflow**, which the design notes reads comments from
     anyone.
-  It is outside this design and should be its own maintenance issue.
+  It is outside this design and tracked in
+    [#54](https://github.com/justdavis-family/justdavis/issues/54).
 - **The analyses template** ([#42](https://github.com/justdavis-family/justdavis/issues/42)),
     **the test-coverage criteria altitude**
     ([#43](https://github.com/justdavis-family/justdavis/issues/43)),

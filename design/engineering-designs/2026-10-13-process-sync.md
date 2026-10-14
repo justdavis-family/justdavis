@@ -334,7 +334,9 @@ The proposal is a Markdown document in the shape `proposal-format.md` fixes:
   direction, files, classification, provenance, draft title and description, and any decision it
   needs, each with a recommendation and the manifest entry that would record it;
   the grouping rationale; the workflow-file items; suggestions not yet adopted;
-  and declines whose hub file changed since their `as_of`.
+  declines whose hub file changed since their `as_of`;
+  and, for an inbound rule the follower's local content does not follow, which content is
+  affected, named for the maintainer and left unchanged by the unit.
 It shows the text a matcher matched, never only the matcher.
 The counterpart appears only as the path or URL the maintainer supplied.
 Attended, it is written where the maintainer asks, default a scratch directory;
@@ -372,6 +374,10 @@ For an inbound unit it creates the branch `<type>/sync-<slug>` from the unit's b
   applies the patches with `git am`, pushes, and opens a pull request titled per the
   repository's conventions whose body is the unit's text followed by the repository's
   pull-request template sections and an HTML comment marker holding the unit id.
+If the base ref no longer names the commit the unit recorded, or a patch does not apply,
+  it stops before creating anything and says what changed, per
+  [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md);
+  the maintainer regenerates the proposal.
 A later run finds an existing pull request by that marker,
   updates its branch with `--force-with-lease` and its body when the unit's content changed,
   and closes it with a comment when the comparison no longer reports the unit.
