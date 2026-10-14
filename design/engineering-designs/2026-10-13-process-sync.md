@@ -440,6 +440,21 @@ The comparison tool, which can clone, is not in the allowance:
 Nothing in the allowance can fetch, clone, push, or open a connection,
   and a reviewer can check any later change to the allowance against the rule in one reading.
 
+The allowance is a check on command text, and checks of that kind have had published bypasses,
+  so it is not the only layer.
+Before the agent starts, the job blocks all outbound traffic from the runner except to
+  Anthropic's API, so that a command which slips past the allowance reaches nowhere.
+The agent needs no other destination: the hub is already cloned, and delivery is another job.
+The block is a plain step that sets the runner's own firewall rules, preferred over a published
+  hardening action for the same reason the design avoids published binaries;
+  the milestone that builds the workflow may choose the action if the plain step proves brittle,
+  and records why.
+Which hosts the agent's job actually reaches, including whatever the action touches while
+  installing Claude Code, is found by running once in an audit mode that logs connections,
+  not assumed; after that, everything else is blocked.
+The two layers are independent: the allowance stops the agent from trying,
+  and the block stops a try from succeeding.
+
 What no mechanism catches is a reviewer in a follower approving a subtly bad process change,
   such as a rule that tells agents to do something they should not.
 That is the trust extended to any reviewed dependency,
@@ -603,6 +618,7 @@ jobs:
     permissions: { contents: read }
     # In a plain step, before the agent starts: clone the hub from the manifest's URL and run
     # process-sync:compare --json, so the agent works on two local clones and clones nothing.
+    # Then block all outbound traffic from the runner except to Anthropic's API.
     # Then run claude-code-action with github_token set to the read-only GITHUB_TOKEN, the
     # prompt invoking the process-sync skill unattended, --allowed-tools limited to
     # reading, git log/show/diff on the clones, process-sync:check-refs, and writing under out/,
@@ -758,6 +774,9 @@ The hub holds no secret and no setting for the sync.
   within one day.
 - The propose job fails before uploading when a file under `out/` contains the OAuth token's
   value, demonstrated on a fixture.
+- With the egress block in place, a command run in the agent's job that tries to reach any host
+  other than Anthropic's API fails, demonstrated on a fixture; the hosts allowed were found by an
+  audit run and are listed in the workflow.
 - The agent's tool allowance in the workflow names no tool that accepts a network destination,
   and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
   the manifest's hub, and refuses to clone, with exit `2`.
