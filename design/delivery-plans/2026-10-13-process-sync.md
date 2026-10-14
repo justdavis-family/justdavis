@@ -321,7 +321,11 @@ This milestone lands in the follower.
 
 - `.github/workflows/process-sync.yml` as the design specifies: the four jobs, the plain step that
     clones and compares before the agent, the agent's allowance with no tool that accepts a network
-    destination, the token scan before upload, the one-day artifact, and the failure issue.
+    destination, the egress block behind it, the token scan before upload, the one-day artifact,
+    and the failure issue.
+- The egress block set up in two passes: one run in an audit mode that logs every host the agent's
+    job reaches, then the block of everything but those the agent needs,
+    with the list and the reason for each recorded in the workflow.
 - The read-only-token confirmation the design flags, done first;
     if the action does not accept it, the documented fallback and its weaker claim recorded in the
     design and the pull request.
@@ -344,6 +348,8 @@ This milestone lands in the follower.
         value, demonstrated on a fixture.
 - [ ] The agent's allowance names no tool that accepts a network destination,
         checked in review against the design's rule.
+- [ ] With the egress block in place, a command in the agent's job that tries to reach any host
+        other than Anthropic's API fails, demonstrated on a fixture.
 - [ ] The hub's copy of the workflow runs and creates nothing, and the hub's content and history
         contain no follower's name.
 - [ ] A failed run opens or updates the failure issue
