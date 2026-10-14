@@ -219,7 +219,8 @@ This milestone is done by hand, with the comparison from M1 as its check.
 **In scope:**
 
 - `mise-tasks/process-sync/deliver` as the design specifies: the dry run, the branch pattern, the
-    body marker, idempotent updates and closures, `pending/` carriers for workflow files,
+    body marker, idempotent updates and closures, `--onto` for landing units on an existing branch,
+    `pending/` carriers for workflow files,
     `Sync decision` issues, `Sync out` issues with the content hash and the approval, refusal,
     and withdrawal sentences,
     and the trust boundary in the design's "What the Deliver Tool Trusts".
@@ -239,6 +240,9 @@ This milestone is done by hand, with the comparison from M1 as its check.
         a carrier, and the manifest entry that records a decision
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] A unit with an open decision yields one `Sync decision` issue and no pull request.
+- [ ] With `--onto`, inbound units land as commits on the named branch and no pull request is
+        opened, so that enrollment can be one pull request
+        (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
 - [ ] A `Sync out` request records an approval, a refusal, or a withdrawal as its state;
         a refused request is closed by the next run with the manifest entry that would record it
         (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)

@@ -360,8 +360,9 @@ When the follower is public and the content came from a private counterpart,
 
 ### Delivery: Branches, Pull Requests, Questions, and Approval Requests
 
-`process-sync:deliver <out> [--dry-run] [--units <id>,...]` runs with whatever `gh` authorization
-  the caller has: the maintainer's own in a session, `GITHUB_TOKEN` in the workflow.
+`process-sync:deliver <out> [--dry-run] [--units <id>,...] [--onto <branch>]` runs with whatever
+  `gh` authorization the caller has: the maintainer's own in a session, `GITHUB_TOKEN` in the
+  workflow.
 
 For an inbound unit it creates the branch `<type>/sync-<slug>` from the unit's base ref,
   applies the patches with `git am`, pushes, and opens a pull request titled per the
@@ -371,6 +372,10 @@ A later run finds an existing pull request by that marker,
   updates its branch with `--force-with-lease` and its body when the unit's content changed,
   and closes it with a comment when the comparison no longer reports the unit.
 Nothing it creates is labeled; the maintainer applies `claude-review` or not.
+With `--onto <branch>`, attended only, it instead applies every inbound unit's commits to that
+  branch in the checkout, in order, and pushes and opens nothing;
+  the maintainer opens one pull request for the branch.
+Held and outbound units are delivered as usual.
 
 Any adopted path under `.github/workflows/` is never written by the tool.
 The workflow's own token cannot push a change to a workflow file,
@@ -532,11 +537,13 @@ A public repository's catalog or manifest never names a private repository;
   in the catalog, suggested regions and replacements included, with each replacement's value left
   for the maintainer to fill.
 It writes to a working tree only; the maintainer edits the manifest, deleting or declining what
-  the repository does not want, and commits.
-The rest is a sync: in the new repository, the skill is run with the hub as counterpart,
-  and the proposal is applied.
-A repository holding none of the process content gets one unit, so one pull request;
+  the repository does not want, and commits on a branch.
+The rest is a sync run from that branch: the comparison, the skill with the hub as counterpart,
+  and delivery with `--onto` that branch, so the enroll commit and the sync's commits share the
+  one pull request the maintainer then opens.
+A repository holding none of the process content gets one unit;
   one that already holds some gets whatever the grouping heuristics produce,
+  landed on the branch or as separate pull requests as the maintainer chooses,
   with every conflict put to the maintainer and recorded.
 Nothing in the hub changes, and the hub learns nothing.
 
