@@ -192,6 +192,7 @@ Every run, attended or not, has the same four stages, and the agent is present i
    `process-sync:compare` reads the follower's manifest, clones or fetches the hub, reads the hub's
      catalog from the hub's ref, and reports one status per entry.
    If no status is `differs`, `missing-here`, `missing-there`, or `suggested`,
+     and no declined entry's hub file has changed since its `as_of`,
      the run ends here and creates nothing.
 2. **Propose.**
    The skill reads the comparison and both histories,
@@ -210,8 +211,8 @@ Every run, attended or not, has the same four stages, and the agent is present i
 
 ### Running the Sync by Hand
 
-The README walks a maintainer through the four stages from a terminal, one command per step,
-  each the same command the workflow runs:
+The README walks a maintainer through the four stages, and then publication, from a terminal,
+  each command the same one the workflow runs:
 
 1. In the follower, `mise run process-sync:compare`, which reads the hub from the manifest;
      `--counterpart` overrides it with a path or URL, and `--here` and `--there` choose refs.
@@ -237,12 +238,12 @@ This sequence is delivered first and proven by converging this repository and it
     and fetched on later runs.
   Cloning the public hub needs no credential; a private counterpart, which only an attended run
     would name, uses whatever authorization the maintainer's git already has.
-  In the workflow the comparison job clones the hub this way rather than through a second
-    checkout step, so the two paths through the tool are one.
+  In the workflow, the compare job and the propose job's plain step both clone the hub this way
+    rather than through a second checkout step, so the two paths through the tool are one.
 - Both sides are read with `git show <ref>:<path>`, never from a working tree;
     `--here` defaults to `HEAD` and `--there` to the hub's default branch.
-  The resolved commit of each side, and whether the follower's working tree is dirty,
-    are in the output.
+  The resolved commit of each side, and whether either side's working tree is dirty where it
+    has one, are in the output.
 - For each adopted entry, the tool takes the hub's file at `source` and the follower's at `path`,
     extracts each region from both with the same matchers or takes both files whole,
     applies the entry's divergence to the hub's side, and compares the pair.
@@ -257,11 +258,14 @@ This sequence is delivered first and proven by converging this repository and it
     [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md).
 - A declined entry with `as_of` is still `declined`, and the output notes when the hub's file has
     changed since that commit, so the proposal can list it for renewal.
+  The skill treats such an entry as a unit with one open decision, renew or adopt,
+    so that unattended it becomes a question rather than going unseen.
 - The exit code is `0` when nothing differs, `1` when something does, and `2` on any error,
     so a workflow can branch on it without parsing the output.
 - A repository with a catalog and no manifest is a hub; the tool says so and exits `0`.
-- Run unattended, which the workflow signals with an environment variable, the tool refuses any
-    counterpart other than the manifest's hub and refuses to clone: the clone must already exist.
+- Run unattended, which the workflow signals with an environment variable set for the agent's
+    step only, the tool refuses any counterpart other than the manifest's hub and refuses to
+    clone: the clone must already exist.
   This backs up the agent's tool allowance, described in
     [What the Agent May Run](#what-the-agent-may-run).
 - Nothing in this tool talks to GitHub beyond cloning.
@@ -278,7 +282,7 @@ With `--find`, it instead lists every file in the repository, local content incl
 
 ### Explaining and Grouping Differences
 
-The skill classifies each `differs` or `missing` entry from history, using
+The skill classifies each `differs`, `missing-here`, or `missing-there` entry from history, using
   `git log --follow` on each side, `git diff -M` between the two contents,
   and `git log -S` for content moved between files, and labels it
   edit, addition, removal, rename, rename plus edit, or move.
@@ -453,8 +457,9 @@ An instruction planted in a commit message could have the agent run such a tool 
 So the allowance is: reading files; `git log`, `git show`, and `git diff` on the two local clones;
   `process-sync:check-refs`; and writing under the output directory.
 The comparison tool, which can clone, is not in the allowance:
-  a plain step clones the hub and runs the comparison before the agent starts,
-  and the tool itself refuses to clone when run unattended.
+  a plain step runs the comparison, which clones the hub, before the agent starts,
+  and under the agent's step, where the workflow sets the unattended variable,
+  the tool refuses to clone.
 Nothing in the allowance can fetch, clone, push, or open a connection,
   and a reviewer can check any later change to the allowance against the rule in one reading.
 
@@ -641,13 +646,14 @@ jobs:
     needs: compare
     if: needs.compare.outputs.status == 'differs'
     permissions: { contents: read }
-    # In a plain step, before the agent starts: clone the hub from the manifest's URL and run
-    # process-sync:compare --json, so the agent works on two local clones and clones nothing.
+    # In a plain step, before the agent starts: run process-sync:compare --json, which clones
+    # the hub, so the agent works on two local clones and clones nothing.
     # Then block all outbound traffic from the runner except to Anthropic's API.
     # Then run claude-code-action with github_token set to the read-only GITHUB_TOKEN, the
-    # prompt invoking the process-sync skill unattended, --allowed-tools limited to
-    # reading, git log/show/diff on the clones, process-sync:check-refs, and writing under out/,
-    # and --max-turns bounded. Fail if any file under out/ contains the Claude OAuth token.
+    # unattended variable in this step's env only, the prompt invoking the process-sync skill
+    # unattended, --allowed-tools limited to reading, git log/show/diff on the clones,
+    # process-sync:check-refs, and writing under out/, and --max-turns bounded.
+    # Fail if any file under out/ contains the Claude OAuth token.
     # Upload out/ as this run's artifact, retained for one day; the deliver job downloads it.
   deliver:
     needs: propose
