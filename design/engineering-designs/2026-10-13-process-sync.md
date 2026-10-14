@@ -137,7 +137,7 @@ No automation holds a credential for the hub, now or in this design;
 | `.process-sync/diverge/` | A follower, as needed. | Patch files the manifest names as divergences. |
 | `.process-sync/pending/` | A follower, on a sync branch. | Carriers for workflow-file changes, present only until a maintainer applies them. |
 | `.claude/skills/process-sync/` | Every repository; shared. | `SKILL.md`, `proposal-format.md`, and `grouping.md`. |
-| `mise-tasks/process-sync/` | Every repository; shared. | The five tasks, their tests, and the package they share. |
+| `mise-tasks/process-sync/` | Every repository; shared. | The six tasks, their tests, and the package they share. |
 | `.github/workflows/process-sync.yml` | Every repository; shared, applied by hand. | The unattended run. |
 
 The README is the single home of explanation.
@@ -151,6 +151,8 @@ Each repository's `CONTRIBUTING.md`, which documents its directory structure,
 The hub's catalog lists the paths the hub suggests a follower adopt.
 A suggestion may also carry the regions of a file the hub expects a follower to want
   and the replacements it expects a follower to need, with the follower's value left blank.
+Enrollment copies a suggested `region` into the manifest entry as its `region`,
+  and each suggested replacement as a `diverge.replace` pair, for the maintainer to fill.
 Suggestions are advisory; the catalog never says anything about any follower.
 
 A follower's manifest is the only thing the comparison obeys.
@@ -313,8 +315,8 @@ A follower that took one hub change and skipped the next, on the same file,
   holds content no hub version matches; that is a divergence, recorded as a patch,
   not a history the manifest has to keep.
 
-Grouping follows `grouping.md`, which the first milestone writes with these starting heuristics
-  and which is expected to evolve with use:
+Grouping follows `grouping.md`, written with these starting heuristics and expected to evolve
+  with use:
 
 - Mirror the upstream pull requests by default: one unit per upstream pull request that still
     has an effect, carrying that pull request's own summary.
@@ -562,6 +564,9 @@ Nothing in the hub changes, and the hub learns nothing.
 
 ### The Catalog
 
+The entries below show each kind of entry the catalog can hold;
+  the real catalog lists whatever the hub offers at the time.
+
 ```toml
 # .process-sync/catalog.toml — in the hub only. See .process-sync/README.md.
 # Each entry is a suggestion; a follower's manifest says what it actually adopts.
@@ -582,7 +587,7 @@ path = ".claude/CLAUDE.md"
 # Only the evergreen-content guidance is general; the rest of the brief is each repository's own.
 region = [
   { start = "**Important**: Keep `CLAUDE.md` files evergreen;",
-    end = { regex = 'not transient project state\.$' } },
+    end = { regex = 'not transient project state\.' } },
 ]
 
 [[suggest]]
@@ -590,6 +595,9 @@ path = ".github/workflows/process-sync.yml"
 ```
 
 ### The Manifest
+
+The entries below show each kind of entry a manifest can hold;
+  a real manifest holds whatever its follower declares.
 
 ```toml
 # .process-sync/manifest.toml — in each follower. See .process-sync/README.md.
@@ -611,7 +619,7 @@ diverge.replace = [{ from = "/issues/34", to = "/issues/7" }]
 source = ".claude/CLAUDE.md"
 region = [
   { start = "**Important**: Keep `CLAUDE.md` files evergreen;",
-    end = { regex = 'not transient project state\.$' } },
+    end = { regex = 'not transient project state\.' } },
 ]
 
 [[adopt]]
@@ -700,9 +708,9 @@ The split is a privilege boundary, not an injection defense;
   [What the Deliver Tool Trusts](#what-the-deliver-tool-trusts) is where the agent's output is
   contained, [What the Agent May Run](#what-the-agent-may-run) is what keeps the token from
   leaving the runner, and human review is where injection is caught.
-The first unattended milestone confirms that the action accepts a read-only `GITHUB_TOKEN` in
-  this mode; if it does not, the fallback is the action's own token with an allowance that
-  excludes every write, which is weaker and would be recorded as such.
+The milestone that builds the workflow confirms that the action accepts a read-only
+  `GITHUB_TOKEN` in this mode; if it does not, the fallback is the action's own token with an
+  allowance that excludes every write, which is weaker and would be recorded as such.
 The repository's mention-responder workflow, which reads comments from anyone,
   is far more exposed than this one; it is outside this design and noted for the hub's hardening.
 
@@ -821,7 +829,7 @@ The hub holds no secret and no setting for the sync.
     or against a request whose state is `Refused` or `Withdrawn`, refuses;
     against a valid approval it shows the exact diff and, after `yes`, opens one pull
     request in the hub whose body names no private repository.
-- Neither repository holds any credential for the other, before or after the first milestones:
+- Neither repository holds any credential for the other, at every milestone:
     the only secrets in a follower are those the review workflow already needs.
 - The hub's `.github/workflows/process-sync.yml` runs and creates nothing,
     and the hub's content and history contain no follower's name.
