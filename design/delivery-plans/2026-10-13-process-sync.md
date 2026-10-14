@@ -383,7 +383,7 @@ This milestone lands in the follower.
   The design keeps that file each repository's own and the README's checklist covers it;
     a check is worth adding only if drift bites.
 - **Hardening of the hub's mention-responder workflow**, which the design notes reads comments from
-  anyone.
+    anyone.
   It is outside this design and should be its own maintenance issue.
 - **The analyses template** ([#42](https://github.com/justdavis-family/justdavis/issues/42)),
     **the test-coverage criteria altitude**
@@ -395,16 +395,16 @@ This milestone lands in the follower.
 ## References
 
 - **Product Vision**:
-  [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md).
+    [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md).
 - **Product Requirements**:
-  [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md),
-  [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md),
-  [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md),
-  [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md),
-  [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md),
-  and [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md).
+    [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md),
+    [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md),
+    [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md),
+    [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md),
+    [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md),
+    and [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md).
 - **Engineering Design**:
-  [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md).
+    [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md).
 - **Analyses**:
-  [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md)
-  and [Keeping the Development Process in Sync across Repositories](../analyses/2026-10-12-cross-repo-process-sync.md).
+    [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md)
+    and [Keeping the Development Process in Sync across Repositories](../analyses/2026-10-12-cross-repo-process-sync.md).

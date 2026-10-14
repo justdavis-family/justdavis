@@ -19,7 +19,7 @@ It rests on two analyses:
 The technical problem is to keep the generally applicable parts of one repository's development
   process identical in every repository that follows it,
   where the repositories are otherwise unrelated, have different owners, and may be private,
-while never storing a credential that reaches from one repository into another
+  while never storing a credential that reaches from one repository into another
   and never letting anything forwarded from another repository run before a human has chosen to
   run it.
 Most of that content is whole files:
@@ -35,7 +35,7 @@ The analysis settled the shape, and this design takes it as given:
 
 - The process stays in every repository as replicated files; nothing is installed from elsewhere.
 - The topology is a hub: followers pull from the public repository, which runs nothing on their
-  behalf and knows none of them.
+    behalf and knows none of them.
   The hub offers; each follower declares what it adopts and how its copy differs,
     and holds everything about itself.
 - A skill, itself process content, does the explaining and grouping;
@@ -746,72 +746,72 @@ The hub holds no secret and no setting for the sync.
 ## Success Criteria
 
 - `process-sync:test` passes, building its fixture repositories with `git init` at test time
-  and covering: two converged repositories (exit `0`, nothing reported);
-  an edit, an addition, a removal, a rename, a rename plus edit, and a move,
-  each reported with the right status;
-  a region adopted with literal matchers and one with regex matchers, identical and differing;
-  a `replace` and a `patch` divergence each making a differing file compare identical;
-  a renamed entry compared as one; a decline reported as `declined`, and one whose hub file
-  changed since its `as_of` noted; a suggestion not adopted reported as `suggested`;
-  a matcher matching twice, a patch that does not apply, and a missing source each reported as
-  `error` with exit `2`; a dirty working tree reported and excluded;
-  and the reference check catching a dangling link, a dangling `@`-import, and a dangling skill
-  pointer.
+    and covering: two converged repositories (exit `0`, nothing reported);
+    an edit, an addition, a removal, a rename, a rename plus edit, and a move,
+    each reported with the right status;
+    a region adopted with literal matchers and one with regex matchers, identical and differing;
+    a `replace` and a `patch` divergence each making a differing file compare identical;
+    a renamed entry compared as one; a decline reported as `declined`, and one whose hub file
+    changed since its `as_of` noted; a suggestion not adopted reported as `suggested`;
+    a matcher matching twice, a patch that does not apply, and a missing source each reported as
+    `error` with exit `2`; a dirty working tree reported and excluded;
+    and the reference check catching a dangling link, a dangling `@`-import, and a dangling skill
+    pointer.
 - `process-sync:deliver --dry-run` on a sample output directory prints every branch, pull request,
-  question, and approval request it would create and creates nothing; run for real and then
-  again, the second run creates nothing and reports what exists.
+    question, and approval request it would create and creates nothing; run for real and then
+    again, the second run creates nothing and reports what exists.
 - `process-sync:deliver` refuses a unit naming a path the manifest does not adopt,
-  and carries a workflow file as a patch under `pending/` rather than writing it.
+    and carries a workflow file as a patch under `pending/` rather than writing it.
 - A unit with an open decision yields one `Sync decision` issue and no pull request;
-  recording the decision in the manifest and running again yields the pull request and closes
-  the issue.
+    recording the decision in the manifest and running again yields the pull request and closes
+    the issue.
 - This repository and its first follower are converged by the by-hand sequence in the README
-  before the workflow exists, and the workflow's first run against the same state creates nothing.
+    before the workflow exists, and the workflow's first run against the same state creates nothing.
 - A pull request created by the unattended run in a follower shows its workflow runs
-  parked until a maintainer approves them.
+    parked until a maintainer approves them.
 - A full unattended run in a follower against a converged hub creates nothing;
-  against a hub with one merged process change, it opens one pull request carrying that change
-  within one day.
+    against a hub with one merged process change, it opens one pull request carrying that change
+    within one day.
 - The propose job fails before uploading when a file under `out/` contains the OAuth token's
-  value, demonstrated on a fixture.
+    value, demonstrated on a fixture.
 - With the egress block in place, a command run in the agent's job that tries to reach any host
-  other than Anthropic's API fails, demonstrated on a fixture; the hosts allowed were found by an
-  audit run and are listed in the workflow.
+    other than Anthropic's API fails, demonstrated on a fixture; the hosts allowed were found by an
+    audit run and are listed in the workflow.
 - The agent's tool allowance in the workflow names no tool that accepts a network destination,
-  and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
-  the manifest's hub, and refuses to clone, with exit `2`.
+    and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
+    the manifest's hub, and refuses to clone, with exit `2`.
 - `process-sync:publish --dry-run` against an approval whose hash no longer matches the content
-  refuses; against a valid approval it shows the exact diff and, after `yes`, opens one pull
-  request in the hub whose body names no private repository.
+    refuses; against a valid approval it shows the exact diff and, after `yes`, opens one pull
+    request in the hub whose body names no private repository.
 - Neither repository holds any credential for the other, before or after the first milestones:
-  the only secrets in a follower are those the review workflow already needs.
+    the only secrets in a follower are those the review workflow already needs.
 - The hub's `.github/workflows/process-sync.yml` runs and creates nothing,
-  and the hub's content and history contain no follower's name.
+    and the hub's content and history contain no follower's name.
 - `process-sync:check-refs` passes in the hub after the `@`-import fix, and fails on a fixture with
-  one of the ten root-relative imports restored.
+    one of the ten root-relative imports restored.
 - Enrolling a scratch repository with `process-sync:enroll` and one sync yields one pull request,
-  after which the comparison between it and the hub reports every adopted entry identical.
+    after which the comparison between it and the hub reports every adopted entry identical.
 
 ## References
 
 - **Product Requirements**:
-  [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md),
-  [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md),
-  [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md),
-  [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md),
-  [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md),
-  and [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md).
+    [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md),
+    [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md),
+    [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md),
+    [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md),
+    [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md),
+    and [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md).
 - **Analyses**:
-  [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md)
-  and [Keeping the Development Process in Sync across Repositories](../analyses/2026-10-12-cross-repo-process-sync.md).
+    [Process Divergence across Adopting Repositories](../analyses/2026-09-04-process-divergence-inventory.md)
+    and [Keeping the Development Process in Sync across Repositories](../analyses/2026-10-12-cross-repo-process-sync.md).
 - **Engineering Principles**:
-  [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md),
-  which the job layout and the by-hand outbound path follow;
-  [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md),
-  which the comparison's seven statuses follow;
-  [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md),
-  which the exit codes, the matcher rules, and the failure issue follow;
-  [Mocks Are Usually Dumb](../engineering-principles/2026-01-15-avoid-mocks.md),
-  which is why the tests build real repositories;
-  and [YAGNI](../engineering-principles/2026-01-06-yagni.md),
-  which is why there is one hub, no App, and no registry.
+    [Least Privilege](../engineering-principles/2026-05-12-least-privilege.md),
+    which the job layout and the by-hand outbound path follow;
+    [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md),
+    which the comparison's seven statuses follow;
+    [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md),
+    which the exit codes, the matcher rules, and the failure issue follow;
+    [Mocks Are Usually Dumb](../engineering-principles/2026-01-15-avoid-mocks.md),
+    which is why the tests build real repositories;
+    and [YAGNI](../engineering-principles/2026-01-06-yagni.md),
+    which is why there is one hub, no App, and no registry.
