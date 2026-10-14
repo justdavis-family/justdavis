@@ -115,7 +115,7 @@ As a maintainer who has already decided how a difference should be handled,
 ### Related Requirements
 
 - [Propose a Process Sync](2026-09-06-process-sync-proposal.md) —
-    Produces the proposals that honor and cite the log; this requirement depends on it.
+    Produces the proposals that honor and cite the record; this requirement depends on it.
 - [Apply a Process Sync Proposal](2026-09-06-process-sync-apply.md) —
     Carries decisions out, and records them in the same pull request; this requirement depends on it.
 

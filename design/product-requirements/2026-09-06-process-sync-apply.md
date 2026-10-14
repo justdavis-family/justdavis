@@ -25,8 +25,9 @@ The skill turns each of the proposal's units into a branch and an open pull requ
   and leaves the maintainer to review and merge through the repository's normal workflow.
 Changes the proposal addressed to the *counterpart repository* — the one the proposal was
   produced against — are not applied from here;
-  the maintainer applies them by running the skill in that repository,
-  with this one as its counterpart.
+  each becomes a request, in the working repository, for a human's approval of that exact content,
+  and leaves only as [Publish Approved Outbound Changes](2026-10-04-publish-outbound-changes.md)
+  describes.
 
 Every crossing between repositories therefore happens with a human present in the receiving
   repository, looking at the exact content.
@@ -47,8 +48,8 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 ### What Gets Applied, and Where
 
 - [ ] The skill applies only the units the proposal addressed to the working repository;
-        units addressed to the counterpart are listed as "not applied here",
-        with the instruction to run the skill there.
+        a unit addressed to the counterpart becomes an approval request in the working repository,
+        carrying the complete diff, and nothing is sent to the counterpart.
 - [ ] The maintainer can apply the whole proposal or a chosen subset of its units.
 - [ ] The maintainer can defer or reject any decision the proposal raised;
         the skill applies no default in their place.
@@ -123,7 +124,7 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 - [ ] The skill's documentation covers applying a proposal:
         choosing units, combining them, the dry run,
         what the safe-to-publish confirmation looks like,
-        and how to apply the counterpart's side.
+        and what becomes of the units addressed to the counterpart.
 
 ## References
 

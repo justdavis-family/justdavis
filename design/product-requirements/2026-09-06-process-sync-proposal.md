@@ -69,8 +69,8 @@ As a maintainer working in one repository that follows this process,
 ### What Is Adopted, and Where It Differs
 
 Each repository that follows the process declares what it adopts from its counterpart.
-The declaration is the skill's definition of what "process content" means in that repository,
-  and is itself process content, held in the repository it describes.
+The declaration is the skill's definition of what "process content" means in that repository.
+It is the repository's own content, held in the repository it describes and never itself synced.
 
 - [ ] Every piece of process content a repository adopts is declared by path;
         nothing is process content by implication.
@@ -104,7 +104,8 @@ Two commands underlie the skill and can be run on their own,
 
 - [ ] The comparison takes the working repository at one ref and the counterpart at another,
         and reports, per declared entry, exactly one of:
-        identical, differs, missing in the working repository, missing in the counterpart;
+        identical, differs, missing in the working repository, missing in the counterpart,
+        or declined by the working repository;
         and reports separately what the counterpart offers that is neither adopted nor declined.
 - [ ] Declared divergences are applied before comparison, so a declared difference is not reported;
         a part adopted from a file is compared on its own, and the rest of that file is not.
