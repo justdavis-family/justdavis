@@ -220,7 +220,8 @@ This milestone is done by hand, with the comparison from M1 as its check.
 
 - `mise-tasks/process-sync/deliver` as the design specifies: the dry run, the branch pattern, the
     body marker, idempotent updates and closures, `pending/` carriers for workflow files,
-    `Sync decision` issues, `Sync out` issues with the content hash and the approval sentence,
+    `Sync decision` issues, `Sync out` issues with the content hash and the approval, refusal,
+    and withdrawal sentences,
     and the trust boundary in the design's "What the Deliver Tool Trusts".
 - Its fixture tests, added to `process-sync:test`.
 - The README's by-hand sequence completed through delivery.
@@ -238,6 +239,10 @@ This milestone is done by hand, with the comparison from M1 as its check.
         a carrier, and the manifest entry that records a decision
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] A unit with an open decision yields one `Sync decision` issue and no pull request.
+- [ ] A `Sync out` request records an approval, a refusal, or a withdrawal as its state;
+        a refused request is closed by the next run with the manifest entry that would record it
+        (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)
+        and [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
 - [ ] A decision is recorded in the same pull request that carries it out
         (from [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md)).
 
@@ -295,14 +300,17 @@ This milestone lands in the follower.
     branch checks, the shown diff and `yes`, the hub branch and pull request, and the comment that
     closes the loop.
 - Its tests, added to `process-sync:test`, against fixture repositories and a fixture approval.
-- The README's sections on approving and publishing.
+- The README's sections on the outbound path: approving, refusing, and withdrawing;
+    publishing by hand; what the hub's reviewers see;
+    and what a maintainer of a private repository checks before approving.
 - One real outbound change published from the first follower, if any remains after M2 and M5;
     otherwise a scratch change, published and then closed, with that said in the pull request.
 
 **Acceptance criteria:**
 
-- [ ] Against an approval whose hash no longer matches, publication refuses; against a valid one it
-        shows the diff and, after `yes`, opens one pull request in the hub
+- [ ] Against an approval whose hash no longer matches, or a request refused or withdrawn,
+        publication refuses; against a valid one it shows the diff and, after `yes`,
+        opens one pull request in the hub
         (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
 - [ ] The hub pull request's commits and description name no private repository, ref, or commit
         (from [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).

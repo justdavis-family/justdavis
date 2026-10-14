@@ -131,7 +131,7 @@ No automation holds a credential for the hub, now or in this design;
 
 | Path | Held by | Holds |
 |---|---|---|
-| `.process-sync/README.md` | Every repository; shared. | The one explanation of the sync: how to run it by hand, read a proposal, respond to what a run creates, approve and publish, and enroll. |
+| `.process-sync/README.md` | Every repository; shared. | The one explanation of the sync: how to run it by hand, read a proposal, respond to what a run creates, approve, refuse, or withdraw, publish, and enroll. |
 | `.process-sync/catalog.toml` | The hub only. | What the hub offers, with suggested regions and replacements where relevant. |
 | `.process-sync/manifest.toml` | Each follower only. | What this repository adopts, how its copies differ, what it declines, and why. |
 | `.process-sync/diverge/` | A follower, as needed. | Patch files the manifest names as divergences. |
@@ -391,12 +391,20 @@ For an outbound unit it pushes the unit's commits to `sync-out/<slug>` in the fo
   the proposed pull-request title and description for the hub,
   the complete diff in a fenced block, the branch and its commit,
   a content hash over the diff, the workflow-file items the maintainer must carry by hand,
-  and the one sentence that records an approval: a comment reading `Approved <hash>`.
+  and the three sentences a maintainer may comment to record a decision:
+  `Approved <hash>`, `Refused <hash>`, and `Withdrawn <hash>`, which takes an approval back.
+The request's state is the latest of those comments by a user with write permission;
+  neither this tool nor the publish tool reads anything else as a decision.
 If the diff would exceed the issue body limit, the body holds the first part and links the
   branch's compare view for the rest.
 A later run with changed content updates the body and hash and comments that the earlier
   approval has lapsed; a run whose comparison no longer reports the unit closes the issue
   saying where the content now stands.
+A request whose state is `Refused` is closed by the next run with a comment naming the manifest
+  entry that would record the refusal, a `diverge` or a `decline`, and stays closed while the
+  content is unchanged; the maintainer records the entry as for a held unit.
+If the content changes first, the run reopens the request with the new hash,
+  since a refusal of one version does not cover the next.
 
 A failure in any stage of the unattended run opens or updates one issue,
   `Process sync failed`, found by its marker, with a link to the run;
@@ -470,8 +478,8 @@ That is the trust extended to any reviewed dependency,
 `process-sync:publish <follower-checkout> <issue-number> [--dry-run]` runs in a checkout of the
   hub, by a maintainer.
 
-1. It reads the approval request through `gh` in the follower and checks that the
-     latest `Approved <hash>` comment is by a user with write permission there,
+1. It reads the approval request through `gh` in the follower and checks that the request's
+     state, the latest decision comment by a user with write permission there, is `Approved <hash>`,
      that the hash matches the body's current hash, and that the `sync-out/` branch head matches
      the commit the body names.
    Any mismatch stops it: the approval has lapsed and a new one is needed.
@@ -486,6 +494,11 @@ That is the trust extended to any reviewed dependency,
    Run again for the same approval, it finds that comment and creates nothing.
 
 The hub's own review follows; publishing applies no label, approves nothing, and merges nothing.
+When the follower is private, approving is the act of publication,
+  because nothing after it looks at the content again before the hub's reviewers do.
+The README's checklist for an approver there is that the diff, the title, and the description
+  carry nothing that identifies the follower or belongs to it alone,
+  and that every line is one the hub's readers may see.
 When the content later lands in the hub, the follower's next unattended run
   sees it in sync and closes the approval request.
 A refused request, or a change the hub turned down,
@@ -785,8 +798,9 @@ The hub holds no secret and no setting for the sync.
 - The agent's tool allowance in the workflow names no tool that accepts a network destination,
     and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
     the manifest's hub, and refuses to clone, with exit `2`.
-- `process-sync:publish --dry-run` against an approval whose hash no longer matches the content
-    refuses; against a valid approval it shows the exact diff and, after `yes`, opens one pull
+- `process-sync:publish --dry-run` against an approval whose hash no longer matches the content,
+    or against a request whose state is `Refused` or `Withdrawn`, refuses;
+    against a valid approval it shows the exact diff and, after `yes`, opens one pull
     request in the hub whose body names no private repository.
 - Neither repository holds any credential for the other, before or after the first milestones:
     the only secrets in a follower are those the review workflow already needs.
