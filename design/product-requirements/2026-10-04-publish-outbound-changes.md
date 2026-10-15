@@ -112,7 +112,7 @@ As a maintainer who has approved an outbound change,
 ### Documentation
 
 - [ ] The process documentation covers the outbound path end to end:
-        approving, withdrawing, publishing by hand, what the counterpart's maintainers see,
+        approving, refusing, withdrawing, publishing by hand, what the counterpart's maintainers see,
         and what a maintainer of a private repository must check before approving.
 
 ## References

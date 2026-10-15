@@ -72,7 +72,8 @@ As a maintainer adopting this process in a new repository,
         as a working repository, with the repository it adopted the process from as its counterpart.
 - [ ] After enrollment, an improvement made in the new repository can reach every other repository
         that follows the process, by way of the one they all follow;
-        no repository that follows the process needs to be a counterpart to another.
+        no two repositories that adopted the process from the same place need to be counterparts
+        to each other.
 - [ ] No repository already following the process needs any change for a new one to join.
 
 ### Privacy and Containment

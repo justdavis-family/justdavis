@@ -98,7 +98,8 @@ As a maintainer who has read a process-sync proposal and decided what to do,
         and the upstream commits or pull requests), and why,
         quoting the source's own summary where one exists.
 - [ ] Each pull request's title and description are specific enough that,
-        once squash-merged, the resulting commit explains its lines to a reader of `git blame`.
+        once merged, the repository's history explains its lines to whoever later asks why they
+        changed.
 - [ ] Each pull request is individually revertible through the repository's normal workflow.
 - [ ] Applying the same proposal twice creates nothing the second time;
         the skill reports the pull requests that already exist and where.
