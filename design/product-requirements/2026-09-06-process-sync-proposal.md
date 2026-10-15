@@ -8,7 +8,7 @@ extends: []
 modifies: []
 replaces: []
 engineering_designs:
-  - 2026-10-13-process-sync
+  - 2026-10-13-process-sync.md
 prs: []
 ---
 
