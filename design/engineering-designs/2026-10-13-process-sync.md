@@ -282,7 +282,8 @@ This sequence is delivered first and proven by converging this repository and it
 ### The Reference Check
 
 `process-sync:check-refs [--find <path>]` scans every file the manifest names,
-  plus the files under the two skills, for Markdown links, `@`-imports, and skill pointers,
+  or every file the catalog names where there is no manifest, plus the files under the two
+  skills, for Markdown links, `@`-imports, and skill pointers,
   resolving relative links against the linking file, root-absolute links against the repository
   root, and `@` paths against the importing file, as Claude Code does.
 Every target that does not exist is reported with its file and line, and the exit code is `1`.
@@ -455,7 +456,8 @@ The output directory is untrusted input, whoever wrote it.
 The tool is deterministic and holds the line between the agent's free text and anything that
   could act:
 
-- It writes only paths the manifest adopts, plus the three the sync itself needs:
+- It writes only paths the manifest adopts, or that the unit's own manifest entry adopts,
+    plus the three the sync itself needs:
     the manifest, for the entry that records a decision the unit carries out;
     `.process-sync/pending/`, for a workflow-file carrier;
     and, in a unit that renames content, the local files `process-sync:check-refs --find` lists
