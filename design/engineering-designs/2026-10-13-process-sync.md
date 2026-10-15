@@ -362,8 +362,15 @@ out/
     *.patch        # git format-patch series: the commits the unit consists of
 ```
 
-The unit id is a hash of the unit's files and the commits it draws from,
+The unit id is a hash of the unit's direction and its provenance, the upstream commits it carries,
   so the same unit has the same id on every run, which is what makes delivery idempotent.
+Two upstream pull requests that touch the same file are two units with two ids,
+  per the grouping heuristics, and never merge by accident.
+A unit's content can change while its id does not, when the follower's base has moved or the
+  manifest's divergences or regions have changed; those are the cases delivery updates in place.
+When a later run's grouping absorbs a unit into a larger one, because a later change supersedes
+  it, the absorbed id is gone, and delivery closes its pull request with a comment naming the
+  unit that replaced it.
 The patches are authored as the follower's branch will carry them:
   the hub's text with the follower's divergences put back, a region written in place inside the
   follower's own file, local references to renamed content updated,
@@ -389,7 +396,8 @@ If the base ref no longer names the commit the unit recorded, or a patch does no
   the maintainer regenerates the proposal.
 A later run finds an existing pull request by that marker,
   updates its branch with `--force-with-lease` and its body when the unit's content changed,
-  and closes it with a comment when the comparison no longer reports the unit.
+  and closes it with a comment when the proposal no longer contains the unit,
+  naming the unit that absorbed it where one did.
 Nothing it creates is labeled; the maintainer applies `claude-review` or not.
 With `--onto <branch>`, attended only, it instead applies every inbound unit's commits to that
   branch in the checkout, in order, and pushes and opens nothing;
@@ -784,7 +792,7 @@ The hub holds no secret and no setting for the sync.
   Sacrificed: a short daily run in the hub that compares nothing.
 - **Markers in bodies rather than labels.**
   Gained: the issue-workflow rule's label vocabulary stays as it is, and a unit's identity is
-    the content hash rather than a label anyone can apply.
+    its provenance rather than a label anyone can apply.
   Sacrificed: finding sync pull requests in a list means searching the body marker,
     which the README documents.
 - **A single hub per follower.**
