@@ -206,6 +206,8 @@ This milestone is done by hand, with the comparison from M1 as its check.
 - [ ] Every decision the proposal cannot make is listed with a recommendation and the manifest
         entry that would record it (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] Against two converged fixture repositories, the proposal is empty (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+- [ ] A unit whose content originates in a private counterpart while the working repository is
+        public is marked as needing the safe-to-publish confirmation (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] Where an inbound rule is one the repository's local content does not follow, the proposal
         names the affected content and the unit leaves it unchanged (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] The skill reads commit messages and content only, never pull-request bodies or comments,
@@ -227,7 +229,8 @@ This milestone is done by hand, with the comparison from M1 as its check.
     body marker, idempotent updates and closures, `--onto` for landing units on an existing branch,
     `pending/` carriers for workflow files,
     `Sync decision` issues, `Sync out` issues with the content hash and the approval, refusal,
-    and withdrawal sentences,
+    and withdrawal sentences, the typed safe-to-publish confirmation for a unit marked as
+    originating in a private counterpart,
     and the trust boundary in the design's "What the Deliver Tool Trusts".
 - Its fixture tests, added to `process-sync:test`.
 - The README's by-hand sequence completed through delivery.
@@ -249,6 +252,9 @@ This milestone is done by hand, with the comparison from M1 as its check.
         the issue.
 - [ ] If the base ref has moved since the proposal, or a patch no longer applies, delivery stops
         before creating anything and says what changed (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
+- [ ] For a unit marked as originating in a private counterpart while the repository is public,
+        delivery shows the complete diff and creates nothing until the maintainer types the
+        confirmation (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] With `--onto`, inbound units land as commits on the named branch and no pull request is
         opened, so that enrollment can be one pull request
         (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).

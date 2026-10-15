@@ -340,8 +340,10 @@ Grouping follows `grouping.md`, written with these starting heuristics and expec
 
 The proposal is a Markdown document in the shape `proposal-format.md` fixes:
   the two sides and their commits; the comparison table; one section per unit with its
-  direction, files, classification, provenance, draft title and description, and any decision it
-  needs, each with a recommendation and the manifest entry that would record it;
+  direction, files, classification, provenance, draft title and description,
+  a mark when its content originates in a private counterpart and the working repository is
+  public, and any decision it needs, each with a recommendation and the manifest entry that
+  would record it;
   the grouping rationale; the workflow-file items; suggestions not yet adopted;
   declines whose hub file changed since their `as_of`;
   and, for an inbound rule the follower's local content does not follow, which content is
@@ -357,7 +359,8 @@ Beside the proposal, the skill writes one directory per unit:
 out/
   proposal.md
   units/<id>/
-    unit.toml      # id, direction, type, title, base ref, files, provenance, open decisions
+    unit.toml      # id, direction, type, title, base ref, files, provenance, private origin,
+                   # open decisions
     body.md        # pull-request description (inbound) or approval-request body (outbound)
     *.patch        # git format-patch series: the commits the unit consists of
 ```
@@ -399,6 +402,10 @@ A later run finds an existing pull request by that marker,
   and closes it with a comment when the proposal no longer contains the unit,
   naming the unit that absorbed it where one did.
 Nothing it creates is labeled; the maintainer applies `claude-review` or not.
+For a unit marked as originating in a private counterpart while the working repository is
+  public, which only an attended run can produce, it shows that unit's complete diff and creates
+  nothing for it until the maintainer types a confirmation that the content is safe to publish;
+  no flag skips the confirmation, and the dry run shows the mark.
 With `--onto <branch>`, attended only, it instead applies every inbound unit's commits to that
   branch in the checkout, in order, and pushes and opens nothing;
   the maintainer opens one pull request for the branch.
@@ -458,8 +465,9 @@ The tool is deterministic and holds the line between the agent's free text and a
 - Branch names come from a fixed pattern and the unit's slug, never from the body.
 - The pull-request body is the repository's template with the unit's text inserted as content;
     nothing in it is interpreted.
-- Everything it creates is a pull request whose workflow runs are parked,
-    or an issue, and a human reads both before anything else happens.
+- Everything it creates is a pull request or an issue, and a human reads both before anything
+    else happens; in the workflow the pull request's runs are parked besides, since
+    `GITHUB_TOKEN` created it.
 
 So a fully subverted agent yields a reviewable pull request confined to those paths,
   and nothing else.
