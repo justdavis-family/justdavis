@@ -193,9 +193,10 @@ Every run, attended or not, has the same four stages, and the agent is present i
 1. **Compare.**
    `process-sync:compare` reads the follower's manifest, clones or fetches the hub, reads the hub's
      catalog from the hub's ref, and reports one status per entry.
-   If no status is `differs`, `missing-here`, `missing-there`, or `suggested`,
-     and no declined entry's hub file has changed since its `as_of`,
-     the run ends here and creates nothing.
+   The report's outcome is `in-sync` when no status is `differs`, `missing-here`,
+     `missing-there`, or `suggested` and no declined entry's hub file has changed since its
+     `as_of`; the run then ends here and creates nothing.
+   Otherwise it is `needs-proposal`, or `error` when any entry is.
 2. **Propose.**
    The skill reads the comparison and both histories,
      classifies each difference, groups the differences into units, drafts each unit's text,
@@ -262,9 +263,15 @@ This sequence is delivered first and proven by converging this repository and it
     changed since that commit, so the proposal can list it for renewal.
   The skill treats such an entry as a unit with one open decision, renew or adopt,
     so that unattended it becomes a question rather than going unseen.
-- The exit code is `0` when nothing differs, `1` when something does, and `2` on any error,
-    so a workflow can branch on it without parsing the output.
-- A repository with a catalog and no manifest is a hub; the tool says so and exits `0`.
+- The report carries one top-level `outcome` beside the per-entry statuses:
+    `in-sync`; `needs-proposal`, when any entry calls for one; `error`, when any entry is `error`;
+    or `hub`.
+  The tool exits `0` whenever it produced a complete report, whatever the outcome,
+    and non-zero only when it could not, such as an unreadable manifest or a failed clone.
+  The workflow reads the outcome from the report rather than from the exit status,
+    so an expected result and a failure of the tool itself are never the same signal.
+- A repository with a catalog and no manifest is a hub; the outcome is `hub` and nothing is
+    compared.
 - Run unattended, which the workflow signals with an environment variable set for the agent's
     step only, the tool refuses any counterpart other than the manifest's hub and refuses to
     clone: the clone must already exist.
@@ -654,11 +661,11 @@ jobs:
   compare:
     permissions: { contents: read }
     # Check out this repository with full history and without persisting credentials;
-    # run process-sync:compare --json, which clones the hub itself; expose the exit status as a
-    # job output. A hub, having no manifest, stops here.
+    # run process-sync:compare --json, which clones the hub itself; read the report's outcome
+    # into a job output, and fail this job when it is error. A hub, having no manifest, stops here.
   propose:
     needs: compare
-    if: needs.compare.outputs.status == 'differs'
+    if: needs.compare.outputs.outcome == 'needs-proposal'
     permissions: { contents: read }
     # In a plain step, before the agent starts: run process-sync:compare --json, which clones
     # the hub, so the agent works on two local clones and clones nothing.
@@ -735,7 +742,8 @@ The hub holds no secret and no setting for the sync.
 - **Python over Rust.**
   Gained: no build, no toolchain, no published artifact, and a follower needs nothing new.
   Sacrificed: the monorepo's Rust conventions and typed errors;
-    the tools compensate with explicit status values and a non-zero exit on every failure.
+    the tools compensate with explicit status and outcome values, and a non-zero exit whenever
+    no report could be produced.
 - **TOML and Python 3.11.**
   Gained: comments in the catalog and the manifest, and standard-library parsing.
   Sacrificed: a follower on an older Python must install one, which mise makes a one-line step.
@@ -791,7 +799,7 @@ The hub holds no secret and no setting for the sync.
 ## Success Criteria
 
 - `process-sync:test` passes, building its fixture repositories with `git init` at test time
-    and covering: two converged repositories (exit `0`, nothing reported);
+    and covering: two converged repositories (outcome `in-sync`, nothing reported);
     an edit, an addition, a removal, a rename, a rename plus edit, and a move,
     each reported with the right status;
     a region adopted with literal matchers and one with regex matchers, identical and differing;
@@ -799,7 +807,7 @@ The hub holds no secret and no setting for the sync.
     a renamed entry compared as one; a decline reported as `declined`, and one whose hub file
     changed since its `as_of` noted; a suggestion not adopted reported as `suggested`;
     a matcher matching twice, a patch that does not apply, and a missing source each reported as
-    `error` with exit `2`; a dirty working tree reported and excluded;
+    `error` with outcome `error`; a dirty working tree reported and excluded;
     and the reference check catching a dangling link, a dangling `@`-import, and a dangling skill
     pointer.
 - `process-sync:deliver --dry-run` on a sample output directory prints every branch, pull request,
@@ -824,7 +832,7 @@ The hub holds no secret and no setting for the sync.
     audit run and are listed in the workflow.
 - The agent's tool allowance in the workflow names no tool that accepts a network destination,
     and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
-    the manifest's hub, and refuses to clone, with exit `2`.
+    the manifest's hub, and refuses to clone, exiting non-zero.
 - `process-sync:publish --dry-run` against an approval whose hash no longer matches the content,
     or against a request whose state is `Refused` or `Withdrawn`, refuses;
     against a valid approval it shows the exact diff and, after `yes`, opens one pull
@@ -856,7 +864,7 @@ The hub holds no secret and no setting for the sync.
     [Clear, Unambiguous, Easily-Parsed Data Models](../engineering-principles/2026-05-12-clear-data-models.md),
     which the comparison's seven statuses follow;
     [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md),
-    which the exit codes, the matcher rules, and the failure issue follow;
+    which the outcome values, the matcher rules, and the failure issue follow;
     [Mocks Are Usually Dumb](../engineering-principles/2026-01-15-avoid-mocks.md),
     which is why the tests build real repositories;
     and [YAGNI](../engineering-principles/2026-01-06-yagni.md),

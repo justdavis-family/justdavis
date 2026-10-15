@@ -90,7 +90,7 @@ Nothing in this milestone changes any process content.
 - `mise-tasks/process-sync/compare` and `mise-tasks/process-sync/check-refs`, with the shared
     package beside them, implementing the comparison and the reference check as the design
     specifies: path or URL counterparts, regions, replace and patch divergences,
-    declines with `as_of`, the seven statuses, the exit codes, and the unattended refusal.
+    declines with `as_of`, the seven statuses, the report's outcome, and the unattended refusal.
 - `mise-tasks/process-sync/enroll`, copying the task directory and the README into a working tree
     and writing a manifest that adopts every catalog suggestion, with suggested regions and
     replacements copied in; later milestones extend what it copies.
@@ -111,7 +111,7 @@ Nothing in this milestone changes any process content.
 - [ ] A failure to compare an entry is reported as an error and never as identical
         (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] Run with the unattended variable set, the comparison refuses any counterpart other than the
-        manifest's hub and refuses to clone, with exit `2`.
+        manifest's hub and refuses to clone, exiting non-zero.
 - [ ] Enrollment writes only to the new repository's working tree, so that nothing in the hub
         changes (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
 - [ ] The comparison, run in the first follower after enrollment, reports the divergence the
@@ -379,7 +379,8 @@ This milestone lands in the follower.
         by an audit run and are listed in the workflow.
 - [ ] The hub's copy of the workflow runs and creates nothing, and the hub's content and history
         contain no follower's name.
-- [ ] A failed run opens or updates the failure issue
+- [ ] A failed run, including one whose comparison's outcome is `error`, opens or updates the
+        failure issue
         (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)).
 - [ ] Enrolling a scratch repository and running one sync yields one pull request there, after which
         the comparison reports every adopted entry identical and the unattended run is on

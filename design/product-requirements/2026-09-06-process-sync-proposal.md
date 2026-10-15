@@ -113,7 +113,8 @@ Two commands underlie the skill and can be run on their own,
 - [ ] The reference check reports every reference from process content
         — Markdown links, `@`-imports, and skill pointers —
         that does not resolve in the repository it is run in.
-- [ ] Both commands run without an agent and exit in a way that unattended automation can act on.
+- [ ] Both commands run without an agent and report their result in a way that unattended
+        automation can act on.
 - [ ] Neither command needs a credential when the counterpart is public.
 
 ### Which Revisions Are Compared
