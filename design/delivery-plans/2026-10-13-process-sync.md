@@ -66,6 +66,9 @@ Four things later milestones depend on are not in hand:
   Evidence from real content stays in that repository; evidence in the hub comes from fixtures.
 - **Settings changes are recorded in the pull request** that first depends on them,
     since no document in the repository can carry them.
+- **Neither repository holds a credential for the other, at any milestone.**
+  The only secrets in a follower are those the review workflow already needs;
+    a milestone that would add one is a change to the design first.
 
 ## Milestones
 
@@ -341,7 +344,7 @@ This milestone lands in the follower.
 ### M7 — The Unattended Run, and Enrollment Proven End to End
 
 **Deliverable:** a follower learns of every process change merged in the hub within a day, as a
-  parked pull request or an approval request, without anyone running anything; the hub's copy of
+  parked pull request or a question, without anyone running anything; the hub's copy of
   the workflow runs and does nothing; and a new repository can be brought onto the whole process,
   unattended sync included, with one command in the hub and one sync there.
 

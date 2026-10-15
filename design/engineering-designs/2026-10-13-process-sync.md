@@ -408,9 +408,9 @@ For a unit marked as originating in a private counterpart while the working repo
   nothing for it until the maintainer types a confirmation that the content is safe to publish;
   no flag skips the confirmation, and the dry run shows the mark.
 With `--onto <branch>`, attended only, it instead applies every inbound unit's commits to that
-  branch in the checkout, in order, and pushes and opens nothing;
+  branch in the checkout, in order, and pushes no inbound branch and opens no pull request;
   the maintainer opens one pull request for the branch.
-Held and outbound units are delivered as usual.
+Held and outbound units are delivered as usual, as questions and approval requests.
 
 Any adopted path under `.github/workflows/` is never written by the tool.
 The workflow's own token cannot push a change to a workflow file,
@@ -666,7 +666,8 @@ The workflow is four jobs, so that the agent's job holds nothing it could write 
 
 ```yaml
 # .github/workflows/process-sync.yml — shared verbatim; applied by hand.
-# Each job is one step of the by-hand sequence in .process-sync/README.md.
+# The first three jobs are the compare, propose, and deliver stages of the by-hand sequence in
+# .process-sync/README.md; the last reports a failure in any of them.
 name: Process Sync
 on:
   schedule:
