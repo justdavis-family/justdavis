@@ -193,10 +193,9 @@ Every run, attended or not, has the same four stages, and the agent is present i
 1. **Compare.**
    `process-sync:compare` reads the follower's manifest, clones or fetches the hub, reads the hub's
      catalog from the hub's ref, and reports one status per entry.
-   The report's outcome is `in-sync` when no status is `differs`, `missing-here`,
-     `missing-there`, or `suggested` and no declined entry's hub file has changed since its
-     `as_of`; the run then ends here and creates nothing.
-   Otherwise it is `needs-proposal`, or `error` when any entry is.
+   The report's outcome is `in-sync` when every entry is settled, as
+     [The Comparison](#the-comparison) defines it; the run then ends here and creates nothing.
+   It is `needs-proposal` when any entry is unsettled, and `error` when any entry is `error`.
 2. **Propose.**
    The skill reads the comparison and both histories,
      classifies each difference, groups the differences into units, drafts each unit's text,
@@ -263,18 +262,22 @@ This sequence is delivered first and proven by converging this repository and it
     changed since that commit, so the proposal can list it for renewal.
   The skill treats such an entry as a unit with one open decision, renew or adopt,
     so that unattended it becomes a question rather than going unseen.
-- The report carries one top-level `outcome` beside the per-entry statuses:
-    `in-sync`; `needs-proposal`, when any entry calls for one; `error`, when any entry is `error`;
-    or `hub`.
+- An entry is *unsettled* when its status is `differs`, `missing-here`, `missing-there`,
+    or `suggested`, or when it is `declined` and the hub's file has changed since its `as_of`;
+    every other entry is settled.
+  Unsettled is the one condition that calls for a proposal.
+- The report carries one top-level `outcome` beside the per-entry statuses, decided in order:
+    `error` when any entry is `error`, `needs-proposal` when any entry is unsettled,
+    `in-sync` otherwise, and `hub` for a repository that has no manifest.
   The tool exits `0` whenever it produced a complete report, whatever the outcome,
     and non-zero only when it could not, such as an unreadable manifest or a failed clone.
   The workflow reads the outcome from the report rather than from the exit status,
     so an expected result and a failure of the tool itself are never the same signal.
 - A repository with a catalog and no manifest is a hub; the outcome is `hub` and nothing is
     compared.
-- Run unattended, which the workflow signals with an environment variable set for the agent's
-    step only, the tool refuses any counterpart other than the manifest's hub and refuses to
-    clone: the clone must already exist.
+- Run with `PROCESS_SYNC_UNATTENDED` set, which the workflow does for the agent's step only,
+    the tool refuses any counterpart other than the manifest's hub and refuses to clone:
+    the clone must already exist.
   This backs up the agent's tool allowance, described in
     [What the Agent May Run](#what-the-agent-may-run).
 - Nothing in this tool talks to GitHub beyond cloning.
@@ -342,14 +345,16 @@ Grouping follows `grouping.md`, written with these starting heuristics and expec
 The proposal is a Markdown document in the shape `proposal-format.md` fixes:
   the two sides and their commits; the comparison table; one section per unit with its
   direction, files, classification, provenance, draft title and description,
-  a mark when its content originates in a private counterpart and the working repository is
-  public, and any decision it needs, each with a recommendation and the manifest entry that
-  would record it;
+  whether it needs clearance, and any decision it needs, each with a recommendation and the
+  manifest entry that would record it;
   the grouping rationale; the workflow-file items; suggestions not yet adopted;
   declines whose hub file changed since their `as_of`;
   and, for an inbound rule the follower's local content does not follow, which content is
   affected, named for the maintainer and left unchanged by the unit.
 It shows the text a matcher matched, never only the matcher.
+A unit *needs clearance* when its content originates in a private counterpart and the working
+  repository is public: a human must confirm that exact content is safe to publish before
+  anything carrying it is created, and nothing the skill infers substitutes for that.
 The counterpart appears only as the path or URL the maintainer supplied.
 Attended, it is written where the maintainer asks, default a scratch directory;
   unattended, it is the run's artifact and its summary.
@@ -360,7 +365,7 @@ Beside the proposal, the skill writes one directory per unit:
 out/
   proposal.md
   units/<id>/
-    unit.toml      # id, direction, type, title, base ref, files, provenance, private origin,
+    unit.toml      # id, direction, type, title, base ref, files, provenance, needs clearance,
                    # open decisions
     body.md        # pull-request description (inbound) or approval-request body (outbound)
     *.patch        # git format-patch series: the commits the unit consists of
@@ -377,9 +382,12 @@ When a later run's grouping absorbs a unit into a larger one, because a later ch
   unit that replaced it.
 The patches are authored as the follower's branch will carry them:
   the hub's text with the follower's divergences put back, a region written in place inside the
-  follower's own file, local references to renamed content updated,
-  the manifest edit that records any decision the unit carries out,
+  follower's own file, the unit's consistency edits,
   and the commit message holding the provenance the apply requirement calls for.
+A unit's *consistency edits* are the two changes to the follower's own files that adopting its
+  content requires: local references to renamed content updated so they keep resolving,
+  and the manifest entry that records any decision the unit carries out,
+  so the manifest never claims a decision the repository has not applied.
 When the follower is public and the content came from a private counterpart,
   the message and the body say only that the change was synced from another repository that
   follows this process, unless the maintainer chose otherwise in the confirm stage.
@@ -393,20 +401,22 @@ When the follower is public and the content came from a private counterpart,
 For an inbound unit it creates the branch `<type>/sync-<slug>` from the unit's base ref,
   applies the patches with `git am`, pushes, and opens a pull request titled per the
   repository's conventions whose body is the unit's text followed by the repository's
-  pull-request template sections and an HTML comment marker holding the unit id.
+  pull-request template sections and the *watermark*.
+The watermark is one closing line in plain words: that the sync created this, the unit id it
+  carries, and a link to the README for what that means; every later run finds what it created
+  by it.
 If the base ref no longer names the commit the unit recorded, or a patch does not apply,
   it stops before creating anything and says what changed, per
   [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md);
   the maintainer regenerates the proposal.
-A later run finds an existing pull request by that marker,
+A later run finds an existing pull request by its watermark,
   updates its branch with `--force-with-lease` and its body when the unit's content changed,
   and closes it with a comment when the proposal no longer contains the unit,
   naming the unit that absorbed it where one did.
 Nothing it creates is labeled; the maintainer applies `claude-review` or not.
-For a unit marked as originating in a private counterpart while the working repository is
-  public, which only an attended run can produce, it shows that unit's complete diff and creates
-  nothing for it until the maintainer types a confirmation that the content is safe to publish;
-  no flag skips the confirmation, and the dry run shows the mark.
+For a unit that needs clearance, which only an attended run can produce, it shows that unit's
+  complete diff and creates nothing for it until the maintainer types the confirmation that
+  clears it; no flag skips the confirmation, and the dry run says which units need clearance.
 With `--onto <branch>`, attended only, it instead applies every inbound unit's commits to that
   branch in the checkout, in order, and pushes no inbound branch and opens no pull request;
   the maintainer opens one pull request for the branch.
@@ -421,7 +431,7 @@ The maintainer applies it with `git am` and deletes it in the same commit before
   the comparison reports one left on the compared ref as an error.
 
 For a held unit, one whose decisions are open, it opens or updates one issue of type `Task`
-  titled `Sync decision: <title>`, found by its marker, carrying each decision with its
+  titled `Sync decision: <title>`, found by its watermark, carrying each decision with its
   recommendation and the exact manifest entry that would record it.
 The maintainer records the decision through an ordinary pull request or an attended run;
   the next run finds it in the manifest, closes the question, and delivers the unit whole.
@@ -431,23 +441,23 @@ For an outbound unit it pushes the unit's commits to `sync-out/<slug>` in the fo
   the proposed pull-request title and description for the hub,
   the complete diff in a fenced block, the branch and its commit,
   a content hash over the diff, the workflow-file items the maintainer must carry by hand,
-  and the three sentences a maintainer may comment to record a decision:
+  and the three *verdict* sentences a maintainer may comment:
   `Approved <hash>`, `Refused <hash>`, and `Withdrawn <hash>`, which takes an approval back.
-The request's state is the latest of those comments by a user with write permission;
-  neither this tool nor the publish tool reads anything else as a decision.
+The request's verdict is the latest of those comments by a user with write permission;
+  neither this tool nor the publish tool reads anything else as one.
 If the diff would exceed the issue body limit, the body holds the first part and links the
   branch's compare view for the rest.
 A later run with changed content updates the body and hash and comments that the earlier
   approval has lapsed; a run whose comparison no longer reports the unit closes the issue
   saying where the content now stands.
-A request whose state is `Refused` is closed by the next run with a comment naming the manifest
+A request whose verdict is `Refused` is closed by the next run with a comment naming the manifest
   entry that would record the refusal, a `diverge` or a `decline`, and stays closed while the
   content is unchanged; the maintainer records the entry as for a held unit.
 If the content changes first, the run reopens the request with the new hash,
   since a refusal of one version does not cover the next.
 
 A failure in any stage of the unattended run opens or updates one issue,
-  `Process sync failed`, found by its marker, with a link to the run;
+  `Process sync failed`, found by its watermark, with a link to the run;
   it is never silent, per [Fail Fast and Loud](../engineering-principles/2026-01-09-fail-fast.md).
 
 ### What the Deliver Tool Trusts
@@ -456,12 +466,10 @@ The output directory is untrusted input, whoever wrote it.
 The tool is deterministic and holds the line between the agent's free text and anything that
   could act:
 
-- It writes only paths the manifest adopts, or that the unit's own manifest entry adopts,
-    plus the three the sync itself needs:
-    the manifest, for the entry that records a decision the unit carries out;
-    `.process-sync/pending/`, for a workflow-file carrier;
-    and, in a unit that renames content, the local files `process-sync:check-refs --find` lists
-    for the old name, changed only in that reference.
+- It writes only paths the manifest adopts, or that the hub's catalog suggests and the unit's
+    own manifest entry adopts; the unit's [consistency edits](#the-proposal), with a reference
+    update allowed only in a file `process-sync:check-refs --find` lists for the old name and
+    only in that reference; and `.process-sync/pending/`, for a workflow-file carrier.
   It refuses a unit naming any other path.
 - It never writes under `.github/workflows/`, as above.
 - Branch names come from a fixed pattern and the unit's slug, never from the body.
@@ -478,20 +486,28 @@ The human review of that pull request, which the vision requires, is the defense
 
 ### What the Agent May Run
 
-The agent's job holds the Claude OAuth token, because the action needs it to reach Claude,
-  and the agent reads text that anyone could have written, so the rule for its tool allowance is:
+The agent's job holds three things worth stealing, and the agent reads text that anyone could
+  have written.
+The Claude OAuth token, which the action needs to reach Claude, is a one-year credential that
+  makes model requests on the subscriber's plan, has no documented revocation,
+  and would let whoever holds it run Claude as the subscriber, quietly, for the rest of its year.
+The job's read-only `GITHUB_TOKEN` can read every branch of the follower until the job ends.
+And the checkout itself is the follower's content, which for a private follower is the larger
+  prize, token or no token.
+So the rule for the agent's tool allowance, the *no-exfiltration rule*, is:
 
 **No tool the agent may run accepts a network destination as an argument,
-  because any such tool is an exfiltration channel for the token.**
+  because any such tool is a way out for all three.**
 An instruction planted in a commit message could have the agent run such a tool with the token
-  spliced into the URL; the shell would expand it, the server named would log it,
-  and no scan of the output directory would ever see it, since nothing was written.
+  spliced into the URL or the checkout as the upload; the shell would expand it,
+  the server named would receive it, and no scan of the output directory would ever see it,
+  since nothing was written.
 
 So the allowance is: reading files; `git log`, `git show`, and `git diff` on the two local clones;
   `process-sync:check-refs`; and writing under the output directory.
 The comparison tool, which can clone, is not in the allowance:
   a plain step runs the comparison, which clones the hub, before the agent starts,
-  and under the agent's step, where the workflow sets the unattended variable,
+  and under the agent's step, where the workflow sets `PROCESS_SYNC_UNATTENDED`,
   the tool refuses to clone.
 Nothing in the allowance can fetch, clone, push, or open a connection,
   and a reviewer can check any later change to the allowance against the rule in one reading.
@@ -510,6 +526,8 @@ Which hosts the agent's job actually reaches, including whatever the action touc
   not assumed; after that, everything else is blocked.
 The two layers are independent: the allowance stops the agent from trying,
   and the block stops a try from succeeding.
+Both are preferred to relying on rotating the token after a leak, because the token is
+  long-lived and its revocation is undocumented: a leak would be hard to end and harder to notice.
 
 What no mechanism catches is a reviewer in a follower approving a subtly bad process change,
   such as a rule that tells agents to do something they should not.
@@ -521,10 +539,9 @@ That is the trust extended to any reviewed dependency,
 `process-sync:publish <follower-checkout> <issue-number> [--dry-run]` runs in a checkout of the
   hub, by a maintainer.
 
-1. It reads the approval request through `gh` in the follower and checks that the request's
-     state, the latest decision comment by a user with write permission there, is `Approved <hash>`,
-     that the hash matches the body's current hash, and that the `sync-out/` branch head matches
-     the commit the body names.
+1. It reads the approval request through `gh` in the follower and checks that its verdict is
+     `Approved <hash>`, that the hash matches the body's current hash,
+     and that the `sync-out/` branch head matches the commit the body names.
    Any mismatch stops it: the approval has lapsed and a new one is needed.
 2. It shows the exact diff it is about to publish and waits for the maintainer's `yes`.
 3. It creates `<type>/sync-<slug>` in the hub from the hub's default branch,
@@ -689,8 +706,8 @@ jobs:
     # In a plain step, before the agent starts: run process-sync:compare --json, which clones
     # the hub, so the agent works on two local clones and clones nothing.
     # Then block all outbound traffic from the runner except to Anthropic's API.
-    # Then run claude-code-action with github_token set to the read-only GITHUB_TOKEN, the
-    # unattended variable in this step's env only, the prompt invoking the process-sync skill
+    # Then run claude-code-action with github_token set to the read-only GITHUB_TOKEN,
+    # PROCESS_SYNC_UNATTENDED in this step's env only, the prompt invoking the process-sync skill
     # unattended, --allowed-tools limited to reading, git log/show/diff on the clones,
     # process-sync:check-refs, and writing under out/, and --max-turns bounded.
     # Fail if any file under out/ contains the Claude OAuth token.
@@ -801,10 +818,10 @@ The hub holds no secret and no setting for the sync.
 - **A daily no-op run in the hub.**
   Gained: the workflow file is shared verbatim, with no hub-specific variant to maintain.
   Sacrificed: a short daily run in the hub that compares nothing.
-- **Markers in bodies rather than labels.**
+- **Watermarks in bodies rather than labels.**
   Gained: the issue-workflow rule's label vocabulary stays as it is, and a unit's identity is
     its provenance rather than a label anyone can apply.
-  Sacrificed: finding sync pull requests in a list means searching the body marker,
+  Sacrificed: finding sync pull requests in a list means searching for the watermark's wording,
     which the README documents.
 - **A single hub per follower.**
   Gained: one `hub` line, one workflow, and the hub topology the analysis chose.
@@ -849,11 +866,11 @@ The hub holds no secret and no setting for the sync.
 - With the egress block in place, a command run in the agent's job that tries to reach any host
     other than Anthropic's API fails, demonstrated on a fixture; the hosts allowed were found by an
     audit run and are listed in the workflow.
-- The agent's tool allowance in the workflow names no tool that accepts a network destination,
-    and `process-sync:compare` run with the unattended variable set refuses a counterpart other than
-    the manifest's hub, and refuses to clone, exiting non-zero.
+- The agent's tool allowance in the workflow meets the no-exfiltration rule, naming no tool that
+    accepts a network destination, and `process-sync:compare` run with `PROCESS_SYNC_UNATTENDED`
+    set refuses a counterpart other than the manifest's hub, and refuses to clone, exiting non-zero.
 - `process-sync:publish --dry-run` against an approval whose hash no longer matches the content,
-    or against a request whose state is `Refused` or `Withdrawn`, refuses;
+    or against a request whose verdict is `Refused` or `Withdrawn`, refuses;
     against a valid approval it shows the exact diff and, after `yes`, opens one pull
     request in the hub whose body names no private repository.
 - Neither repository holds any credential for the other, at every milestone:

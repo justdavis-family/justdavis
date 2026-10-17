@@ -113,7 +113,7 @@ Nothing in this milestone changes any process content.
         (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] A failure to compare an entry is reported as an error and never as identical
         (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
-- [ ] Run with the unattended variable set, the comparison refuses any counterpart other than the
+- [ ] Run with `PROCESS_SYNC_UNATTENDED` set, the comparison refuses any counterpart other than the
         manifest's hub and refuses to clone, exiting non-zero.
 - [ ] Enrollment writes only to the new repository's working tree, so that nothing in the hub
         changes (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
@@ -210,7 +210,7 @@ This milestone is done by hand, with the comparison from M1 as its check.
         entry that would record it (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] Against two converged fixture repositories, the proposal is empty (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] A unit whose content originates in a private counterpart while the working repository is
-        public is marked as needing the safe-to-publish confirmation (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
+        public is marked as needing clearance (from [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md)).
 - [ ] Where an inbound rule is one the repository's local content does not follow, the proposal
         names the affected content and the unit leaves it unchanged (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] The skill reads commit messages and content only, never pull-request bodies or comments,
@@ -229,11 +229,10 @@ This milestone is done by hand, with the comparison from M1 as its check.
 **In scope:**
 
 - `mise-tasks/process-sync/deliver` as the design specifies: the dry run, the branch pattern, the
-    body marker, idempotent updates and closures, `--onto` for landing units on an existing branch,
+    watermark, idempotent updates and closures, `--onto` for landing units on an existing branch,
     `pending/` carriers for workflow files,
-    `Sync decision` issues, `Sync out` issues with the content hash and the approval, refusal,
-    and withdrawal sentences, the typed safe-to-publish confirmation for a unit marked as
-    originating in a private counterpart,
+    `Sync decision` issues, `Sync out` issues with the content hash and the verdict sentences,
+    the typed confirmation that clears a unit needing clearance,
     and the trust boundary in the design's "What the Deliver Tool Trusts".
 - Its fixture tests, added to `process-sync:test`.
 - The README's by-hand sequence completed through delivery.
@@ -247,21 +246,19 @@ This milestone is done by hand, with the comparison from M1 as its check.
 - [ ] Each applied unit becomes one branch and one pull request following the repository's
         conventions, with provenance in the description
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
-- [ ] Local content is byte-for-byte unchanged apart from reference updates for renamed content,
-        a carrier, and the manifest entry that records a decision
+- [ ] Local content is byte-for-byte unchanged apart from the unit's consistency edits and a carrier
         (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] A unit with an open decision yields one `Sync decision` issue and no pull request;
         recording the decision in the manifest and running again yields the pull request and closes
         the issue.
 - [ ] If the base ref has moved since the proposal, or a patch no longer applies, delivery stops
         before creating anything and says what changed (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
-- [ ] For a unit marked as originating in a private counterpart while the repository is public,
-        delivery shows the complete diff and creates nothing until the maintainer types the
-        confirmation (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
+- [ ] For a unit that needs clearance, delivery shows the complete diff and creates nothing until
+        the maintainer types the confirmation that clears it (from [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md)).
 - [ ] With `--onto`, inbound units land as commits on the named branch and no pull request is
         opened, so that enrollment can be one pull request
         (from [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md)).
-- [ ] A `Sync out` request records an approval, a refusal, or a withdrawal as its state;
+- [ ] A `Sync out` request records an approval, a refusal, or a withdrawal as its verdict;
         a refused request is closed by the next run with the manifest entry that would record it
         (from [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md)
         and [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md)).
@@ -353,8 +350,8 @@ This milestone lands in the follower.
 **In scope:**
 
 - `.github/workflows/process-sync.yml` as the design specifies: the four jobs, the plain step that
-    clones and compares before the agent, the agent's allowance with no tool that accepts a network
-    destination, the egress block behind it, the token scan before upload, the one-day artifact,
+    clones and compares before the agent, the agent's allowance under the no-exfiltration rule,
+    the egress block behind it, the token scan before upload, the one-day artifact,
     and the failure issue.
 - The egress block set up in two passes: one run in an audit mode that logs every host the agent's
     job reaches, then the block of everything but those the agent needs,
@@ -381,8 +378,8 @@ This milestone lands in the follower.
         left, creates nothing; the pull request says so and attaches nothing from it.
 - [ ] The propose job fails before uploading when a file under `out/` contains the OAuth token's
         value, demonstrated on a fixture.
-- [ ] The agent's allowance names no tool that accepts a network destination,
-        checked in review against the design's rule.
+- [ ] The agent's allowance meets the design's no-exfiltration rule, naming no tool that accepts
+        a network destination, checked in review.
 - [ ] With the egress block in place, a command in the agent's job that tries to reach any host
         other than Anthropic's API fails, demonstrated on a fixture; the hosts allowed were found
         by an audit run and are listed in the workflow.
