@@ -9,7 +9,7 @@ extends: []
 modifies: []
 replaces: []
 engineering_designs:
-  - 2026-10-13-process-sync.md
+  - 2026-10-13-lockstep.md
 prs: []
 ---
 
@@ -38,7 +38,7 @@ That is what keeps this requirement simple:
 
 ## User Story
 
-As a maintainer who has read a process-sync proposal and decided what to do,
+As a maintainer who has read a process sync proposal and decided what to do,
   I want the skill to open the proposed pull requests in the repository I am working in,
   so that converging on the current process is a review-and-merge task
   rather than a hand-copy of many files across a self-linked set of documents.
@@ -140,7 +140,7 @@ As a maintainer who has read a process-sync proposal and decided what to do,
 
 ### Engineering Design
 
-- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+- [Lockstep Engineering Design](../engineering-designs/2026-10-13-lockstep.md) —
     Delivery as a deterministic tool with a dry run, the carrier for human-applied units,
     and the confirm stage.
 

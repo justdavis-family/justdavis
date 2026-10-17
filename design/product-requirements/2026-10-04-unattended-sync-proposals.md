@@ -11,7 +11,7 @@ extends: []
 modifies: []
 replaces: []
 engineering_designs:
-  - 2026-10-13-process-sync.md
+  - 2026-10-13-lockstep.md
 prs: []
 ---
 
@@ -124,7 +124,7 @@ As a maintainer of a repository that follows this process,
 
 ### Engineering Design
 
-- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+- [Lockstep Engineering Design](../engineering-designs/2026-10-13-lockstep.md) —
     The four-job workflow, the agent's read-only job, delivery with the workflow token, and approval requests.
 
 ### Analysis

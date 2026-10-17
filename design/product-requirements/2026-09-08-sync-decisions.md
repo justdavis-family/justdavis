@@ -10,7 +10,7 @@ extends: []
 modifies: []
 replaces: []
 engineering_designs:
-  - 2026-10-13-process-sync.md
+  - 2026-10-13-lockstep.md
 prs: []
 ---
 
@@ -95,7 +95,7 @@ As a maintainer who has already decided how a difference should be handled,
 
 ### Engineering Design
 
-- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+- [Lockstep Engineering Design](../engineering-designs/2026-10-13-lockstep.md) —
     How each kind of decision is recorded as an entry in the repository's manifest,
     with the manifest's history as the log, and how the comparison and the skill read them.
 

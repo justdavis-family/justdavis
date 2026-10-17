@@ -160,6 +160,9 @@ The concrete shape of these — how the boundary is declared, how staleness is d
   how a change travels, how conflicts are presented, how publication is confirmed,
   how forwarded content is kept from running unreviewed —
   is specified in the requirements and the engineering design, not here.
+That design specifies tooling named *Lockstep*, after what it does:
+  keeping every repository that follows the process in lockstep with the one that defines it,
+  with each intentional divergence declared.
 
 ## Requirements
 

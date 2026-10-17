@@ -12,7 +12,7 @@ extends:
 modifies: []
 replaces: []
 engineering_designs:
-  - 2026-10-13-process-sync.md
+  - 2026-10-13-lockstep.md
 prs: []
 ---
 
@@ -127,7 +127,7 @@ As a maintainer who has approved an outbound change,
 
 ### Engineering Design
 
-- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+- [Lockstep Engineering Design](../engineering-designs/2026-10-13-lockstep.md) —
     The approval comment, the publish tool, and how the loop closes.
 
 ### Analysis

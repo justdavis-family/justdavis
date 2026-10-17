@@ -8,7 +8,7 @@ extends: []
 modifies: []
 replaces: []
 engineering_designs:
-  - 2026-10-13-process-sync.md
+  - 2026-10-13-lockstep.md
 prs: []
 ---
 
@@ -195,7 +195,7 @@ How to weigh those goals in a given case is a judgment:
 
 ### Engineering Design
 
-- [Process Sync Engineering Design](../engineering-designs/2026-10-13-process-sync.md) —
+- [Lockstep Engineering Design](../engineering-designs/2026-10-13-lockstep.md) —
     The counterpart's catalog, the repository's manifest, the comparison, the reference check,
     the skill, and the proposal format.
 
