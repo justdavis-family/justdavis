@@ -29,7 +29,7 @@ A repository that already holds some of it — an earlier copy, or its own versi
   [Propose a Process Sync](2026-09-06-process-sync-proposal.md) call for.
 Either way, once enrolled, the new repository is a *working repository* like any other:
   it can produce and apply proposals, keep decisions, and run unattended,
-  with the repository it adopted the process from as its *counterpart*.
+  with the repository that defines the process as its *counterpart*.
 
 Joining costs the repositories already following the process nothing.
 None of them needs a change for a new one to join,
@@ -69,11 +69,10 @@ As a maintainer adopting this process in a new repository,
 ### Equal Participation
 
 - [ ] After enrollment, every requirement under the vision applies to the new repository
-        as a working repository, with the repository it adopted the process from as its counterpart.
+        as a working repository, with the repository that defines the process as its counterpart.
 - [ ] After enrollment, an improvement made in the new repository can reach every other repository
         that follows the process, by way of the one they all follow;
-        no two repositories that adopted the process from the same place need to be counterparts
-        to each other.
+        no two repositories that follow the process need to be counterparts to each other.
 - [ ] No repository already following the process needs any change for a new one to join.
 
 ### Privacy and Containment
