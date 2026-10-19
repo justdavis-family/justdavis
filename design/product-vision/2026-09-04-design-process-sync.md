@@ -1,192 +1,122 @@
-# One Development Process across Many Repositories
+# Shared Content in Lockstep across Two Repositories
 
 ## Problem and Motivation
 
-This repository's development process — how work is designed, reviewed, tracked, and formatted —
-  is not used only here.
-One or more other repositories, some of which may be private, follow the same process:
-  the same `design/` directory and templates, the same agent rules, the same review conventions.
-The process is, in effect, a product.
-Its users are the maintainers and agents of every repository that follows it,
-  it changes through reviewed pull requests, and it has a skill, templates, rules, and workflows.
+Some content belongs to more than one repository.
+Two repositories with a shared lineage and a shared purpose end up holding the same agent
+  instructions, the same shape of build and hook configuration, the same CI workflows,
+  and the same design process, because the second was set up from the first and both need the
+  same things.
+Nothing keeps those copies aligned except someone remembering that the other repository exists
+  and carrying the change over by hand,
+  across a densely self-linked set of files that one improvement can touch fifteen or twenty of
+  at once.
+Copying is expensive, so drift is the default.
+Once two copies have diverged, the next sync is a merge rather than a copy,
+  which is more expensive still, so it is deferred longer.
 
-What it does not have is a way to reach its users.
-Today an improvement made in one repository reaches another only if someone remembers the other
-  repository exists, copies the change by hand, and does so across a densely self-linked set of files
-  that a single process change can touch fifteen or twenty of at once.
-That has happened once, in one direction, about five months ago.
-Since then, as the [divergence inventory](../analyses/2026-09-04-process-divergence-inventory.md) records,
-  this repository has merged six process-only pull requests that reached no other repository,
-  and another repository has made corrections to this repository's own content
+The first instance is Karl's two monorepos: `justdavis`, which is public, and `justdavis-private`.
+The private one adopted the public one's infrastructure by hand in April 2026, in one direction,
+  and the two have diverged since.
+As the [divergence inventory](../analyses/2026-09-04-process-divergence-inventory.md) records,
+  `justdavis` has merged six process-only pull requests that never reached `justdavis-private`,
+  and `justdavis-private` has made corrections to content that originated in `justdavis`
   — a spelling fix, a stale term in a review prompt, a missing engineering principle —
   that never came back.
-
-The people and agents on the far end experience this directly.
-An agent starting work in another repository follows an older process:
-  no skill to route it, no pull-request template, different heading rules,
-  a different convention for tracking delivery.
-A human who learned the process in one repository finds it subtly different in the next,
-  and review enforces different standards in each.
-A fix that was already found is found again, or never made.
-And the author of a process improvement faces a choice between a large manual copy and letting the
-  repositories drift, which is no choice at all: drift is the default, because copying is expensive.
-
-Drift then ratchets.
-Once two repositories have diverged, the next sync is a merge rather than a copy,
-  which is more expensive still, so it is deferred longer.
-Every additional repository that follows the process multiplies the cost.
-Meanwhile the value of process work is proportional to the number of repositories it governs;
-  unsynced, every improvement pays off exactly once.
-
-The root cause is not that copying is slow.
-It is that the process has no single definition that every repository demonstrably follows.
-It has several copies with no relationship between them.
+A fix that was already found is found again, or never made,
+  and an agent starting work in one repository follows an older process than the other.
 
 ## Vision
 
-One development process, with one definition, maintained collectively by everyone who follows it.
-Improve it from whichever repository you happen to be working in;
-  within a short, bounded time every repository that follows it has the improvement,
-  and nothing is broken on arrival.
+Lockstep keeps the content two repositories share moving in lockstep.
+A change to shared content merged in either repository is as easy to make in the other as if it
+  had been made there first:
+  it arrives as a similar pull request, reviewed and merged through that repository's own workflow,
+  with its origin and reasoning intact.
 
-A repository *follows the process* when the process content it uses is the current definition,
-  except at points where a repository is explicitly allowed to differ.
-Anything else is staleness, and staleness is visible rather than discovered by accident.
+The first use case is infrastructure.
+The agent instructions, the broad strokes of the `mise` build and the git hooks,
+  the CI infrastructure, the design process, and sundry related items in `justdavis` and
+  `justdavis-private` should stay in sync,
+  so that an addition, a refinement, or a fix made in one is as easy as pie to make in the other.
+Nothing about the approach is particular to infrastructure, though;
+  any content two repositories share by lineage and by purpose is a candidate.
 
-The boundary between process content and a repository's own content is explicit,
-  discoverable from within any repository that follows the process, and part of the process itself.
-Process content is the design directory's READMEs and templates, the design-process skill,
-  the rules that govern process, the pull-request and issue templates, the process-related workflows,
-  and the engineering principles.
-Everything else is local: the design documents about a repository's own projects,
-  its language and platform rules, its contributor handbook, its build and CI configuration,
-  its tool and agent settings.
-Local content is never touched by the process, and local *additions* are first-class:
-  a repository may add rules, principles, and skills alongside the shared ones
-  without them being removed or propagated.
+Each repository knows what it shares and where it is allowed to differ.
+The shared set is explicit and discoverable from within either repository,
+  and so are the places where a repository's copy intentionally departs from the other's.
+Everything else is the repository's own:
+  its projects, their design documents, its local rules and settings.
+Local content is never touched by a sync, and local additions are first-class:
+  a repository may add rules, principles, skills, and tasks beside the shared ones
+  without them being removed or carried across.
 
 Rules apply on arrival, but the debt lands locally.
 When a heading-capitalization rule reaches a repository,
   that repository's existing documents do not become compliant by magic;
   bringing them into line is that repository's own follow-up work, tracked as such.
-The process promises that the rule is there, not that the past has been rewritten.
+A sync promises that the rule is there, not that the past has been rewritten.
 
-Contributors, human and agent, can find and read the current process
-  from within any repository that follows it.
-Whether they read it in files that live in the repository, or by following a pointer to where the
-  definition lives, is a design choice with real trade-offs on each side;
-  this vision requires only that the reading is possible and that what they read is current.
-
-Privacy runs one way.
-A private repository may name the public one, link to it, and cite its history;
-  the public repository never names a private one, links to it, or records that it exists
-  — not in its content, and not in its commit or pull-request history.
-Nothing about a private repository joining requires the public repository to know it is there.
+A human runs every sync and reviews every pull request it produces.
+The work Lockstep removes is the finding, the copying, and the explaining, not the deciding.
 
 ### What This Is Not
 
 - It is not a way to sync project content.
-  Visions, requirements, engineering designs, delivery plans, and analyses about a repository's own
-    projects stay where they are.
-- It is not an attempt to make repositories identical outside the process.
-  Contributor handbooks, agent briefs, settings, and CI differ by design and keep differing.
+  Visions, requirements, designs, plans, and code about a repository's own projects stay where
+    they are.
+- It is not an attempt to make the two repositories identical.
+  They differ by design outside the shared set, and inside it wherever a difference is declared.
 - It is not a change to who decides what lands in a repository.
-  Each repository keeps its own review and merge authority over its own content;
-    whether a process change arrives as something to review or as something already applied
-    is left to the requirements and the engineering design.
-- It is not a per-repository veto on the process.
-  Disagreement with a change is expressed by changing the process, which reaches everyone,
-    or by declaring a point of allowed variation — not by quietly keeping an older copy.
-- It is not a choice of mechanism.
-  Shared skills, replication workflows, template repositories, subtrees, and hybrids of these
-    are evaluated in an analysis, on their merits, against the metrics below.
+  Each repository keeps its own review and merge authority over its own content.
+- It is not unattended automation.
+  Nothing runs on a schedule, and nothing is created that a maintainer has not seen.
 
 ## Success Metrics
 
-### One Process
+### In Lockstep
 
-- At steady state, every repository that follows the process is on its current definition,
-    and whenever one does not, that fact is visible without anyone going looking for it.
-- A process change merged in any repository that follows the process is followed by every other one
-    within a bounded time — no more than a week, or before the next process change is authored,
-    whichever comes first.
-- Improvements flow in both directions with equal effort, apart from the publication check below:
-    a change authored in a private repository reaches the public one as readily as the reverse.
-- The same shared change is authored and reviewed on its merits once.
-  Whatever per-repository review the design requires is mechanical
-    — does it apply cleanly, do the references resolve — not a second review of the content.
+- A change to shared content merged in either repository reaches the other as a pull request
+    for a few minutes of the maintainer's effort, in either direction.
+- The same change is authored and reviewed on its merits once.
+  Review in the receiving repository is mechanical
+    — does it apply cleanly, do the references resolve —
+    not a second review of the content.
+- Whether the two repositories are in sync, and where they are not,
+    can be told from either one without going looking.
 
 ### Nothing Broken, Nothing Lost
 
-- After any process change reaches a repository, every reference from process content
-    — links, imports, pointers — resolves in the place it is consumed,
-    and every point of allowed variation carries that repository's own value.
-- A repository's local content is byte-for-byte untouched by process changes.
-- When the same part of the process is changed in two repositories before either change has reached
+- After a sync, every reference from shared content — links, imports, pointers — resolves in the
+    repository it landed in, and every declared difference keeps that repository's own value.
+- A repository's local content is byte-for-byte untouched by a sync.
+- When the same shared content is changed in both repositories before either change has reached
     the other, both changes are surfaced together; neither is silently overwritten.
 
-### Private Stays Private
+### Public Stays Safe
 
-- Nothing authored in a private repository is pushed to, proposed against,
-    or otherwise made visible in a public repository
-    until a human has reviewed that specific content and confirmed it is safe to publish.
-  The confirmation happens before anything leaves the private side;
-    a pull request opened in a public repository is already a publication, not a review step.
-  An agent's judgment that a change is "only process content" is never a substitute for that
+- A pull request opened against `justdavis` is a publication, not a review step.
+  Nothing authored in `justdavis-private` is pushed there until the maintainer has seen that exact
+    content and confirmed it is safe to publish.
+  An agent's judgment that a change is "only infrastructure" is never a substitute for that
     confirmation, however plausible the judgment.
-- The public repository's content and history never identify a private repository:
-    not by name, not by link, and not by a record of a change's origin
-    beyond what the human who published it chose to say.
-
-### Compromise Stays Contained
-
-- No repository involved in this sync process is required to hold a credential
-    that would allow an attacker who acquires that credential
-    to automatically compromise another repository.
-- Nothing forwarded from another repository — a workflow, a build, a test, a document —
-    executes in the receiving repository until a human has reviewed it and chosen to run it.
-  This holds in every direction, public or private on either side,
-    because the danger is automatic execution of forwarded code, not the visibility of the repositories.
-
-### Cheap to Join, Easy to Understand
-
-- A repository that holds none of the process content starts following it with one pull request
-    of its own; one that already holds some of it needs no more than a sync would.
-  Either participates equally from then on.
-- From any repository that follows the process, on its own,
-    a contributor can tell which content is process and which is local, before editing either.
-
-The concrete shape of these — how the boundary is declared, how staleness is detected,
-  how a change travels, how conflicts are presented, how publication is confirmed,
-  how forwarded content is kept from running unreviewed —
-  is specified in the requirements and the engineering design, not here.
-That design specifies tooling named *Lockstep*, after what it does:
-  keeping every repository that follows the process in lockstep with the one that defines it,
-  with each intentional divergence declared.
 
 ## Requirements
 
-This vision is being implemented through the following requirements:
+This vision is being implemented through the following requirements, each building on the one before:
 
-- [Propose a Process Sync](../product-requirements/2026-09-06-process-sync-proposal.md) —
-    A skill that, run in one repository that follows the process and pointed at another,
-    explains how their process content has diverged and proposes the pull requests that would
-    converge them, changing nothing (draft).
-- [Apply a Process Sync Proposal](../product-requirements/2026-09-06-process-sync-apply.md) —
-    On request, the skill opens the proposed pull requests in the repository it is running in,
-    never in another; the maintainer sees everything before it is created, and explicitly confirms
-    any private content is safe to publish before it reaches a public repository (draft).
-- [Remember Sync Decisions](../product-requirements/2026-09-08-sync-decisions.md) —
-    Each repository keeps a record of its sync decisions, which proposals honor and cite,
-    so no decision is asked twice and a resolution made on one side is carried to the other (draft).
-- [Unattended Sync Proposals](../product-requirements/2026-10-04-unattended-sync-proposals.md) —
-    A repository notices on its own when it and its counterpart have diverged,
-    and puts inbound changes in front of its maintainer as pull requests
-    and outbound changes as approval requests, sending and running nothing itself (draft).
-- [Publish Approved Outbound Changes](../product-requirements/2026-10-04-publish-outbound-changes.md) —
-    An approved outbound change reaches the counterpart exactly as approved,
-    is reviewed there as real content, and runs nothing until a human there chooses (draft).
-- [Enroll a New Repository](../product-requirements/2026-10-12-enrolling-a-repository.md) —
-    A repository starts following the process, and stays in sync, through one pull request of its
-    own or a sync of what it already holds,
-    with no change to the repositories already there and nothing added to any public one (draft).
+- [Agent-Assisted Sync of Shared Content](../product-requirements/2026-10-18-agent-assisted-sync.md) —
+    A skill, run in either repository and pointed at a checkout of the other,
+    that carries the other's changes to shared content here as pull requests,
+    with the maintainer seeing everything before it is created (draft).
+- [Exact Comparison of Shared Content](../product-requirements/2026-10-18-exact-comparison.md) —
+    One command, needing no agent, that reports exactly which shared paths differ and how (draft).
+- [Exact Delivery of a Sync](../product-requirements/2026-10-18-exact-delivery.md) —
+    What the maintainer approved in a dry run is byte-for-byte what lands,
+    with the publication confirmation enforced by a tool (draft).
+- [Declared Divergences and Shared Parts of Files](../product-requirements/2026-10-18-declared-divergences.md) —
+    Intentional differences, declines, and partially shared files honored deterministically
+    rather than re-judged on each run (draft).
+- [Renamed and Moved Shared Content](../product-requirements/2026-10-18-renamed-and-moved-content.md) —
+    Content shared at different paths, or moved between files,
+    compared as one thing and landed as a rename (draft).
