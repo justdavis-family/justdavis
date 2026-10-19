@@ -6,14 +6,15 @@ This repository's [development process](../README.md)
   — the `design/` directory's READMEs and templates, the `design-process` skill,
   the agent rules that govern process, the pull-request and issue templates,
   the process-related workflows, and the engineering principles —
-  is also followed by one or more other repositories, some of which may be private.
-Nothing keeps those copies aligned except occasional manual effort.
+  is also followed by `justdavis-private`, a private monorepo with the same maintainer,
+  which adopted it from here.
+Nothing keeps the two copies aligned except occasional manual effort.
 
 Before deciding how to keep them aligned,
   it is worth knowing precisely how far apart they have drifted, and in what ways.
 This analysis answers:
 
-1. When did process content last move between this repository and another, and in which direction?
+1. When did process content last move between the two repositories, and in which direction?
 2. Which improvements exist on one side and not the other, in each direction?
 3. What shape does the divergence take:
      are files identical, extended, restructured, renamed, or missing?
@@ -22,15 +23,14 @@ This analysis answers:
      and which are pure content that could in principle live anywhere?
 
 Findings compare this repository at commit `b80c62d` (2026-08-18)
-  with a checkout of one other repository that follows this process, taken on 2026-09-04.
+  with a checkout of `justdavis-private` taken on 2026-09-04.
 File names and line counts are this repository's.
-The other repository is described but not named, and none of its content is quoted.
 
 ## Findings
 
 ### 1. The Last Sync Was Manual, One-Way, and Nearly Five Months Ago
 
-The other repository adopted this repository's process content in April 2026,
+`justdavis-private` adopted this repository's process content in April 2026,
   through two pull requests on the same day, by hand.
 That is the only time process content has ever moved between the two,
   and it moved outward from this repository only.
@@ -46,9 +46,8 @@ The three most recent (#32, #39, #40) were each cross-cutting,
   touching between three and twenty files across `design/`, `.claude/`, and `.github/` at once,
   and #40 also re-cased headings in twelve dated design documents.
 
-*Provenance:* this repository's history is verified from `git log`.
-The other repository's dates come from an inventory of its history made for this analysis
-  and are inherited here rather than re-verified.
+*Provenance:* this repository's history is verified from `git log`;
+  `justdavis-private`'s dates come from an inventory of its history made for this analysis.
 
 ### 2. What Never Propagated, in Each Direction
 
@@ -147,7 +146,7 @@ Two latent cases are worth recording even though neither bites today:
     (the opening of `design/README.md`; the PR workflow's reasoning about commit scopes).
   Both current adopters are monorepos, so the prose is true in both;
     a single-project adopter would make it false.
-- The other repository carries a local security rule stating that its code is confidential.
+- `justdavis-private` carries a local security rule stating that its code is confidential.
   That is local content and correctly stays local,
     but it shows that a repository's local rules can contradict the public process's framing,
     and that "local" must be a first-class category rather than an oversight.
@@ -203,14 +202,10 @@ Whichever mechanism is chosen, convergence has to decide the following,
 5. **The four repository-specific lines** in section 4:
      generalize them, or declare them as points where repositories are allowed to differ.
 
-Two things follow for the design work downstream:
-
-- The unit of sync cannot be the individual file.
-  The rename-plus-edit and the cross-file moves in section 3 mean that identity
-    lives at the level of the process content as a whole.
-- Every repository that follows this process will hold at least its own `.github/` files,
-    so even a design that moves most of the process out of the repository
-    still has to keep some of it in every repository.
+One thing follows for the design work downstream:
+  the unit of sync cannot be the individual file.
+The rename-plus-edit and the cross-file moves in section 3 mean that identity
+  lives at the level of the process content as a whole.
 
 The newest unpropagated change is the amendment to `design/product-requirements/README.md`
   that opened this design lineage, letting the process itself be the product;
@@ -218,5 +213,5 @@ The newest unpropagated change is the amendment to `design/product-requirements/
 
 ## References
 
-- [One Development Process across Many Repositories](../product-vision/2026-09-04-design-process-sync.md)
+- [Shared Content in Lockstep across Two Repositories](../product-vision/2026-09-04-design-process-sync.md)
     — the product vision that this analysis informs.
